@@ -13,6 +13,10 @@ from classes.attempt import Attempt
 from classes.kniffel_check import KniffelCheck
 from classes.kniffel_option import KniffelOptionClass
 
+import numpy as np
+import itertools
+import tensorflow as tf
+
 
 class Kniffel:
     turns = []
@@ -21,6 +25,108 @@ class Kniffel:
     def __init__(self, logging: bool = False):
         self.turns = []
         self.logging = logging
+
+    def get_turn_as_dict(self, id: int):
+        if 0 <= id < len(self.turns):
+            turn = {
+                "attempt1": [0, 0, 0, 0, 0]
+                if len(self.turns[id].attempts) <= 0
+                else self.turns[id].attempts[0].get_as_array(),
+                "attempt2": [0, 0, 0, 0, 0]
+                if len(self.turns[id].attempts) <= 1
+                else self.turns[id].attempts[1].get_as_array(),
+                "attempt3": [0, 0, 0, 0, 0]
+                if len(self.turns[id].attempts) <= 2
+                else self.turns[id].attempts[2].get_as_array(),
+                "selected_option": 0
+                if self.turns[id].selected_option is None
+                else self.turns[id].selected_option.get_id(),
+            }
+        else:
+            turn = {
+                "attempt1": [0, 0, 0, 0, 0],
+                "attempt2": [0, 0, 0, 0, 0],
+                "attempt3": [0, 0, 0, 0, 0],
+                "selected_option": -1,
+            }
+
+        return turn
+
+    def get_turn_as_array(self, id: int):
+        if 0 <= id < len(self.turns):
+            turn = []
+            attempt1 = (
+                np.array([0, 0, 0, 0, 0], dtype=np.int8)
+                if len(self.turns[id].attempts) <= 0
+                else np.array(self.turns[id].attempts[0].get_as_array(), dtype=np.int8)
+            )
+
+            attempt2 = (
+                np.array([0, 0, 0, 0, 0], dtype=np.int8)
+                if len(self.turns[id].attempts) <= 1
+                else np.array(self.turns[id].attempts[1].get_as_array(), dtype=np.int8)
+            )
+
+            attempt3 = (
+                np.array([0, 0, 0, 0, 0], dtype=np.int8)
+                if len(self.turns[id].attempts) <= 2
+                else np.array(self.turns[id].attempts[2].get_as_array(), dtype=np.int8)
+            )
+
+            selected_option = (
+                np.array([0], dtype=np.int8)
+                if self.turns[id].selected_option is None
+                else np.array([self.turns[id].selected_option.get_id()], dtype=np.int8)
+            )
+
+            turn = list(itertools.chain(attempt1, attempt2, attempt3, selected_option))
+        else:
+            attempt1 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
+            attempt2 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
+            attempt3 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
+            selected_option = np.array([0], dtype=np.int8)
+
+            turn = list(itertools.chain(attempt1, attempt2, attempt3, selected_option))
+
+        return turn
+
+    def get_dict(self):
+        turns = {
+            "turn1": self.get_turn_as_dict(0),
+            "turn2": self.get_turn_as_dict(1),
+            "turn3": self.get_turn_as_dict(2),
+            "turn4": self.get_turn_as_dict(3),
+            "turn5": self.get_turn_as_dict(4),
+            "turn6": self.get_turn_as_dict(5),
+            "turn7": self.get_turn_as_dict(6),
+            "turn8": self.get_turn_as_dict(7),
+            "turn9": self.get_turn_as_dict(8),
+            "turn10": self.get_turn_as_dict(9),
+            "turn11": self.get_turn_as_dict(10),
+            "turn12": self.get_turn_as_dict(11),
+            "turn13": self.get_turn_as_dict(12),
+        }
+
+        return turns
+
+    def get_array(self):
+        turns = []
+
+        turns.append(self.get_turn_as_array(0))
+        turns.append(self.get_turn_as_array(1))
+        turns.append(self.get_turn_as_array(2))
+        turns.append(self.get_turn_as_array(3))
+        turns.append(self.get_turn_as_array(4))
+        turns.append(self.get_turn_as_array(5))
+        turns.append(self.get_turn_as_array(6))
+        turns.append(self.get_turn_as_array(7))
+        turns.append(self.get_turn_as_array(8))
+        turns.append(self.get_turn_as_array(9))
+        turns.append(self.get_turn_as_array(10))
+        turns.append(self.get_turn_as_array(11))
+        turns.append(self.get_turn_as_array(12))
+
+        return tf.convert_to_tensor(np.array(turns, dtype=np.int8), dtype=tf.int8)
 
     def start(self):
         """

@@ -1,6 +1,7 @@
 from classes.kniffel import Kniffel
 from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
+import numpy as np
 
 
 def main():
@@ -23,12 +24,12 @@ def main():
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.SIXES)
+    kniffel.finish_turn(KniffelOptions.THREE_TIMES)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.THREE_TIMES)
+    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+    kniffel.finish_turn(KniffelOptions.SIXES)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
@@ -46,13 +47,23 @@ def main():
     kniffel.finish_turn(KniffelOptions.KNIFFEL)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    # kniffel.finish_turn(KniffelOptions.CHANCE)
+    kniffel.finish_turn(KniffelOptions.CHANCE)
 
-    kniffel.add_turn([1, 1, 1, 1, 1])
+    # kniffel.add_turn([1, 1, 1, 1, 1])
 
     kniffel.print()
     print(kniffel.get_points())
     print(kniffel.is_bonus())
+    d = kniffel.get_array()
+
+    print(d)
+
+
+def test2():
+    kniffel = Kniffel(False)
+    d = kniffel.get_array()
+    print(d.shape)
+    print(d)
 
 
 if __name__ == "__main__":
