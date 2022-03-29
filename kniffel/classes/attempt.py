@@ -3,14 +3,15 @@ from classes.options import KniffelOptions
 from classes.dice_set import DiceSet
 from classes.kniffel_check import KniffelCheck
 from classes.kniffel_option import KniffelOptionClass
+from enum import Enum
 
 
 class Attempt:
     attempts = []
     status = KniffelStatus.INIT
     option = KniffelOptions.DEFAULT
-    selected_option: KniffelOptionClass = None
     logging = False
+    selected_option = None
 
     def __init__(self, logging: bool = False):
         self.attempts = []
@@ -22,9 +23,9 @@ class Attempt:
         """
         if self.count() > 3:
             return False
-        elif self.status is KniffelStatus.FINISHED:
+        elif self.status.value == KniffelStatus.FINISHED.value:
             return False
-        elif self.option is not KniffelOptions.DEFAULT:
+        elif self.option.value is not KniffelOptions.DEFAULT.value:
             return False
         else:
             return True
@@ -61,53 +62,50 @@ class Attempt:
 
             self.attempts.append(dice_set)
 
-    def finish_attempt(self, option: KniffelOptions):
+    def finish_attempt(self, option: KniffelOptions) -> KniffelOptionClass:
         """
         Finish attempt
 
         :param KniffelOptions option: selected option how to finish the attempt
         """
-        if self.is_active() is True:
+
+        if self.is_active():
             self.status = KniffelStatus.FINISHED
             self.option = option
 
-            if option is KniffelOptions.ONES:
-                self.selected_option = KniffelCheck().check_1(self.attempts[-1])
-            if option is KniffelOptions.TWOS:
-                self.selected_option = KniffelCheck().check_2(self.attempts[-1])
-            if option is KniffelOptions.THREES:
-                self.selected_option = KniffelCheck().check_3(self.attempts[-1])
-            if option is KniffelOptions.FOURS:
-                self.selected_option = KniffelCheck().check_4(self.attempts[-1])
-            if option is KniffelOptions.FIVES:
-                self.selected_option = KniffelCheck().check_5(self.attempts[-1])
-            if option is KniffelOptions.SIXES:
-                self.selected_option = KniffelCheck().check_6(self.attempts[-1])
+            selected = None
 
-            if option is KniffelOptions.THREE_TIMES:
-                self.selected_option = KniffelCheck().check_three_times(
-                    self.attempts[-1]
-                )
-            if option is KniffelOptions.FOUR_TIMES:
-                self.selected_option = KniffelCheck().check_four_times(
-                    self.attempts[-1]
-                )
-            if option is KniffelOptions.FULL_HOUSE:
-                self.selected_option = KniffelCheck().check_full_house(
-                    self.attempts[-1]
-                )
-            if option is KniffelOptions.SMALL_STREET:
-                self.selected_option = KniffelCheck().check_small_street(
-                    self.attempts[-1]
-                )
-            if option is KniffelOptions.LARGE_STREET:
-                self.selected_option = KniffelCheck().check_large_street(
-                    self.attempts[-1]
-                )
-            if option is KniffelOptions.KNIFFEL:
-                self.selected_option = KniffelCheck().check_kniffel(self.attempts[-1])
-            if option is KniffelOptions.CHANCE:
-                self.selected_option = KniffelCheck().check_chance(self.attempts[-1])
+            if option.value == KniffelOptions.ONES.value:
+                selected = KniffelCheck().check_1(self.attempts[-1])
+            elif option.value == KniffelOptions.TWOS.value:
+                selected = KniffelCheck().check_2(self.attempts[-1])
+            elif option.value == KniffelOptions.THREES.value:
+                selected = KniffelCheck().check_3(self.attempts[-1])
+            elif option.value == KniffelOptions.FOURS.value:
+                selected = KniffelCheck().check_4(self.attempts[-1])
+            elif option.value == KniffelOptions.FIVES.value:
+                selected = KniffelCheck().check_5(self.attempts[-1])
+            elif option.value == KniffelOptions.SIXES.value:
+                selected = KniffelCheck().check_6(self.attempts[-1])
+
+            elif option.value == KniffelOptions.THREE_TIMES.value:
+                selected = KniffelCheck().check_three_times(self.attempts[-1])
+            elif option.value == KniffelOptions.FOUR_TIMES.value:
+                selected = KniffelCheck().check_four_times(self.attempts[-1])
+            elif option.value == KniffelOptions.FULL_HOUSE.value:
+                selected = KniffelCheck().check_full_house(self.attempts[-1])
+            elif option.value == KniffelOptions.SMALL_STREET.value:
+                selected = KniffelCheck().check_small_street(self.attempts[-1])
+            elif option.value == KniffelOptions.LARGE_STREET.value:
+                selected = KniffelCheck().check_large_street(self.attempts[-1])
+            elif option.value == KniffelOptions.KNIFFEL.value:
+                selected = KniffelCheck().check_kniffel(self.attempts[-1])
+            elif option.value == KniffelOptions.CHANCE.value:
+                selected = KniffelCheck().check_chance(self.attempts[-1])
+
+            self.selected_option = selected
+
+        return self.selected_option
 
     def get_latest(self):
         """
@@ -136,7 +134,7 @@ class Attempt:
         """
         Print attempts
         """
-        if self.status is KniffelStatus.FINISHED:
+        if self.status.value == KniffelStatus.FINISHED.value:
             print(
                 "Turn (finished): "
                 + str(len(self.attempts))

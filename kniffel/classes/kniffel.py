@@ -1,6 +1,7 @@
 import os
 import sys
 import inspect
+import tensorflow as tf
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -11,11 +12,9 @@ from classes.options import KniffelOptions
 from classes.dice_set import DiceSet
 from classes.attempt import Attempt
 from classes.kniffel_check import KniffelCheck
-from classes.kniffel_option import KniffelOptionClass
 
 import numpy as np
 import itertools
-import tensorflow as tf
 
 
 class Kniffel:
@@ -126,7 +125,8 @@ class Kniffel:
         turns.append(self.get_turn_as_array(11))
         turns.append(self.get_turn_as_array(12))
 
-        return tf.convert_to_tensor(np.array(turns, dtype=np.int8), dtype=tf.int8)
+        # return tf.convert_to_tensor(np.array(turns, dtype=np.int8), dtype=tf.int8)
+        return np.asarray(turns, dtype=np.int32).reshape(13, 16)
 
     def start(self):
         """
@@ -148,7 +148,7 @@ class Kniffel:
         else:
             raise Exception("Cannot play more then 13 rounds. Play a new game!")
 
-    def finish_turn(self, option: KniffelOptions):
+    def finish_turn(self, option: KniffelOptions) -> int:
         """
         Finish turn
 
@@ -156,7 +156,8 @@ class Kniffel:
         """
         if self.is_option_possible(option) is True:
             if self.is_new_game() == False and self.is_turn_finished() == False:
-                self.turns[-1].finish_attempt(option)
+                kniffel_option = self.turns[-1].finish_attempt(option)
+                return kniffel_option.points
         else:
             raise Exception(
                 "Cannot select the same Option again or not possible for this. Select another Option!"
@@ -167,12 +168,16 @@ class Kniffel:
         Get the total points
         """
         total = 0
-        for turn in self.turns:
-            if turn.status is KniffelStatus.FINISHED:
-                total += turn.selected_option.points
+        if self.turns is not [] and self.turns is not None:
+            for turn in self.turns:
+                if (
+                    turn.status.value == KniffelStatus.FINISHED.value
+                    and turn.selected_option is not None
+                ):
+                    total += turn.selected_option.points
 
-        if self.is_bonus() is True:
-            total += 35
+            if self.is_bonus() is True:
+                total += 35
 
         return total
 
@@ -195,13 +200,13 @@ class Kniffel:
         """
         total = 0
         for turn in self.turns:
-            if turn.status is KniffelStatus.FINISHED and (
-                turn.option is KniffelOptions.ONES
-                or turn.option is KniffelOptions.TWOS
-                or turn.option is KniffelOptions.THREES
-                or turn.option is KniffelOptions.FOURS
-                or turn.option is KniffelOptions.FIVES
-                or turn.option is KniffelOptions.SIXES
+            if turn.status.value == KniffelStatus.FINISHED.value and (
+                turn.option.value == KniffelOptions.ONES.value
+                or turn.option.value == KniffelOptions.TWOS.value
+                or turn.option.value == KniffelOptions.THREES.value
+                or turn.option.value == KniffelOptions.FOURS.value
+                or turn.option.value == KniffelOptions.FIVES.value
+                or turn.option.value == KniffelOptions.SIXES.value
             ):
                 total += turn.selected_option.points
 

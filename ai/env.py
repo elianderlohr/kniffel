@@ -2,11 +2,11 @@ from tokenize import Triple
 from gym import Env
 import gym.spaces as spaces
 import numpy as np
-import random
 from enum import Enum
 import os
 import sys
 import inspect
+import tensorflow as tf
 
 sys.path.insert(
     0,
@@ -71,8 +71,8 @@ class EnumAction(Enum):
 
 
 class KniffelEnv(Env):
-    PENALTY = -50
-    REWARD = 10
+    PENALTY = -5
+    REWARD = 1
 
     def __init__(self):
         self.kniffel = Kniffel()
@@ -80,7 +80,7 @@ class KniffelEnv(Env):
         self.action_space = spaces.Discrete(44)
 
         self.observation_space = spaces.Box(
-            low=0, high=13, shape=(13, 16), dtype=np.int8
+            low=0, high=13, shape=(13, 16), dtype=np.int32
         )
 
         # Set start
@@ -91,33 +91,34 @@ class KniffelEnv(Env):
         # Apply action
         enum_action = EnumAction(action)
         try:
+            points = 0
             # Finish Actions
             if enum_action.FINISH_ONES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.ONES)
+                points = self.kniffel.finish_turn(KniffelOptions.ONES)
             if enum_action.FINISH_TWOS is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.TWOS)
+                points = self.kniffel.finish_turn(KniffelOptions.TWOS)
             if enum_action.FINISH_THREES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.THREES)
+                points = self.kniffel.finish_turn(KniffelOptions.THREES)
             if enum_action.FINISH_FOURS is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.FOURS)
+                points = self.kniffel.finish_turn(KniffelOptions.FOURS)
             if enum_action.FINISH_FIVES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.FIVES)
+                points = self.kniffel.finish_turn(KniffelOptions.FIVES)
             if enum_action.FINISH_SIXES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.SIXES)
+                points = self.kniffel.finish_turn(KniffelOptions.SIXES)
             if enum_action.FINISH_THREE_TIMES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
+                points = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
             if enum_action.FINISH_FOUR_TIMES is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
+                points = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
             if enum_action.FINISH_FULL_HOUSE is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
+                points = self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
             if enum_action.FINISH_SMALL_STREET is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
+                points = self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
             if enum_action.FINISH_LARGE_STREET is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
+                points = self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
             if enum_action.FINISH_KNIFFEL is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
+                points = self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
             if enum_action.FINISH_CHANCE is enum_action:
-                self.kniffel.finish_turn(KniffelOptions.CHANCE)
+                points = self.kniffel.finish_turn(KniffelOptions.CHANCE)
 
             # Continue enum_actions
             if enum_action.NEXT_0 is enum_action:
@@ -185,9 +186,9 @@ class KniffelEnv(Env):
             if enum_action.NEXT_31 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
-            reward = self.REWARD + self.kniffel.get_points()
+            reward = self.REWARD + points
         except:
-            reward = self.PENALTY
+            reward = self.PENALTY - self.kniffel.get_points()
             done = True
 
         self.state = self.kniffel.get_array()
@@ -210,6 +211,9 @@ class KniffelEnv(Env):
 
     def reset(self):
         # Reset
+        del self.state
+        del self.kniffel
+
         self.kniffel = Kniffel()
         self.state = self.kniffel.get_array()
 
