@@ -15,15 +15,18 @@ import numpy as np
 def build_model(states, actions):
     model = tf.keras.Sequential()
     model.add(Flatten(input_shape=(1, 13, 16)))
+    model.add(Dense(265, activation="relu"))
+    model.add(Dense(128, activation="relu"))
     model.add(Dense(64, activation="relu"))
-    model.add(Dense(64, activation="relu"))
+    model.add(Dense(32, activation="relu"))
+
     model.add(Dense(actions, activation="linear"))
     return model
 
 
 def build_agent(model, actions):
     policy = BoltzmannQPolicy()
-    memory = SequentialMemory(limit=50000, window_length=1)
+    memory = SequentialMemory(limit=100000, window_length=1)
     dqn = DQNAgent(
         model=model,
         memory=memory,
@@ -64,7 +67,7 @@ def main():
     model = build_model(states, actions)
     dqn = build_agent(model, actions)
     dqn.compile(Adam(lr=1e-3), metrics=["mae"])
-    dqn.fit(env, nb_steps=60000, visualize=False, verbose=1)
+    dqn.fit(env, nb_steps=500000, visualize=False, verbose=1)
 
     scores = dqn.test(env, nb_episodes=100, visualize=False)
     print(np.mean(scores.history["episode_reward"]))
