@@ -31,9 +31,9 @@ from kniffel.classes.kniffel import Kniffel
 from env import EnumAction
 
 
-def build_model(actions):
+def build_model(actions, windows_length):
     model = tf.keras.Sequential()
-    model.add(Flatten(input_shape=(1, 13, 16)))
+    model.add(Flatten(input_shape=(windows_length, 13, 16)))
     model.add(Dense(64, activation="relu"))
     model.add(Dense(128, activation="relu"))
     model.add(Dense(64, activation="relu"))
@@ -42,9 +42,9 @@ def build_model(actions):
     return model
 
 
-def build_agent(model, actions):
+def build_agent(model, actions, windows_length):
     policy = BoltzmannQPolicy()
-    memory = SequentialMemory(limit=100000, window_length=1)
+    memory = SequentialMemory(limit=100000, window_length=windows_length)
     dqn = DQNAgent(
         model=model,
         memory=memory,
@@ -52,6 +52,7 @@ def build_agent(model, actions):
         nb_actions=actions,
         nb_steps_warmup=10,
         target_model_update=1e-3,
+        batch_size=64,
     )
     return dqn
 
@@ -80,9 +81,10 @@ def train():
 
     states = env.observation_space.shape
     actions = env.action_space.n
+    windows_length = 1
 
-    model = build_model(actions)
-    dqn = build_agent(model, actions)
+    model = build_model(actions, windows_length)
+    dqn = build_agent(model, actions, windows_length)
     dqn.compile(Adam(lr=1e-3), metrics=["mae"])
     dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1)
 
@@ -237,4 +239,4 @@ def use():
 
 
 if __name__ == "__main__":
-    use()
+    train()
