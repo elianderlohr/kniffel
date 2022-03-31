@@ -4,6 +4,7 @@ from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
 from classes.kniffel_check import KniffelCheck
 import numpy as np
+from enum import Enum
 
 
 def main():
@@ -114,5 +115,23 @@ def test4():
     print("## " + str(selected))
 
 
+def test5():
+    kniffel = Kniffel(False)
+
+    kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
+
+    # print(kniffel.check())
+
+    kniffel.finish_turn(KniffelOptions.ONES)
+
+    kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
+
+    # print(kniffel.check())
+
+    kniffel.finish_turn(KniffelOptions.ONES)
+
+    kniffel.print()
+
+
 if __name__ == "__main__":
-    test4()
+    test5()

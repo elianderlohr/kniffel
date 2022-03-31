@@ -25,6 +25,8 @@ class Kniffel:
         self.turns = []
         self.logging = logging
 
+        self.add_turn()
+
     def get_turn_as_dict(self, id: int):
         if 0 <= id < len(self.turns):
             turn = {
@@ -141,7 +143,7 @@ class Kniffel:
         :param list keep: hot encoded list of which dice to keep (1 = keep, 0 = drop)
         """
         if self.turns_left() > 0:
-            if self.is_new_game() == True or self.is_turn_finished() == True:
+            if self.is_new_game() or self.is_turn_finished():
                 self.turns.append(Attempt())
 
             self.turns[-1].add_attempt(keep)
@@ -154,10 +156,15 @@ class Kniffel:
 
         :param KniffelOptions option: selected option how to finish the turn
         """
-        if self.is_option_possible(option) is True:
-            if self.is_new_game() == False and self.is_turn_finished() == False:
+        if self.is_option_possible(option):
+            if self.is_new_game() is False and self.is_turn_finished() is False:
                 kniffel_option = self.turns[-1].finish_attempt(option)
                 return kniffel_option.points
+
+            elif self.is_new_game():
+                raise Exception("Cannot finish new game!")
+            elif self.is_turn_finished():
+                raise Exception("Cannot finish finished round!")
         else:
             raise Exception(
                 "Cannot select the same Option again or not possible for this. Select another Option!"
@@ -187,16 +194,21 @@ class Kniffel:
 
         :param KniffelOptions option: kniffel option to check
         """
-        for turn in self.turns:
-            if turn.option is option:
-                return False
+        check = self.system_check()
+        if option.value in check.keys():
+            if check[option.value].is_possible:
+                for turn in self.turns:
+                    if turn.option is option:
+                        return False
 
-        return True
+                return True
+
+        return False
 
     def is_bonus(self):
         """
         Is bonus possible.
-        Sum for einser, zweier, dreier, vierer, fünfer und secher needs to be higher or equal to 63
+        Sum for einser, zweier, dreier, vierer, fünfer und sechser needs to be higher or equal to 63
         """
         total = 0
         for turn in self.turns:
@@ -231,8 +243,8 @@ class Kniffel:
         """
         Is the turn finished
         """
-        if self.is_new_game() == False:
-            if self.turns[-1].status == KniffelStatus.FINISHED:
+        if self.is_new_game() is False:
+            if self.turns[-1].status.value == KniffelStatus.FINISHED.value:
                 return True
             else:
                 return False
@@ -245,13 +257,39 @@ class Kniffel:
         else:
             return False
 
+    def system_check(self):
+        """
+        Check latest dice set for possible points
+        """
+        latest_turn = self.turns[-1]
+
+        ds = latest_turn.attempts[-1]
+
+        check = dict()
+
+        check[KniffelOptions.ONES.value] = KniffelCheck().check_1(ds)
+        check[KniffelOptions.TWOS.value] = KniffelCheck().check_2(ds)
+        check[KniffelOptions.THREES.value] = KniffelCheck().check_3(ds)
+        check[KniffelOptions.FOURS.value] = KniffelCheck().check_4(ds)
+        check[KniffelOptions.FIVES.value] = KniffelCheck().check_5(ds)
+        check[KniffelOptions.SIXES.value] = KniffelCheck().check_6(ds)
+        check[KniffelOptions.THREE_TIMES.value] = KniffelCheck().check_three_times(ds)
+        check[KniffelOptions.FOUR_TIMES.value] = KniffelCheck().check_four_times(ds)
+        check[KniffelOptions.FULL_HOUSE.value] = KniffelCheck().check_full_house(ds)
+        check[KniffelOptions.SMALL_STREET.value] = KniffelCheck().check_small_street(ds)
+        check[KniffelOptions.LARGE_STREET.value] = KniffelCheck().check_large_street(ds)
+        check[KniffelOptions.KNIFFEL.value] = KniffelCheck().check_kniffel(ds)
+        check[KniffelOptions.CHANCE.value] = KniffelCheck().check_chance(ds)
+
+        return check
+
     def check(self):
         """
         Check latest dice set for possible points
         """
+        latest_turn = self.turns[-1]
 
-        ds = self.turns[-1][-1]
-        values = ds.to_list()
+        ds = latest_turn.attempts[-1]
 
         check = dict()
 

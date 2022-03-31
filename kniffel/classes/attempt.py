@@ -49,7 +49,7 @@ class Attempt:
         if self.count() >= 3:
             raise Exception("Cannot do more then 3 attempts per round.")
         else:
-            if self.is_active() == True and self.count() > 0 and keep is not None:
+            if self.is_active() and self.count() > 0 and keep is not None:
                 old_set = self.attempts[-1]
 
                 counter = 1
@@ -68,7 +68,6 @@ class Attempt:
 
         :param KniffelOptions option: selected option how to finish the attempt
         """
-
         if self.is_active():
             self.status = KniffelStatus.FINISHED
             self.option = option

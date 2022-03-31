@@ -186,7 +186,8 @@ class KniffelEnv(Env):
             if EnumAction.NEXT_31 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
-            reward = self.REWARD  # + self.kniffel.get_points()
+            print("#Rewards: " + str(self.kniffel.get_points()))
+            reward = self.REWARD + self.kniffel.get_points()
         except Exception as e:
             # print(e)
             reward = self.PENALTY  # - self.kniffel.get_points()
@@ -206,16 +207,23 @@ class KniffelEnv(Env):
         # Return step information
         return self.state, reward, done, info
 
-    def render(self):
-        # Implement viz
-        pass
 
-    def reset(self):
-        # Reset
-        del self.state
-        del self.kniffel
+if __name__ == "__main__":
+    env = KniffelEnv()
 
-        self.kniffel = Kniffel()
-        self.state = self.kniffel.get_array()
+    n_state, reward, done, info = env.step(EnumAction.NEXT_27)
+    print(done)
+    n_state, reward, done, info = env.step(EnumAction.NEXT_30)
 
-        return self.state
+    print(done)
+    n_state, reward, done, info = env.step(EnumAction.NEXT_19)
+    print(done)
+    n_state, reward, done, info = env.step(EnumAction.FINISH_CHANCE)
+    print(done)
+    n_state, reward, done, info = env.step(EnumAction.NEXT_27)
+    print(done)
+    n_state, reward, done, info = env.step(EnumAction.FINISH_FIVES)
+
+    print(done)
+    print(reward)
+    print(n_state)

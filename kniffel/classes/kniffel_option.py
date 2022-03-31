@@ -37,6 +37,8 @@ class KniffelOptionClass:
             + str(self.is_possible)
             + "', points: '"
             + str(self.points)
+            + "', id: '"
+            + str(self.id)
             + "'}"
         )
 
