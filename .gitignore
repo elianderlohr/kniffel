@@ -1,3 +1,5 @@
 ai/__pycache__/*
 kniffel/__pycache__/*
 kniffel/classes/*
+.vscode
+.idea
