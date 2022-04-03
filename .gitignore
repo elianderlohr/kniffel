@@ -1,6 +1,3 @@
-ai/__pycache__/env.cpython-39.pyc
-ai/__pycache__/env.cpython-310.pyc
-kniffel/__pycache__/__init__.cpython-39.pyc
+ai/__pycache__/*
+kniffel/__pycache__/*
 kniffel/classes/*
-ai/__pycache__/env.cpython-310.pyc
-kniffel/classes/__pycache__/kniffel.cpython-310.pyc
