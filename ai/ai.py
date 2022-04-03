@@ -1,14 +1,8 @@
-from cgi import test
-from cgitb import html
-from pprint import pprint
 from statistics import mean
-from tkinter import E
-
 from datetime import datetime as dt
-
 from sympy import N
-from env import KniffelEnv
 
+import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
@@ -16,12 +10,12 @@ from rl.agents import DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
 
-import tensorflow as tf
-
 import numpy as np
 import os
 import sys
 import inspect
+
+import itertools
 
 sys.path.insert(
     0,
@@ -33,6 +27,7 @@ sys.path.insert(
 from kniffel.classes.options import KniffelOptions
 from kniffel.classes.kniffel import Kniffel
 from env import EnumAction
+from env import KniffelEnv
 
 
 def build_model(actions, windows_length):
@@ -80,81 +75,98 @@ def do_random():
         print("Episode:{} Score:{}".format(episode, score))
 
 
+def train_test():
+    config = {
+        "windows_length": [1, 2, 3, 4, 5],
+        "adam_learning_rate": [1e-4, 1e-3, 1e-2],
+        "batch_size": [32, 48, 64],
+        "target_model_update": [1e-4, 1e-3, 1e-2],
+    }
 
-def train():
-    for i in range(10):
-        date_start = dt.today()
-        env = KniffelEnv()
-
-        states = env.observation_space.shape
-        actions = env.action_space.n
-
-        # hyperparameter
-        windows_length = 1
-        adam_learning_rate = 1e-3
-        nb_steps = 100
-        batch_size = 64
-        target_model_update = 1e-3
-
-        # parameter
-        n = 100
-
-        model = build_model(actions, windows_length)
-        dqn = build_agent(
-            model,
-            actions,
-            windows_length,
-            batch_size=batch_size,
-            target_model_update=target_model_update,
+    result = list(
+        itertools.product(
+            config["windows_length"],
+            config["adam_learning_rate"],
+            config["batch_size"],
+            config["target_model_update"],
         )
-        dqn.compile(Adam(learning_rate=adam_learning_rate), metrics=["mae"])
-        dqn.fit(env, nb_steps=nb_steps, visualize=False, verbose=1)
+    )
 
-        scores = dqn.test(env, nb_episodes=100, visualize=False)
-        print(np.mean(scores.history["episode_reward"]))
-        _ = dqn.test(env, nb_episodes=15, visualize=False)
+    for windows_length, adam_learning_rate, batch_size, target_model_update in result:
+        train(windows_length, adam_learning_rate, batch_size, target_model_update)
 
-        break_counter, mean, max, min = test(dqn=dqn, n=100)
-        date_end = dt.today()
-        datetime = dt.today().strftime('%Y-%m-%d-%H_%M_%S')
 
-        duration = date_end - date_start
+def train(
+    windows_length, adam_learning_rate, batch_size, target_model_update, nb_steps=10000
+):
 
-        content = f"""
-        date: {datetime}
-        filename: configuration_{datetime}.txt
-        duration in seconds: {duration.total_seconds()}
+    date_start = dt.today()
+    env = KniffelEnv()
 
-        HYPERPARAMETER
+    states = env.observation_space.shape
+    actions = env.action_space.n
 
-            windows_length: {windows_length}
-            adam_learning_rate: {adam_learning_rate}
-            nb_steps: {nb_steps}
-            batch_size: {batch_size}
-            target_model_update: {target_model_update}
+    # hyperparameter
 
-        -----
+    # parameter
+    n = 100
 
-        RESULT
+    model = build_model(actions, windows_length)
+    dqn = build_agent(
+        model,
+        actions,
+        windows_length,
+        batch_size=batch_size,
+        target_model_update=target_model_update,
+    )
+    dqn.compile(Adam(learning_rate=adam_learning_rate), metrics=["mae"])
+    dqn.fit(env, nb_steps=nb_steps, visualize=False, verbose=1)
 
-            TRAIN:
-                AVG Reward: {str(np.mean(scores.history["episode_reward"]))}
-                Max Reward: {str(np.max(scores.history["episode_reward"]))}
-                Min Reward: {str(np.min(scores.history["episode_reward"]))}
+    scores = dqn.test(env, nb_episodes=100, visualize=False)
+    print(np.mean(scores.history["episode_reward"]))
+    _ = dqn.test(env, nb_episodes=15, visualize=False)
 
-            TEST:
-                AVG Score: {mean}
-                Max Score: {max}
-                Min Score: {min}
-                Breakcounter: {break_counter}/{n}
+    break_counter, mean, max, min = test(dqn=dqn, n=100)
+    date_end = dt.today()
+    datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
-        """
+    duration = date_end - date_start
 
-        with open(f"weights/configuration/configuration_{datetime}.txt", "w") as file:
-            file.write(content)
-            file.close()
+    content = f"""
+    date: {datetime}
+    filename: configuration_{datetime}.txt
+    duration in seconds: {duration.total_seconds()}
 
-        # dqn.save_weights("weights/" + name, overwrite=True)
+    HYPERPARAMETER
+
+        windows_length: {windows_length}
+        adam_learning_rate: {adam_learning_rate}
+        nb_steps: {nb_steps}
+        batch_size: {batch_size}
+        target_model_update: {target_model_update}
+
+    -----
+
+    RESULT
+
+        TRAIN:
+            AVG Reward: {str(np.mean(scores.history["episode_reward"]))}
+            Max Reward: {str(np.max(scores.history["episode_reward"]))}
+            Min Reward: {str(np.min(scores.history["episode_reward"]))}
+
+        TEST:
+            AVG Score: {mean}
+            Max Score: {max}
+            Min Score: {min}
+            Breakcounter: {break_counter}/{n}
+
+    """
+
+    with open(f"weights/configuration_{datetime}.txt", "w") as file:
+        file.write(content)
+        file.close()
+
+    # dqn.save_weights("weights/" + name, overwrite=True)
 
 
 def predict(dqn: DQNAgent, kniffel: Kniffel, state):
@@ -310,4 +322,4 @@ def use(path, n):
 
 
 if __name__ == "__main__":
-    train()
+    train_test()
