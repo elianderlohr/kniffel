@@ -1,0 +1,1045 @@
+
+####################
+TEST RUN 1
+
+date: 2022-04-04-12_44_45
+duration in seconds: 100.496919
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 15.73421052631579
+        Max Reward: 27
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 15.73421052631579
+        Max Score: 27
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 2
+
+date: 2022-04-04-12_46_35
+duration in seconds: 110.273564
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 12.46177370030581
+        Max Reward: 25
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 12.46177370030581
+        Max Score: 25
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 3
+
+date: 2022-04-04-12_48_27
+duration in seconds: 111.664358
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 18.254335260115607
+        Max Reward: 30
+        Min Reward: 8
+
+    TEST:
+        AVG Score: 18.254335260115607
+        Max Score: 30
+        Min Score: 8
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 4
+
+date: 2022-04-04-12_50_24
+duration in seconds: 116.859501
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.887537993920972
+        Max Reward: 26
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.887537993920972
+        Max Score: 26
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 5
+
+date: 2022-04-04-12_52_40
+duration in seconds: 136.901434
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 19.376226826608505
+        Max Reward: 51
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 19.376226826608505
+        Max Score: 51
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 6
+
+date: 2022-04-04-12_55_13
+duration in seconds: 152.97368
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.943074003795067
+        Max Reward: 39
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.943074003795067
+        Max Score: 39
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 7
+
+date: 2022-04-04-12_57_06
+duration in seconds: 112.22593
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 20.12898936170213
+        Max Reward: 38
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 20.12898936170213
+        Max Score: 38
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 8
+
+date: 2022-04-04-12_59_09
+duration in seconds: 123.188366
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 12.594524119947849
+        Max Reward: 43
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 12.594524119947849
+        Max Score: 43
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 9
+
+date: 2022-04-04-13_01_13
+duration in seconds: 123.673183
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 19.969101123595507
+        Max Reward: 38
+        Min Reward: 10
+
+    TEST:
+        AVG Score: 19.969101123595507
+        Max Score: 38
+        Min Score: 10
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 10
+
+date: 2022-04-04-13_03_17
+duration in seconds: 124.791198
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 15.76559356136821
+        Max Reward: 34
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 15.76559356136821
+        Max Score: 34
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 11
+
+date: 2022-04-04-13_05_49
+duration in seconds: 152.031175
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 22.73938795656466
+        Max Reward: 49
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 22.73938795656466
+        Max Score: 49
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 12
+
+date: 2022-04-04-13_08_30
+duration in seconds: 161.05521
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 4.929723502304148
+        Max Reward: 19
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 4.929723502304148
+        Max Score: 19
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 13
+
+date: 2022-04-04-13_11_02
+duration in seconds: 151.285822
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 10.303867403314918
+        Max Reward: 25
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 10.303867403314918
+        Max Score: 25
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 14
+
+date: 2022-04-04-13_13_48
+duration in seconds: 166.58681
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 7.092643051771117
+        Max Reward: 36
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 7.092643051771117
+        Max Score: 36
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 15
+
+date: 2022-04-04-13_16_48
+duration in seconds: 179.60427
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 12.030390738060781
+        Max Reward: 36
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 12.030390738060781
+        Max Score: 36
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 16
+
+date: 2022-04-04-13_19_58
+duration in seconds: 190.583879
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 0.9554140127388535
+        Max Reward: 3
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 0.9554140127388535
+        Max Score: 3
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 17
+
+date: 2022-04-04-13_23_46
+duration in seconds: 227.85389
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.62847790507365
+        Max Reward: 30
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.62847790507365
+        Max Score: 30
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 18
+
+date: 2022-04-04-13_27_43
+duration in seconds: 236.945136
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.02925045703839
+        Max Reward: 41
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.02925045703839
+        Max Score: 41
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 19
+
+date: 2022-04-04-13_30_41
+duration in seconds: 178.207904
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 0.8657534246575342
+        Max Reward: 8
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 0.8657534246575342
+        Max Score: 8
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 20
+
+date: 2022-04-04-13_33_40
+duration in seconds: 178.0398
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 10.931640625
+        Max Reward: 42
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 10.931640625
+        Max Score: 42
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 21
+
+date: 2022-04-04-13_36_50
+duration in seconds: 190.845814
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 14.104539202200826
+        Max Reward: 39
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 14.104539202200826
+        Max Score: 39
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 22
+
+date: 2022-04-04-13_40_07
+duration in seconds: 196.750113
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 9.030737704918034
+        Max Reward: 29
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 9.030737704918034
+        Max Score: 29
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 23
+
+date: 2022-04-04-13_44_24
+duration in seconds: 257.115644
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 17.38705035971223
+        Max Reward: 34
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 17.38705035971223
+        Max Score: 34
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 24
+
+date: 2022-04-04-13_49_14
+duration in seconds: 290.230247
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 2
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 0.5567567567567567
+        Max Reward: 3
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 0.5567567567567567
+        Max Score: 3
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 25
+
+date: 2022-04-04-13_54_33
+duration in seconds: 318.587123
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 14.157303370786517
+        Max Reward: 38
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 14.157303370786517
+        Max Score: 38
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 26
+
+date: 2022-04-04-14_00_05
+duration in seconds: 331.556861
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 0.3909348441926346
+        Max Reward: 3
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 0.3909348441926346
+        Max Score: 3
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 27
+
+date: 2022-04-04-14_06_16
+duration in seconds: 371.407375
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.554585152838428
+        Max Reward: 24
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.554585152838428
+        Max Score: 24
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 28
+
+date: 2022-04-04-14_12_28
+duration in seconds: 372.285398
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 11.690068493150685
+        Max Reward: 27
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 11.690068493150685
+        Max Score: 27
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 29
+
+date: 2022-04-04-14_21_09
+duration in seconds: 520.336124
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 3.5
+        Max Reward: 24
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 3.5
+        Max Score: 24
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 30
+
+date: 2022-04-04-14_29_45
+duration in seconds: 516.074034
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.0001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 1.3781512605042017
+        Max Reward: 9
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 1.3781512605042017
+        Max Score: 9
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 31
+
+date: 2022-04-04-14_35_34
+duration in seconds: 349.6892
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 17.32
+        Max Reward: 26
+        Min Reward: 7
+
+    TEST:
+        AVG Score: 17.32
+        Max Score: 26
+        Min Score: 7
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 32
+
+date: 2022-04-04-14_41_22
+duration in seconds: 347.131788
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 24
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 10.722863741339491
+        Max Reward: 29
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 10.722863741339491
+        Max Score: 29
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 33
+
+date: 2022-04-04-14_47_50
+duration in seconds: 388.664045
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 12.724331926863572
+        Max Reward: 37
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 12.724331926863572
+        Max Score: 37
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 34
+
+date: 2022-04-04-14_54_41
+duration in seconds: 410.587965
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 32
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 1.1206434316353888
+        Max Reward: 23
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 1.1206434316353888
+        Max Score: 23
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 35
+
+date: 2022-04-04-15_02_57
+duration in seconds: 496.709619
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.0001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 12.277258566978194
+        Max Reward: 41
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 12.277258566978194
+        Max Score: 41
+        Min Score: 0
+        Breakcounter: 100/100
+
+    
+####################
+TEST RUN 36
+
+date: 2022-04-04-15_10_49
+duration in seconds: 471.097357
+nb_steps: 20000
+
+HYPERPARAMETER
+
+    windows_length: 5
+    adam_learning_rate: 0.001
+    
+    batch_size: 64
+    target_model_update: 0.001
+
+RESULT
+
+    TRAIN:
+        AVG Reward: 16.666666666666668
+        Max Reward: 25
+        Min Reward: 0
+
+    TEST:
+        AVG Score: 16.666666666666668
+        Max Score: 25
+        Min Score: 0
+        Breakcounter: 100/100
+
+    

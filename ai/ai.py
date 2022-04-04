@@ -1,3 +1,5 @@
+from math import gamma
+from pickletools import optimize
 from statistics import mean
 from datetime import datetime as dt
 from sympy import N
@@ -14,6 +16,10 @@ import numpy as np
 import os
 import sys
 import inspect
+
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import itertools
 
@@ -34,16 +40,16 @@ def build_model(actions, windows_length):
     model = tf.keras.Sequential()
     model.add(Flatten(input_shape=(windows_length, 13, 16)))
     model.add(Dense(64, activation="relu"))
-    model.add(Dense(128, activation="relu"))
     model.add(Dense(64, activation="relu"))
-
     model.add(Dense(actions, activation="linear"))
     return model
 
 
-def build_agent(model, actions, windows_length, batch_size, target_model_update):
+def build_agent(
+    model, actions, windows_length, batch_size, target_model_update, dueling_option
+):
     policy = BoltzmannQPolicy()
-    memory = SequentialMemory(limit=100000, window_length=windows_length)
+    memory = SequentialMemory(limit=1000000, window_length=windows_length)
     dqn = DQNAgent(
         model=model,
         memory=memory,
@@ -52,6 +58,7 @@ def build_agent(model, actions, windows_length, batch_size, target_model_update)
         nb_steps_warmup=10,
         target_model_update=target_model_update,
         batch_size=batch_size,
+        dueling_type=dueling_option,
     )
     return dqn
 
@@ -77,10 +84,11 @@ def do_random():
 
 def train_test():
     config = {
-        "windows_length": [1, 2, 3, 4, 5],
-        "adam_learning_rate": [1e-4, 1e-3, 1e-2],
-        "batch_size": [32, 48, 64],
-        "target_model_update": [1e-4, 1e-3, 1e-2],
+        "windows_length": [1, 2, 5],
+        "adam_learning_rate": [0.0001, 0.001],
+        "batch_size": [24, 32, 64],
+        "target_model_update": [0.0001, 0.001],
+        # "dueling_option": ["avg", "max"],
     }
 
     result = list(
@@ -89,15 +97,64 @@ def train_test():
             config["adam_learning_rate"],
             config["batch_size"],
             config["target_model_update"],
+            # config["dueling_option"],
         )
     )
 
-    for windows_length, adam_learning_rate, batch_size, target_model_update in result:
-        train(windows_length, adam_learning_rate, batch_size, target_model_update)
+    datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
+    path = f"weights/configuration_test_{datetime}"
+
+    os.mkdir(path)
+
+    header = "duration;nb_steps;windows_length;adam_learning_rate;batch_size;target_model_update;mean_episode;max_episode;min_episode;mean;max;min;break_counter;n\n"
+    with open(f"{path}/csv_configuration.csv", "a") as file:
+        file.write(header)
+        file.close()
+
+    i = 1
+    for (
+        windows_length,
+        adam_learning_rate,
+        batch_size,
+        target_model_update,
+        # dueling_option,
+    ) in result:
+        print("#################")
+        print(f"Test {i} from {len(result)}")
+        content, csv = train(
+            windows_length,
+            adam_learning_rate,
+            batch_size,
+            target_model_update,
+            i=i,
+            # dueling_option,
+            nb_steps=20000,
+        )
+
+        try:
+
+            with open(f"{path}/text_configuration.txt", "a") as file:
+                file.write(content)
+                file.close()
+
+            with open(f"{path}/csv_configuration.csv", "a") as file:
+                file.write(csv)
+                file.close()
+        except Exception as e:
+            print(e)
+
+        i = i + 1
 
 
 def train(
-    windows_length, adam_learning_rate, batch_size, target_model_update, nb_steps=10000
+    windows_length,
+    adam_learning_rate,
+    batch_size,
+    target_model_update,
+    i,
+    dueling_option="avg",
+    nb_steps=10000,
+    save=False,
 ):
 
     date_start = dt.today()
@@ -105,8 +162,6 @@ def train(
 
     states = env.observation_space.shape
     actions = env.action_space.n
-
-    # hyperparameter
 
     # parameter
     n = 100
@@ -118,6 +173,7 @@ def train(
         windows_length,
         batch_size=batch_size,
         target_model_update=target_model_update,
+        dueling_option=dueling_option,
     )
     dqn.compile(Adam(learning_rate=adam_learning_rate), metrics=["mae"])
     dqn.fit(env, nb_steps=nb_steps, visualize=False, verbose=1)
@@ -132,41 +188,47 @@ def train(
 
     duration = date_end - date_start
 
+    mean_episode = str(np.mean(scores.history["episode_reward"]))
+    max_episode = str(np.max(scores.history["episode_reward"]))
+    min_episode = str(np.min(scores.history["episode_reward"]))
+
     content = f"""
-    date: {datetime}
-    filename: configuration_{datetime}.txt
-    duration in seconds: {duration.total_seconds()}
+####################
+TEST RUN {i}
 
-    HYPERPARAMETER
+date: {datetime}
+duration in seconds: {duration.total_seconds()}
+nb_steps: {nb_steps}
 
-        windows_length: {windows_length}
-        adam_learning_rate: {adam_learning_rate}
-        nb_steps: {nb_steps}
-        batch_size: {batch_size}
-        target_model_update: {target_model_update}
+HYPERPARAMETER
 
-    -----
+    windows_length: {windows_length}
+    adam_learning_rate: {adam_learning_rate}
+    
+    batch_size: {batch_size}
+    target_model_update: {target_model_update}
 
-    RESULT
+RESULT
 
-        TRAIN:
-            AVG Reward: {str(np.mean(scores.history["episode_reward"]))}
-            Max Reward: {str(np.max(scores.history["episode_reward"]))}
-            Min Reward: {str(np.min(scores.history["episode_reward"]))}
+    TRAIN:
+        AVG Reward: {mean}
+        Max Reward: {max}
+        Min Reward: {min}
 
-        TEST:
-            AVG Score: {mean}
-            Max Score: {max}
-            Min Score: {min}
-            Breakcounter: {break_counter}/{n}
+    TEST:
+        AVG Score: {mean}
+        Max Score: {max}
+        Min Score: {min}
+        Breakcounter: {break_counter}/{n}
 
     """
 
-    with open(f"weights/configuration_{datetime}.txt", "w") as file:
-        file.write(content)
-        file.close()
+    csv = f"{duration.total_seconds()};{nb_steps};{windows_length};{adam_learning_rate};{batch_size};{target_model_update};{mean_episode};{max_episode};{min_episode};{mean};{max};{min};{break_counter};{n}\n"
 
-    # dqn.save_weights("weights/" + name, overwrite=True)
+    if save:
+        dqn.save_weights("weights/weights_run_" + str(i), overwrite=True)
+
+    return content, csv
 
 
 def predict(dqn: DQNAgent, kniffel: Kniffel, state):
@@ -322,4 +384,13 @@ def use(path, n):
 
 
 if __name__ == "__main__":
-    train_test()
+    train(
+        windows_length=1,
+        adam_learning_rate=0.001,
+        batch_size=64,
+        target_model_update=0.0001,
+        i=1,
+        dueling_option="avg",
+        nb_steps=500000,
+        save=True,
+    )
