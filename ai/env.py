@@ -6,6 +6,7 @@ from enum import Enum
 import os
 import sys
 import inspect
+from sympy import elliptic_f
 import tensorflow as tf
 
 sys.path.insert(
@@ -71,10 +72,36 @@ class EnumAction(Enum):
 
 
 class KniffelEnv(Env):
-    PENALTY = -375
-    REWARD = 10
+    def __init__(
+        self,
+        reward_step=-0.7,
+        reward_round=5,
+        reward_game_over=-10,
+        reward_bonus=2,
+        reward_finish=10,
+        reward_zero_dice=-0.5,
+        reward_one_dice=-0.2,
+        reward_twos_dice=-0.1,
+        reward_three_dice=3,
+        reward_four_dice=4,
+        reward_five_dice=5,
+        reward_six_dice=6,
+    ):
+        """Initialize Kniffel Envioronment
 
-    def __init__(self):
+        :param reward_step: Reward for a normal step, defaults to -0.5
+        :param reward_round: Reward for finishing a round, defaults to 5
+        :param reward_game_over: Reward for failing a game, defaults to -10
+        :param reward_bonus: Reward if bonus received, defaults to 2
+        :param reward_finish: Reward if game finished, defaults to 10
+        :param reward_zero_dice: Reward if zero dices used, defaults to -0.5
+        :param reward_one_dice: Reward if one dices used, defaults to -0.2
+        :param reward_twos_dice: Reward if two dices used, defaults to -0.1
+        :param reward_three_dice: Reward if three dices used, defaults to 5
+        :param reward_four_dice: Reward if four dices used, defaults to 5.33
+        :param reward_five_dice: Reward if five dices used, defaults to 5.66
+        :param reward_six_dice: Reward if six dices used, defaults to 6
+        """
         self.kniffel = Kniffel()
         # Actions we can take
         self.action_space = spaces.Discrete(44)
@@ -86,39 +113,89 @@ class KniffelEnv(Env):
         # Set start
         self.state = self.kniffel.get_array()
 
+        self._reward_step = reward_step
+        self._reward_round = reward_round
+        self._reward_game_over = reward_game_over
+        self._reward_bonus = reward_bonus
+        self._reward_finish = reward_finish
+
+        self._reward_zero_dice = reward_zero_dice
+        self._reward_one_dice = reward_one_dice
+        self._reward_two_dice = reward_twos_dice
+        self._reward_three_dice = reward_three_dice
+        self._reward_four_dice = reward_four_dice
+        self._reward_five_dice = reward_five_dice
+        self._reward_six_dice = reward_six_dice
+
+    def rewards_calculator(self, dice_count) -> int:
+        """Calculate reward based on amount of dices used for finishing the round.
+
+        :param dice_count: amount of dices
+        :return: reward
+        """
+        if dice_count == 0:
+            return self._reward_zero_dice
+        elif dice_count == 1:
+            return self._reward_one_dice
+        elif dice_count == 2:
+            return self._reward_two_dice
+        elif dice_count == 3:
+            return self._reward_three_dice
+        elif dice_count == 4:
+            return self._reward_four_dice
+        elif dice_count == 5:
+            return self._reward_five_dice
+        elif dice_count == 6:
+            return self._reward_six_dice
+
     def step(self, action):
+        reward = 0
+        has_bonus = self.kniffel.is_bonus()
+
         done = False
         # Apply action
         enum_action = EnumAction(action)
         try:
-            points = 0
             # Finish Actions
             if EnumAction.FINISH_ONES is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.ONES)
+                points = self.kniffel.finish_turn(KniffelOptions.ONES) / 1
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_TWOS is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.TWOS)
+                points = self.kniffel.finish_turn(KniffelOptions.TWOS) / 2
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_THREES is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.THREES)
+                points = self.kniffel.finish_turn(KniffelOptions.THREES) / 3
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_FOURS is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.FOURS)
+                points = self.kniffel.finish_turn(KniffelOptions.FOURS) / 4
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_FIVES is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.FIVES)
+                points = self.kniffel.finish_turn(KniffelOptions.FIVES) / 5
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_SIXES is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.SIXES)
+                points = self.kniffel.finish_turn(KniffelOptions.SIXES) / 6
+                reward += self.rewards_calculator(points)
             if EnumAction.FINISH_THREE_TIMES is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
+                reward += points / 5
             if EnumAction.FINISH_FOUR_TIMES is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
+                reward += points / 5
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
+                self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
+                reward += self._reward_round
             if EnumAction.FINISH_SMALL_STREET is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
+                self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
+                reward += self._reward_round
             if EnumAction.FINISH_LARGE_STREET is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
+                self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
+                reward += self._reward_round
             if EnumAction.FINISH_KNIFFEL is enum_action:
-                points = self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
+                self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
+                reward += self._reward_round
             if EnumAction.FINISH_CHANCE is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.CHANCE)
+                reward += points / 5
 
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:
@@ -186,22 +263,38 @@ class KniffelEnv(Env):
             if EnumAction.NEXT_31 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
-            reward = self.REWARD  # + self.kniffel.get_points()
+            if (
+                self.kniffel.is_bonus()
+                and has_bonus is False
+                and (
+                    EnumAction.FINISH_ONES is enum_action
+                    or EnumAction.FINISH_ONES is enum_action
+                    or EnumAction.FINISH_TWOS is enum_action
+                    or EnumAction.FINISH_THREES is enum_action
+                    or EnumAction.FINISH_FOURS is enum_action
+                    or EnumAction.FINISH_FIVES is enum_action
+                    or EnumAction.FINISH_SIXES is enum_action
+                )
+            ):
+                reward += self._reward_bonus
+
         except Exception as e:
-            # print(e)
-            reward = self.PENALTY  # - self.kniffel.get_points()
+            reward += self._reward_game_over
             done = True
 
         self.state = self.kniffel.get_array()
 
         # Check if shower is done
         if self.kniffel.is_finished():
+            reward += self._reward_finish
             done = True
         elif done is False:
             done = False
 
         # Set placeholder for info
         info = {}
+
+        reward += self._reward_step
 
         # Return step information
         return self.state, reward, done, info
