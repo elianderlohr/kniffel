@@ -2,12 +2,9 @@ from click import option
 from classes.kniffel import Kniffel
 from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
-from classes.kniffel_check import KniffelCheck
-import numpy as np
-from enum import Enum
 
 
-def main():
+def play():
     kniffel = Kniffel(False)
 
     kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
@@ -62,76 +59,5 @@ def main():
     print(d)
 
 
-def test2():
-    kniffel = Kniffel(False)
-    d = kniffel.get_array()
-    print(d.shape)
-    print(d)
-
-
-def test3():
-
-    test = KniffelCheck().check_chance(DiceSet([1, 1, 1, 1, 1]))
-    print(test)
-
-
-def test4():
-    option = KniffelOptions.ONES
-
-    selected = None
-
-    if option is KniffelOptions.ONES:
-        print("##ones")
-        selected = KniffelCheck().check_1(DiceSet([1, 1, 1, 1, 1]))
-
-    if option is KniffelOptions.TWOS:
-        print("##twos")
-        selected = KniffelCheck().check_2(DiceSet([1, 1, 1, 1, 1]))
-
-    if option is KniffelOptions.THREES:
-        selected = KniffelCheck().check_3(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.FOURS:
-        selected = KniffelCheck().check_4(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.FIVES:
-        selected = KniffelCheck().check_5(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.SIXES:
-        selected = KniffelCheck().check_6(DiceSet([1, 1, 1, 1, 1]))
-
-    if option is KniffelOptions.THREE_TIMES:
-        selected = KniffelCheck().check_three_times(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.FOUR_TIMES:
-        selected = KniffelCheck().check_four_times(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.FULL_HOUSE:
-        selected = KniffelCheck().check_full_house(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.SMALL_STREET:
-        selected = KniffelCheck().check_small_street(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.LARGE_STREET:
-        selected = KniffelCheck().check_large_street(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.KNIFFEL:
-        selected = KniffelCheck().check_kniffel(DiceSet([1, 1, 1, 1, 1]))
-    if option is KniffelOptions.CHANCE:
-        selected = KniffelCheck().check_chance(DiceSet([1, 1, 1, 1, 1]))
-
-    print("## " + str(selected))
-
-
-def test5():
-    kniffel = Kniffel(False)
-
-    kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
-
-    # print(kniffel.check())
-
-    kniffel.finish_turn(KniffelOptions.ONES)
-
-    kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
-
-    # print(kniffel.check())
-
-    kniffel.finish_turn(KniffelOptions.ONES)
-
-    kniffel.print()
-
-
 if __name__ == "__main__":
-    test5()
+    play()

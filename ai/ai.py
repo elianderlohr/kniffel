@@ -603,7 +603,7 @@ if __name__ == "__main__":
 
     ai = KniffelAI()
 
-    ai.play(path="weights/p_date=2022-04-08-22_14_23", episodes=10000)
+    ai.play(path="weights/p_date=2022-04-10-17_25_53", episodes=10000)
     # ai.grid_search_test(nb_steps=20000)
 
     hyperparameter = {
@@ -614,11 +614,11 @@ if __name__ == "__main__":
         "dueling_option": "avg",
         "eps": 0.5,
     }
-
-    # ai.train(
-    #    hyperparameter=hyperparameter,
-    #    load=False,
-    #    load_path="weights\p_date=2022-04-08-13_54_49",
-    #    nb_steps=500000,
-    #    save=True,
-    # )
+    """
+    ai.train(
+        hyperparameter=hyperparameter,
+        load=True,
+        load_path="weights\p_date=2022-04-08-22_14_23",
+        nb_steps=1000000,
+        save=True,
+    )"""

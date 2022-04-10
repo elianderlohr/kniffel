@@ -1,0 +1,29 @@
+####################
+TEST RUN
+
+date: 2022-04-10-22_05_17
+duration in seconds: 16763.315493
+nb_steps: 1000000
+
+HYPERPARAMETER
+
+    windows_length: 1
+    adam_learning_rate: 0.0001
+    
+    batch_size: 20
+    target_model_update: 0.0001
+
+    dueling_option: avg
+    eps: 0.5
+RESULT
+
+    TRAIN:
+        AVG Reward: -10.067999999999998
+        Max Reward: -7.9
+        Min Reward: -12.299999999999999
+
+    TEST:
+        AVG Score: 17.43
+        Max Score: 28
+        Min Score: 10
+        Breakcounter: 100/100
