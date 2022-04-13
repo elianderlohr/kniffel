@@ -1,8 +1,10 @@
+from cgi import test
 from math import gamma
 from pickletools import optimize
 from statistics import mean
 from datetime import datetime as dt
 from sympy import N, use
+import random
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten
@@ -10,8 +12,6 @@ from tensorflow.keras.optimizers import Adam
 
 from rl.agents import DQNAgent
 from rl.policy import (
-    BoltzmannQPolicy,
-    BoltzmannGumbelQPolicy,
     LinearAnnealedPolicy,
     EpsGreedyQPolicy,
 )
@@ -24,7 +24,6 @@ import inspect
 
 import warnings
 import json
-import itertools
 import matplotlib.pyplot as plt
 
 sys.path.insert(
@@ -36,6 +35,7 @@ sys.path.insert(
 
 from kniffel.classes.options import KniffelOptions
 from kniffel.classes.kniffel import Kniffel
+from ai.hyperparameter import Hyperparameter
 from env import EnumAction
 from env import KniffelEnv
 
@@ -62,39 +62,35 @@ class EpisodeLogger(rl.callbacks.Callback):
 
 
 class KniffelAI:
-    config = {
-        "windows_length": [1],
-        "adam_learning_rate": [0.0001],
-        "batch_size": [20, 32],
-        "target_model_update": [0.0001],
-        "dueling_option": ["avg"],
-        "eps": [0.1, 0.2, 0.3, 0.4, 0.5],
-    }
+    # Save model
+    _save = False
+
+    # Load model from path
+    _load = False
+
+    # Hyperparameter object
+    _hp = None
+
+    # Test episodes
+    _test_episodes = 100
+
+    def __init__(self, save=False, load=False, test_episodes=100):
+        self._save = save
+        self._load = load
+        self._hp = Hyperparameter(randomize=True)
+        self._test_episodes = test_episodes
 
     # Model
-
-    def build_model(self, actions, windows_length):
+    def build_model(self, actions, hyperparameter):
         model = tf.keras.Sequential()
-        model.add(Flatten(input_shape=(windows_length, 13, 16)))
-        model.add(Dense(32, activation="relu"))
-        model.add(Dense(64, activation="relu"))
-        model.add(Dense(64, activation="relu"))
-        model.add(Flatten())
-        model.add(Dense(256, activation="relu"))
-        model.add(Dense(actions, activation="softmax"))
+        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 13, 16)))
+        for i in range(1, hyperparameter["layers"]):
+            model.add(Dense(hyperparameter["units"][str(i)], activation="relu"))
+
+        model.add(Dense(actions, activation=hyperparameter["activation"]))
         return model
 
-    def build_agent(
-        self,
-        model,
-        actions,
-        windows_length,
-        batch_size,
-        target_model_update,
-        dueling_option,
-        eps,
-        nb_steps,
-    ):
+    def build_agent(self, model, actions, nb_steps, hyperparameter):
         # policy = BoltzmannQPolicy()
         # policy = BoltzmannGumbelQPolicy()
         policy = LinearAnnealedPolicy(
@@ -103,86 +99,58 @@ class KniffelAI:
             value_max=1.0,
             value_min=0.1,
             value_test=0.05,
-            nb_steps=10000,  # nb_steps,
+            nb_steps=10_000,  # nb_steps,
         )
+
         memory = SequentialMemory(
-            limit=1000000,
-            window_length=windows_length,
+            limit=500_000,
+            window_length=hyperparameter["windows_length"],
         )
+
         dqn = DQNAgent(
             model=model,
             memory=memory,
             policy=policy,
             nb_actions=actions,
-            nb_steps_warmup=10000,
-            target_model_update=target_model_update,
-            batch_size=batch_size,
-            dueling_type=dueling_option,
+            nb_steps_warmup=1_000,
+            target_model_update=hyperparameter["target_model_update"],
+            batch_size=hyperparameter["batch_size"],
+            dueling_type=hyperparameter["dueling_option"],
         )
+
         return dqn
 
     # Train models by applying config
-    def grid_search_test(self, nb_steps=20000):
-        result = list(
-            itertools.product(
-                self.config["windows_length"],
-                self.config["adam_learning_rate"],
-                self.config["batch_size"],
-                self.config["target_model_update"],
-                self.config["dueling_option"],
-                self.config["eps"],
-            )
-        )
-
+    def grid_search_test(self, nb_steps=20_000):
         datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
         path = f"configuration/p_date={datetime}"
 
-        os.mkdir(path)
-
-        header = "duration;nb_steps;windows_length;adam_learning_rate;batch_size;target_model_update;mean_episode;max_episode;min_episode;mean;max;min;break_counter;n;dueling_type;eps\n"
-        with open(f"{path}/csv_configuration.csv", "a") as file:
-            file.write(header)
-            file.close()
+        self._append_file(
+            f"{path}/csv_configuration.csv",
+            content="duration;nb_steps;windows_length;adam_learning_rate;batch_size;target_model_update;mean_train;max_train;min_train;mean_test_dqn;max_test_dqn;min_test_dqn;mean_test_own;max_test_own;min_test_own;break_counter;n;dueling_type;eps;layers;unit1;unit2;unit3;unit4;unit5;activation\n",
+        )
 
         i = 1
-        for (
-            windows_length,
-            adam_learning_rate,
-            batch_size,
-            target_model_update,
-            dueling_option,
-            eps,
-        ) in result:
+        for hyperparameter in self._hp.get():
             print("#################")
-            print(f"Test {i} from {len(result)}")
+            print(f"Test {i} from {len(self._hp.get())}")
 
-            hyperparameter = {
-                "windows_length": windows_length,
-                "adam_learning_rate": adam_learning_rate,
-                "batch_size": batch_size,
-                "target_model_update": target_model_update,
-                "dueling_option": dueling_option,
-                "eps": eps,
-            }
-
-            content, csv = self.train(
+            csv = self.train(
                 hyperparameter=hyperparameter,
                 nb_steps=nb_steps,
             )
 
-            try:
-
-                with open(f"{path}/text_configuration.txt", "a") as file:
-                    file.write(content)
-                    file.close()
-
-                with open(f"{path}/csv_configuration.csv", "a") as file:
-                    file.write(csv)
-                    file.close()
-            except Exception as e:
-                print(e)
+            self._append_file(f"{path}/csv_configuration.csv", content=csv)
 
             i = i + 1
+
+    def _append_file(self, path, content):
+        try:
+            with open(path, "a") as file:
+                file.write(content)
+                file.close()
+        except:
+            os.mkdir(os.path.splitext(path)[0])
 
     def train_dqn(
         self,
@@ -191,78 +159,48 @@ class KniffelAI:
         env,
         nb_steps,
         callbacks,
-        save=False,
-        load=False,
         load_path="",
     ):
-
-        windows_length = hyperparameter["windows_length"]
-        adam_learning_rate = hyperparameter["adam_learning_rate"]
-        batch_size = hyperparameter["batch_size"]
-        target_model_update = hyperparameter["target_model_update"]
-        dueling_option = hyperparameter["dueling_option"]
-        eps = hyperparameter["eps"]
-
-        model = self.build_model(actions, windows_length)
+        model = self.build_model(actions, hyperparameter)
         dqn = self.build_agent(
             model,
             actions,
-            windows_length,
-            batch_size=batch_size,
-            target_model_update=target_model_update,
-            dueling_option=dueling_option,
-            eps=eps,
             nb_steps=nb_steps,
+            hyperparameter=hyperparameter,
         )
 
-        dqn.compile(Adam(learning_rate=adam_learning_rate), metrics=["mae"])
+        dqn.compile(
+            Adam(learning_rate=hyperparameter["adam_learning_rate"]), metrics=["mae"]
+        )
 
-        if load:
+        if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
             dqn.load_weights(f"{load_path}/weights.h5f")
 
-        if save:
-            dqn.fit(
+        if self._save:
+            history = dqn.fit(
                 env, nb_steps=nb_steps, verbose=1, visualize=False, callbacks=callbacks
             )
         else:
-            dqn.fit(env, nb_steps=nb_steps, verbose=1, visualize=False)
+            history = dqn.fit(env, nb_steps=nb_steps, verbose=1, visualize=False)
 
-        return dqn
+        return dqn, history
 
     def validate_model(self, dqn, env):
         scores = dqn.test(env, nb_episodes=100, visualize=False)
 
-        print(np.mean(scores.history["episode_reward"]))
-        _ = dqn.test(env, nb_episodes=15, visualize=False)
+        # print(np.mean(scores.history["episode_reward"]))
+        # _ = dqn.test(env, nb_episodes=15, visualize=False)
 
         return scores
 
-    def get_configuration(self, dqn, scores, date_start, hyperparameter, nb_steps, n):
-        break_counter, mean, max, min = self.test(dqn=dqn, n=n)
+    def get_configuration(
+        self, dqn, train_scores, test_scores, date_start, hyperparameter, nb_steps
+    ):
+        break_counter, mean_own, max_own, min_own = self.test(dqn=dqn)
         date_end = dt.today()
-        datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
         duration = date_end - date_start
-
-        mean_episode = str(np.mean(scores.history["episode_reward"]))
-        max_episode = str(np.max(scores.history["episode_reward"]))
-        min_episode = str(np.min(scores.history["episode_reward"]))
-
-        content = self.get_configuration_as_text(
-            hyperparameter,
-            datetime,
-            duration,
-            nb_steps,
-            mean_episode,
-            max_episode,
-            min_episode,
-            mean,
-            max,
-            min,
-            break_counter,
-            n,
-        )
 
         windows_length = hyperparameter["windows_length"]
         adam_learning_rate = hyperparameter["adam_learning_rate"]
@@ -270,29 +208,40 @@ class KniffelAI:
         target_model_update = hyperparameter["target_model_update"]
         dueling_option = hyperparameter["dueling_option"]
         eps = hyperparameter["eps"]
+        activation = hyperparameter["activation"]
+        layer = hyperparameter["layers"]
+        unit1 = hyperparameter["units"][1]
+        unit2 = hyperparameter["units"][2]
+        unit3 = hyperparameter["units"][3]
+        unit4 = hyperparameter["units"][4]
+        unit5 = hyperparameter["units"][5]
 
-        csv = f"{duration.total_seconds()};{nb_steps};{windows_length};{adam_learning_rate};{batch_size};{target_model_update};{mean_episode};{max_episode};{min_episode};{mean};{max};{min};{break_counter};{n};{dueling_option};{eps}\n"
+        mean_train = str(np.mean(train_scores.history["episode_reward"]))
+        max_train = str(np.max(train_scores.history["episode_reward"]))
+        min_train = str(np.min(train_scores.history["episode_reward"]))
 
-        return content, csv
+        mean_test = str(np.mean(test_scores.history["episode_reward"]))
+        max_test = str(np.max(test_scores.history["episode_reward"]))
+        min_test = str(np.min(test_scores.history["episode_reward"]))
+
+        csv = f"{duration.total_seconds()};{nb_steps};{windows_length};{adam_learning_rate};{batch_size};{target_model_update};{mean_train};{max_train};{min_train};{mean_test};{max_test};{min_test};{mean_own};{max_own};{min_own};{break_counter};{self._test_episodes};{dueling_option};{eps};{layer};{unit1};{unit2};{unit3};{unit4};{unit5};{activation}\n"
+
+        return csv
 
     def train(
         self,
         hyperparameter,
-        nb_steps=10000,
-        load=False,
+        nb_steps=10_000,
         load_path="",
-        save=False,
     ):
         date_start = dt.today()
         env = KniffelEnv()
 
         actions = env.action_space.n
 
-        # parameter
-        n = 100
         callbacks = []
 
-        if save:
+        if self._save:
             datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
             path = f"weights/p_date={datetime}"
 
@@ -307,95 +256,35 @@ class KniffelAI:
             ]
             callbacks += [FileLogger(log_filename, interval=100)]
 
-        dqn = self.train_dqn(
+        dqn, train_score = self.train_dqn(
             actions=actions,
             hyperparameter=hyperparameter,
             env=env,
             nb_steps=nb_steps,
-            load=load,
             load_path=load_path,
             callbacks=callbacks,
-            save=save,
         )
 
-        scores = self.validate_model(dqn=dqn, env=env)
+        test_scores = self.validate_model(dqn=dqn, env=env)
 
-        content, csv = self.get_configuration(
+        csv = self.get_configuration(
             dqn=dqn,
-            scores=scores,
+            train_scores=train_score,
+            test_scores=test_scores,
             date_start=date_start,
             hyperparameter=hyperparameter,
             nb_steps=nb_steps,
-            n=n,
         )
 
-        if save:
+        if self._save:
             # save weights and configuration as json
             dqn.save_weights(f"{path}/weights.h5f", overwrite=False)
 
             json_object = json.dumps(hyperparameter, indent=4)
 
-            with open(f"{path}/configuration.json", "w") as file:
-                file.write(json_object)
-                file.close()
+            self._append_file(f"{path}/configuration.json", json_object)
 
-            with open(f"{path}/configuration.txt", "w") as file:
-                file.write(content)
-                file.close()
-
-        return content, csv
-
-    def get_configuration_as_text(
-        self,
-        hyperparameter,
-        datetime,
-        duration,
-        nb_steps,
-        mean_episode,
-        max_episode,
-        min_episode,
-        mean,
-        max,
-        min,
-        break_counter,
-        n,
-    ):
-
-        return (
-            f"""
-####################
-TEST RUN
-
-date: {datetime}
-duration in seconds: {duration.total_seconds()}
-nb_steps: {nb_steps}
-
-HYPERPARAMETER
-
-    windows_length: {hyperparameter["windows_length"]}
-    adam_learning_rate: {hyperparameter["adam_learning_rate"]}
-    
-    batch_size: {hyperparameter["batch_size"]}
-    target_model_update: {hyperparameter["target_model_update"]}
-
-    dueling_option: {hyperparameter["dueling_option"]}
-    eps: {hyperparameter["eps"]}
-RESULT
-
-    TRAIN:
-        AVG Reward: {mean_episode}
-        Max Reward: {max_episode}
-        Min Reward: {min_episode}
-
-    TEST:
-        AVG Score: {mean}
-        Max Score: {max}
-        Min Score: {min}
-        Breakcounter: {break_counter}/{n}
-        """.rstrip()
-            .lstrip()
-            .strip()
-        )
+        return csv
 
     def predict_and_apply(self, dqn: DQNAgent, kniffel: Kniffel, state):
         action = dqn.forward(state)
@@ -494,13 +383,11 @@ RESULT
         if EnumAction.NEXT_31 is enum_action:
             kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
-    def test(self, dqn, n):
-        env = KniffelEnv()
-
+    def test(self, dqn):
         points = []
         break_counter = 0
 
-        for i in range(n):
+        for i in range(self._test_episodes):
             kniffel = Kniffel()
             while True:
                 try:
@@ -547,42 +434,30 @@ RESULT
         env = KniffelEnv()
 
         f = open(f"{path}/configuration.json")
-        data = json.load(f)
-
-        windows_length = data["windows_length"]
-        batch_size = data["batch_size"]
-        target_model_update = data["target_model_update"]
-        dueling_option = data["dueling_option"]
-        adam_learning_rate = data["adam_learning_rate"]
-        eps = data["eps"]
+        hyperparameter = dict(json.load(f))
 
         actions = env.action_space.n
 
-        model = self.build_model(actions, windows_length)
+        model = self.build_model(actions, hyperparameter)
         dqn = self.build_agent(
-            model,
-            actions,
-            windows_length,
-            batch_size=batch_size,
-            target_model_update=target_model_update,
-            dueling_option=dueling_option,
-            eps=eps,
-            nb_steps=episodes,
+            model, actions, nb_steps=episodes, hyperparameter=hyperparameter
         )
-        dqn.compile(Adam(learning_rate=adam_learning_rate), metrics=["mae"])
+        dqn.compile(
+            Adam(learning_rate=hyperparameter["adam_learning_rate"]), metrics=["mae"]
+        )
 
         dqn.load_weights(f"{path}/weights.h5f")
 
         points = []
         break_counter = 0
 
-        for i in range(episodes):
+        for _ in range(episodes):
             kniffel = Kniffel()
             while True:
                 try:
                     state = kniffel.get_array()
                     self.predict_and_apply(dqn, kniffel, state)
-                except Exception as e:
+                except:
                     points.append(kniffel.get_points())
                     break_counter += 1
                     break
@@ -601,10 +476,12 @@ RESULT
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI()
+    ai = KniffelAI(
+        save=True,
+    )
 
-    ai.play(path="weights/p_date=2022-04-10-17_25_53", episodes=10000)
-    # ai.grid_search_test(nb_steps=20000)
+    ai.play(path="weights\p_date=2022-04-13-22_20_05", episodes=10000)
+    # ai.grid_search_test(nb_steps=20_000)
 
     hyperparameter = {
         "windows_length": 1,
@@ -613,12 +490,12 @@ if __name__ == "__main__":
         "target_model_update": 0.0001,
         "dueling_option": "avg",
         "eps": 0.5,
+        "activation": "softmax",
+        "layers": 4,
+        "units": {1: 32, 2: 128, 3: 32, 4: 16, 5: 999},
     }
     """
     ai.train(
         hyperparameter=hyperparameter,
-        load=True,
-        load_path="weights\p_date=2022-04-08-22_14_23",
-        nb_steps=1000000,
-        save=True,
+        nb_steps=20_000,
     )"""
