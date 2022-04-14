@@ -210,11 +210,11 @@ class KniffelAI:
         eps = hyperparameter["eps"]
         activation = hyperparameter["activation"]
         layer = hyperparameter["layers"]
-        unit1 = hyperparameter["units"][1]
-        unit2 = hyperparameter["units"][2]
-        unit3 = hyperparameter["units"][3]
-        unit4 = hyperparameter["units"][4]
-        unit5 = hyperparameter["units"][5]
+        unit1 = hyperparameter["units"]["1"]
+        unit2 = hyperparameter["units"]["2"]
+        unit3 = hyperparameter["units"]["3"]
+        unit4 = hyperparameter["units"]["4"]
+        unit5 = hyperparameter["units"]["5"]
 
         mean_train = str(np.mean(train_scores.history["episode_reward"]))
         max_train = str(np.max(train_scores.history["episode_reward"]))
@@ -476,13 +476,13 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(
-        save=True,
-    )
+    ai = KniffelAI(save=True, load=True)
 
-    ai.play(path="weights\p_date=2022-04-13-22_20_05", episodes=10000)
+    ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
+
     # ai.grid_search_test(nb_steps=20_000)
 
+    # Following settings produces some "not that bad" results (after a really short training time)
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0001,
@@ -492,10 +492,11 @@ if __name__ == "__main__":
         "eps": 0.5,
         "activation": "softmax",
         "layers": 4,
-        "units": {1: 32, 2: 128, 3: 32, 4: 16, 5: 999},
+        "units": {"1": 32, "2": 128, "3": 32, "4": 16, "5": 999},
     }
     """
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=20_000,
+        nb_steps=500_000,
+        load_path="weights\p_date=2022-04-14-15_51_12",
     )"""
