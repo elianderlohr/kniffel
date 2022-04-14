@@ -150,7 +150,7 @@ class KniffelAI:
                 file.write(content)
                 file.close()
         except:
-            os.mkdir(os.path.splitext(path)[0])
+            os.mkdir(os.path.dirname(path)[0])
 
     def train_dqn(
         self,
@@ -478,9 +478,9 @@ if __name__ == "__main__":
 
     ai = KniffelAI(save=True, load=True)
 
-    ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
+    # ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
 
-    # ai.grid_search_test(nb_steps=20_000)
+    ai.grid_search_test(nb_steps=20_000)
 
     # Following settings produces some "not that bad" results (after a really short training time)
     hyperparameter = {
