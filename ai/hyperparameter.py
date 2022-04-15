@@ -6,7 +6,9 @@ class Hyperparameter:
     _randomize = False
 
     hps = list()
-
+    
+    units = list(range(16, 128, 16))
+    
     base_hp = {
         "windows_length": [1],
         "adam_learning_rate": [0.0001],
@@ -15,22 +17,25 @@ class Hyperparameter:
         "dueling_option": ["avg"],
         "eps": [0.2],
         "activation": ["linear", "softmax"],
-        "layers": range(1, 5),
-        "units": {
-            "1": list(range(16, 128, 16)),
-            "2": list(range(16, 128, 16)),
-            "3": list(range(16, 128, 16)),
-            "4": list(range(16, 128, 16)),
-            "5": list(range(16, 128, 16)),
-        },
+        "layers": range(1, 3), 
     }
 
     def __init__(self, randomize=False) -> None:
         self._randomize = randomize
         self._create_product()
-
+    
+    def _pepare(self):
+        for i in self.base_hp["layers"]:
+            self.base_hp["unit_" + str(i)] = self.units
+    
     def _create_product(self):
-        self.hps = list(itertools.product(self.base_hp.values()))
+        self._pepare()
+        
+        values = list(itertools.product(*self.base_hp.values()))
+
+        values_mod = [ {i: j for i, j in zip(self.base_hp.keys(), v) } for v in values ]
+        
+        self.hps = values_mod
 
         if self._randomize:
             self.hps = random.sample(self.hps, k=len(self.hps))

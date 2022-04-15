@@ -85,7 +85,7 @@ class KniffelAI:
         model = tf.keras.Sequential()
         model.add(Flatten(input_shape=(hyperparameter["windows_length"], 13, 16)))
         for i in range(1, hyperparameter["layers"]):
-            model.add(Dense(hyperparameter["units"][str(i)], activation="relu"))
+            model.add(Dense(hyperparameter["unit_" + str(i)], activation="relu"))
 
         model.add(Dense(actions, activation=hyperparameter["activation"]))
         return model
@@ -125,15 +125,21 @@ class KniffelAI:
         datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
         path = f"configuration/p_date={datetime}"
 
+        hyperparameter_csv = ';'.join(str(e) for e in list(dict(self._hp.get()[0]).keys()))
+        print(hyperparameter_csv)
         self._append_file(
             f"{path}/csv_configuration.csv",
-            content="duration;nb_steps;windows_length;adam_learning_rate;batch_size;target_model_update;mean_train;max_train;min_train;mean_test_dqn;max_test_dqn;min_test_dqn;mean_test_own;max_test_own;min_test_own;break_counter;n;dueling_type;eps;layers;unit1;unit2;unit3;unit4;unit5;activation\n",
+            content=f"duration;nb_steps;mean_train;max_train;min_train;mean_test_dqn;max_test_dqn;min_test_dqn;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
         )
 
         i = 1
         for hyperparameter in self._hp.get():
+            print()
             print("#################")
             print(f"Test {i} from {len(self._hp.get())}")
+            print()
+            print(hyperparameter)
+            print()
 
             csv = self.train(
                 hyperparameter=hyperparameter,
@@ -150,7 +156,11 @@ class KniffelAI:
                 file.write(content)
                 file.close()
         except:
-            os.mkdir(os.path.dirname(path)[0])
+            try:
+                os.mkdir(os.path.dirname(path))
+            except Exception as e:
+                print(path)
+                print(e)
 
     def train_dqn(
         self,
@@ -202,20 +212,6 @@ class KniffelAI:
 
         duration = date_end - date_start
 
-        windows_length = hyperparameter["windows_length"]
-        adam_learning_rate = hyperparameter["adam_learning_rate"]
-        batch_size = hyperparameter["batch_size"]
-        target_model_update = hyperparameter["target_model_update"]
-        dueling_option = hyperparameter["dueling_option"]
-        eps = hyperparameter["eps"]
-        activation = hyperparameter["activation"]
-        layer = hyperparameter["layers"]
-        unit1 = hyperparameter["units"]["1"]
-        unit2 = hyperparameter["units"]["2"]
-        unit3 = hyperparameter["units"]["3"]
-        unit4 = hyperparameter["units"]["4"]
-        unit5 = hyperparameter["units"]["5"]
-
         mean_train = str(np.mean(train_scores.history["episode_reward"]))
         max_train = str(np.max(train_scores.history["episode_reward"]))
         min_train = str(np.min(train_scores.history["episode_reward"]))
@@ -224,7 +220,9 @@ class KniffelAI:
         max_test = str(np.max(test_scores.history["episode_reward"]))
         min_test = str(np.min(test_scores.history["episode_reward"]))
 
-        csv = f"{duration.total_seconds()};{nb_steps};{windows_length};{adam_learning_rate};{batch_size};{target_model_update};{mean_train};{max_train};{min_train};{mean_test};{max_test};{min_test};{mean_own};{max_own};{min_own};{break_counter};{self._test_episodes};{dueling_option};{eps};{layer};{unit1};{unit2};{unit3};{unit4};{unit5};{activation}\n"
+        hyperparameter_csv = ';'.join(str(e) for e in list(dict(hyperparameter).values()))
+
+        csv = f"{duration.total_seconds()};{nb_steps};{mean_train};{max_train};{min_train};{mean_test};{max_test};{min_test};{mean_own};{max_own};{min_own};{break_counter};{self._test_episodes};{hyperparameter_csv}\n"
 
         return csv
 
@@ -476,7 +474,7 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=True, load=True)
+    ai = KniffelAI(save=False, load=False)
 
     # ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
 
