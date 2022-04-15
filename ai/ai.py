@@ -150,7 +150,7 @@ class KniffelAI:
 
             i = i + 1
 
-    def _append_file(self, path, content):
+    def _append_file(self, path, content, retry=0):
         try:
             with open(path, "a") as file:
                 file.write(content)
@@ -158,6 +158,8 @@ class KniffelAI:
         except:
             try:
                 os.mkdir(os.path.dirname(path))
+                if retry < 3:
+                    self._append_file(path, content, retry + 1)
             except Exception as e:
                 print(path)
                 print(e)
@@ -478,8 +480,9 @@ if __name__ == "__main__":
 
     # ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
 
-    ai.grid_search_test(nb_steps=20_000)
-
+    ai.grid_search_test(nb_steps=1_000)
+    
+    """
     # Following settings produces some "not that bad" results (after a really short training time)
     hyperparameter = {
         "windows_length": 1,
@@ -492,7 +495,7 @@ if __name__ == "__main__":
         "layers": 4,
         "units": {"1": 32, "2": 128, "3": 32, "4": 16, "5": 999},
     }
-    """
+    
     ai.train(
         hyperparameter=hyperparameter,
         nb_steps=500_000,

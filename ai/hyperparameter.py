@@ -17,7 +17,7 @@ class Hyperparameter:
         "dueling_option": ["avg"],
         "eps": [0.2],
         "activation": ["linear", "softmax"],
-        "layers": range(1, 3), 
+        "layers": range(2, 6), 
     }
 
     def __init__(self, randomize=False) -> None:
@@ -25,7 +25,7 @@ class Hyperparameter:
         self._create_product()
     
     def _pepare(self):
-        for i in self.base_hp["layers"]:
+        for i in range(max(list(self.base_hp["layers"]))):
             self.base_hp["unit_" + str(i)] = self.units
     
     def _create_product(self):
