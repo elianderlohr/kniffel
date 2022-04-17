@@ -11,10 +11,7 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
 from rl.agents import DQNAgent
-from rl.policy import (
-    LinearAnnealedPolicy,
-    EpsGreedyQPolicy,
-)
+from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy, BoltzmannGumbelQPolicy
 from rl.memory import SequentialMemory
 
 import numpy as np
@@ -92,7 +89,8 @@ class KniffelAI:
 
     def build_agent(self, model, actions, nb_steps, hyperparameter):
         # policy = BoltzmannQPolicy()
-        # policy = BoltzmannGumbelQPolicy()
+        policy = BoltzmannGumbelQPolicy()
+        """
         policy = LinearAnnealedPolicy(
             EpsGreedyQPolicy(),
             attr="eps",
@@ -100,11 +98,10 @@ class KniffelAI:
             value_min=0.1,
             value_test=0.05,
             nb_steps=10_000,  # nb_steps,
-        )
+        )"""
 
         memory = SequentialMemory(
-            limit=500_000,
-            window_length=hyperparameter["windows_length"],
+            limit=500_000, window_length=hyperparameter["windows_length"],
         )
 
         dqn = DQNAgent(
@@ -125,7 +122,9 @@ class KniffelAI:
         datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
         path = f"configuration/p_date={datetime}"
 
-        hyperparameter_csv = ';'.join(str(e) for e in list(dict(self._hp.get()[0]).keys()))
+        hyperparameter_csv = ";".join(
+            str(e) for e in list(dict(self._hp.get()[0]).keys())
+        )
         print(hyperparameter_csv)
         self._append_file(
             f"{path}/csv_configuration.csv",
@@ -141,10 +140,7 @@ class KniffelAI:
             print(hyperparameter)
             print()
 
-            csv = self.train(
-                hyperparameter=hyperparameter,
-                nb_steps=nb_steps,
-            )
+            csv = self.train(hyperparameter=hyperparameter, nb_steps=nb_steps,)
 
             self._append_file(f"{path}/csv_configuration.csv", content=csv)
 
@@ -165,24 +161,16 @@ class KniffelAI:
                 print(e)
 
     def train_dqn(
-        self,
-        actions,
-        hyperparameter,
-        env,
-        nb_steps,
-        callbacks,
-        load_path="",
+        self, actions, hyperparameter, env, nb_steps, callbacks, load_path="",
     ):
         model = self.build_model(actions, hyperparameter)
         dqn = self.build_agent(
-            model,
-            actions,
-            nb_steps=nb_steps,
-            hyperparameter=hyperparameter,
+            model, actions, nb_steps=nb_steps, hyperparameter=hyperparameter,
         )
 
         dqn.compile(
-            Adam(learning_rate=hyperparameter["adam_learning_rate"]), metrics=["mae"]
+            Adam(learning_rate=hyperparameter["adam_learning_rate"]),
+            metrics=["accuracy"],
         )
 
         if self._load:
@@ -222,17 +210,16 @@ class KniffelAI:
         max_test = str(np.max(test_scores.history["episode_reward"]))
         min_test = str(np.min(test_scores.history["episode_reward"]))
 
-        hyperparameter_csv = ';'.join(str(e) for e in list(dict(hyperparameter).values()))
+        hyperparameter_csv = ";".join(
+            str(e) for e in list(dict(hyperparameter).values())
+        )
 
         csv = f"{duration.total_seconds()};{nb_steps};{mean_train};{max_train};{min_train};{mean_test};{max_test};{min_test};{mean_own};{max_own};{min_own};{break_counter};{self._test_episodes};{hyperparameter_csv}\n"
 
         return csv
 
     def train(
-        self,
-        hyperparameter,
-        nb_steps=10_000,
-        load_path="",
+        self, hyperparameter, nb_steps=10_000, load_path="",
     ):
         date_start = dt.today()
         env = KniffelEnv()
@@ -427,9 +414,7 @@ class KniffelAI:
             print("Episode:{} Score:{}".format(episode, score))
 
     def use_model(
-        self,
-        path,
-        episodes,
+        self, path, episodes,
     ):
         env = KniffelEnv()
 
@@ -476,28 +461,31 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=False, load=False)
+    ai = KniffelAI(save=True, load=False)
 
-    # ai.play(path="weights\p_date=2022-04-14-17_15_59", episodes=10000)
+    # ai.play(path="weights\p_date=2022-04-17-12_41_43", episodes=1000)
 
-    ai.grid_search_test(nb_steps=1_000)
-    
-    """
+    # ai.grid_search_test(nb_steps=1_000)
+
     # Following settings produces some "not that bad" results (after a really short training time)
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0001,
-        "batch_size": 20,
-        "target_model_update": 0.0001,
+        "adam_learning_rate": 0.00025,
+        "batch_size": 512,
+        "target_model_update": 0.00025,
         "dueling_option": "avg",
-        "eps": 0.5,
-        "activation": "softmax",
-        "layers": 4,
-        "units": {"1": 32, "2": 128, "3": 32, "4": 16, "5": 999},
+        "eps": 0.3,
+        "activation": "linear",
+        "layers": 3,
+        "unit_1": 64,
+        "unit_2": 64,
+        "unit_3": 64,
+        # "unit_4": 32,
+        # "unit_5": 64,
     }
-    
+
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=500_000,
+        nb_steps=100_000,
         load_path="weights\p_date=2022-04-14-15_51_12",
-    )"""
+    )
