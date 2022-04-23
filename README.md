@@ -24,7 +24,7 @@ The neural network is located under [ai/ai.py](ai/ai.py).
 
 ## Highscores
 
-| Id | Date       | Training Episodes | Duration | Score | Weights                            |
-|----|------------|-------------------|----------|-------|------------------------------------|
-| 1  | 10.04.2022 | 1.500.000         | 4,6h       | 17.5   | [weights\p_date=2022-04-10-17_25_53](weights\p_date=2022-04-10-17_25_53) |
+| Id | Date       | Training Episodes | Duration | AVG Score | AVG Rounds | Weights                            |
+|----|------------|-------------------|----------|-------|-|------------------------------------|
+| 1  | 23.04.2022 | 500.000         | 4.5h       | 27.2   | 8.7 | [weights\p_date=2022-04-23-14_24_28](weights\p_date=2022-04-23-14_24_28) |
 *tbc*

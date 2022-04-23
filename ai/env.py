@@ -74,8 +74,9 @@ class EnumAction(Enum):
 class KniffelEnv(Env):
     def __init__(
         self,
-        reward_step=-0.7,
-        reward_round=5,
+        reward_step=-0.1,
+        reward_round=3,
+        reward_roll_dice=1.5,
         reward_game_over=-10,
         reward_bonus=2,
         reward_finish=10,
@@ -91,6 +92,7 @@ class KniffelEnv(Env):
 
         :param reward_step: Reward for a normal step, defaults to -0.5
         :param reward_round: Reward for finishing a round, defaults to 5
+        :param reward_roll_dice: Reward for rolling a dice, defaults to 5
         :param reward_game_over: Reward for failing a game, defaults to -10
         :param reward_bonus: Reward if bonus received, defaults to 2
         :param reward_finish: Reward if game finished, defaults to 10
@@ -115,6 +117,7 @@ class KniffelEnv(Env):
 
         self._reward_step = reward_step
         self._reward_round = reward_round
+        self._reward_roll_dice = reward_roll_dice
         self._reward_game_over = reward_game_over
         self._reward_bonus = reward_bonus
         self._reward_finish = reward_finish
@@ -200,68 +203,100 @@ class KniffelEnv(Env):
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 0, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_1 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 0, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_2 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 0, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_3 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 0, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_4 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 1, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_5 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 1, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_6 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 1, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_7 is enum_action:
                 self.kniffel.add_turn(keep=[0, 0, 1, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_8 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 0, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_9 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 0, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_10 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 0, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_11 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 0, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_12 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 1, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_13 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 1, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_14 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 1, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_15 is enum_action:
                 self.kniffel.add_turn(keep=[0, 1, 1, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_16 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 0, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_17 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 0, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_18 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 0, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_19 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 0, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_20 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 1, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_21 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 1, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_22 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 1, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_23 is enum_action:
                 self.kniffel.add_turn(keep=[1, 0, 1, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_24 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 0, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_25 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 0, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_26 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 0, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_27 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 0, 1, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_28 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 0, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_29 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 0, 1])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_30 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 0])
+                reward += self._reward_roll_dice
             if EnumAction.NEXT_31 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
+                reward += self._reward_roll_dice
 
             if (
                 self.kniffel.is_bonus()

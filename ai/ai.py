@@ -101,7 +101,8 @@ class KniffelAI:
         )"""
 
         memory = SequentialMemory(
-            limit=500_000, window_length=hyperparameter["windows_length"],
+            limit=500_000,
+            window_length=hyperparameter["windows_length"],
         )
 
         dqn = DQNAgent(
@@ -140,7 +141,10 @@ class KniffelAI:
             print(hyperparameter)
             print()
 
-            csv = self.train(hyperparameter=hyperparameter, nb_steps=nb_steps,)
+            csv = self.train(
+                hyperparameter=hyperparameter,
+                nb_steps=nb_steps,
+            )
 
             self._append_file(f"{path}/csv_configuration.csv", content=csv)
 
@@ -161,11 +165,20 @@ class KniffelAI:
                 print(e)
 
     def train_dqn(
-        self, actions, hyperparameter, env, nb_steps, callbacks, load_path="",
+        self,
+        actions,
+        hyperparameter,
+        env,
+        nb_steps,
+        callbacks,
+        load_path="",
     ):
         model = self.build_model(actions, hyperparameter)
         dqn = self.build_agent(
-            model, actions, nb_steps=nb_steps, hyperparameter=hyperparameter,
+            model,
+            actions,
+            nb_steps=nb_steps,
+            hyperparameter=hyperparameter,
         )
 
         dqn.compile(
@@ -219,7 +232,10 @@ class KniffelAI:
         return csv
 
     def train(
-        self, hyperparameter, nb_steps=10_000, load_path="",
+        self,
+        hyperparameter,
+        nb_steps=10_000,
+        load_path="",
     ):
         date_start = dt.today()
         env = KniffelEnv()
@@ -414,7 +430,9 @@ class KniffelAI:
             print("Episode:{} Score:{}".format(episode, score))
 
     def use_model(
-        self, path, episodes,
+        self,
+        path,
+        episodes,
     ):
         env = KniffelEnv()
 
@@ -434,19 +452,23 @@ class KniffelAI:
         dqn.load_weights(f"{path}/weights.h5f")
 
         points = []
+        rounds = []
         break_counter = 0
-
         for _ in range(episodes):
             kniffel = Kniffel()
+            rounds_counter = 0
             while True:
                 try:
                     state = kniffel.get_array()
                     self.predict_and_apply(dqn, kniffel, state)
+                    rounds_counter += 1
                 except:
                     points.append(kniffel.get_points())
                     break_counter += 1
+                    rounds_counter = 0
                     break
 
+                rounds.append(rounds_counter)
                 points.append(kniffel.get_points())
 
         print()
@@ -454,6 +476,9 @@ class KniffelAI:
         print(f"AVG. {sum(points) / len(points)}")
         print(f"MAX: {max(points)}")
         print(f"MIN: {min(points)}")
+        print(f"AVG rounds: {mean(rounds)}")
+        print(f"Max rounds: {max(rounds)}")
+        print(f"Min rounds: {min(rounds)}")
 
         return break_counter, sum(points) / len(points), max(points), min(points)
 
@@ -463,18 +488,17 @@ if __name__ == "__main__":
 
     ai = KniffelAI(save=True, load=False)
 
-    # ai.play(path="weights\p_date=2022-04-17-12_41_43", episodes=1000)
+    ai.play(path="weights\p_date=2022-04-23-14_24_28", episodes=1000)
 
     # ai.grid_search_test(nb_steps=1_000)
 
-    # Following settings produces some "not that bad" results (after a really short training time)
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.00025,
-        "batch_size": 512,
+        "batch_size": 256,
         "target_model_update": 0.00025,
         "dueling_option": "avg",
-        "eps": 0.3,
+        "eps": 0.5,
         "activation": "linear",
         "layers": 3,
         "unit_1": 64,
@@ -483,9 +507,9 @@ if __name__ == "__main__":
         # "unit_4": 32,
         # "unit_5": 64,
     }
-
+    """
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=100_000,
-        load_path="weights\p_date=2022-04-14-15_51_12",
-    )
+        nb_steps=1_000_000,
+        load_path="weights\p_date=2022-04-23-11_07_50",
+    )"""
