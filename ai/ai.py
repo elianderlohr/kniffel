@@ -10,8 +10,8 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
-from rl.agents import DQNAgent
-from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy, BoltzmannGumbelQPolicy
+from rl.agents import DQNAgent, CEMAgent, SARSAAgent
+from rl.policy import BoltzmannGumbelQPolicy, BoltzmannQPolicy
 from rl.memory import SequentialMemory
 
 import numpy as np
@@ -36,26 +36,7 @@ from ai.hyperparameter import Hyperparameter
 from env import EnumAction
 from env import KniffelEnv
 
-import rl.callbacks
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
-
-
-class EpisodeLogger(rl.callbacks.Callback):
-    def __init__(self):
-        self.observations = {}
-        self.rewards = {}
-        self.actions = {}
-
-    def on_episode_begin(self, episode, logs):
-        self.observations[episode] = []
-        self.rewards[episode] = []
-        self.actions[episode] = []
-
-    def on_step_end(self, step, logs):
-        episode = logs["episode"]
-        self.observations[episode].append(logs["observation"])
-        self.rewards[episode].append(logs["reward"])
-        self.actions[episode].append(logs["action"])
 
 
 class KniffelAI:
@@ -88,8 +69,16 @@ class KniffelAI:
         return model
 
     def build_agent(self, model, actions, nb_steps, hyperparameter):
+
+        agent = None
+        memory = SequentialMemory(
+            limit=500_000,
+            window_length=hyperparameter["windows_length"],
+        )
+
         # policy = BoltzmannQPolicy()
-        policy = BoltzmannGumbelQPolicy()
+        train_policy = BoltzmannGumbelQPolicy()
+        test_policy = BoltzmannQPolicy()
         """
         policy = LinearAnnealedPolicy(
             EpsGreedyQPolicy(),
@@ -100,23 +89,43 @@ class KniffelAI:
             nb_steps=10_000,  # nb_steps,
         )"""
 
-        memory = SequentialMemory(
-            limit=500_000,
-            window_length=hyperparameter["windows_length"],
-        )
+        if hyperparameter["agents"] == "dqn":
 
-        dqn = DQNAgent(
-            model=model,
-            memory=memory,
-            policy=policy,
-            nb_actions=actions,
-            nb_steps_warmup=1_000,
-            target_model_update=hyperparameter["target_model_update"],
-            batch_size=hyperparameter["batch_size"],
-            dueling_type=hyperparameter["dueling_option"],
-        )
+            agent = DQNAgent(
+                model=model,
+                memory=memory,
+                policy=train_policy,
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                target_model_update=hyperparameter["target_model_update"],
+                batch_size=hyperparameter["batch_size"],
+                dueling_type=hyperparameter["dueling_option"],
+            )
+        elif hyperparameter["agents"] == "cem":
+            agent = CEMAgent(
+                model=model,
+                nb_actions=actions,
+                memory=memory,
+                batch_size=hyperparameter["batch_size"],
+                nb_steps_warmup=1_000,
+                train_interval=50,
+                elite_frac=0.05,
+                memory_interval=1,
+                theta_init=None,
+                noise_decay_const=0.0,
+                noise_ampl=0.0,
+            )
 
-        return dqn
+        elif hyperparameter["agents"] == "sarsa":
+            agent = SARSAAgent(
+                model=model,
+                nb_actions=actions,
+                policy=train_policy,
+                test_policy=test_policy,
+                nb_steps_warmup=1_000,
+            )
+
+        return agent
 
     # Train models by applying config
     def grid_search_test(self, nb_steps=20_000):
@@ -129,7 +138,7 @@ class KniffelAI:
         print(hyperparameter_csv)
         self._append_file(
             f"{path}/csv_configuration.csv",
-            content=f"duration;nb_steps;mean_train;max_train;min_train;mean_test_dqn;max_test_dqn;min_test_dqn;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
+            content=f"duration;nb_steps;mean_train;max_train;min_train;mean_test_agent;max_test_agent;min_test_agent;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
         )
 
         i = 1
@@ -164,7 +173,7 @@ class KniffelAI:
                 print(path)
                 print(e)
 
-    def train_dqn(
+    def train_agent(
         self,
         actions,
         hyperparameter,
@@ -174,43 +183,46 @@ class KniffelAI:
         load_path="",
     ):
         model = self.build_model(actions, hyperparameter)
-        dqn = self.build_agent(
+        agent = self.build_agent(
             model,
             actions,
             nb_steps=nb_steps,
             hyperparameter=hyperparameter,
         )
 
-        dqn.compile(
-            Adam(learning_rate=hyperparameter["adam_learning_rate"]),
-            metrics=["accuracy"],
-        )
+        if hyperparameter["agents"] in ["dqn", "sarsa"]:
+            agent.compile(
+                Adam(learning_rate=hyperparameter["adam_learning_rate"]),
+                metrics=["mae"],
+            )
+        elif hyperparameter["agents"] == "cem":
+            agent.compile()
 
         if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
-            dqn.load_weights(f"{load_path}/weights.h5f")
+            agent.load_weights(f"{load_path}/weights.h5f")
 
         if self._save:
-            history = dqn.fit(
+            history = agent.fit(
                 env, nb_steps=nb_steps, verbose=1, visualize=False, callbacks=callbacks
             )
         else:
-            history = dqn.fit(env, nb_steps=nb_steps, verbose=1, visualize=False)
+            history = agent.fit(env, nb_steps=nb_steps, verbose=1, visualize=False)
 
-        return dqn, history
+        return agent, history
 
-    def validate_model(self, dqn, env):
-        scores = dqn.test(env, nb_episodes=100, visualize=False)
+    def validate_model(self, agent, env):
+        scores = agent.test(env, nb_episodes=100, visualize=False)
 
         # print(np.mean(scores.history["episode_reward"]))
-        # _ = dqn.test(env, nb_episodes=15, visualize=False)
+        # _ = agent.test(env, nb_episodes=15, visualize=False)
 
         return scores
 
     def get_configuration(
-        self, dqn, train_scores, test_scores, date_start, hyperparameter, nb_steps
+        self, agent, train_scores, test_scores, date_start, hyperparameter, nb_steps
     ):
-        break_counter, mean_own, max_own, min_own = self.test(dqn=dqn)
+        break_counter, mean_own, max_own, min_own = self.test(agent)
         date_end = dt.today()
 
         duration = date_end - date_start
@@ -251,15 +263,15 @@ class KniffelAI:
             # Create dir
             os.mkdir(path)
 
-            checkpoint_weights_filename = path + "/dqn_weights_{step}.h5f"
-            log_filename = path + "/dqn_log.json"
+            checkpoint_weights_filename = path + "/agent_weights_{step}.h5f"
+            log_filename = path + "/agent_log.json"
 
             callbacks = [
                 ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250000)
             ]
             callbacks += [FileLogger(log_filename, interval=100)]
 
-        dqn, train_score = self.train_dqn(
+        agent, train_score = self.train_agent(
             actions=actions,
             hyperparameter=hyperparameter,
             env=env,
@@ -268,10 +280,10 @@ class KniffelAI:
             callbacks=callbacks,
         )
 
-        test_scores = self.validate_model(dqn=dqn, env=env)
+        test_scores = self.validate_model(agent, env=env)
 
         csv = self.get_configuration(
-            dqn=dqn,
+            agent=agent,
             train_scores=train_score,
             test_scores=test_scores,
             date_start=date_start,
@@ -281,7 +293,7 @@ class KniffelAI:
 
         if self._save:
             # save weights and configuration as json
-            dqn.save_weights(f"{path}/weights.h5f", overwrite=False)
+            agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
             json_object = json.dumps(hyperparameter, indent=4)
 
@@ -289,8 +301,8 @@ class KniffelAI:
 
         return csv
 
-    def predict_and_apply(self, dqn: DQNAgent, kniffel: Kniffel, state):
-        action = dqn.forward(state)
+    def predict_and_apply(self, agent, kniffel: Kniffel, state):
+        action = agent.forward(state)
         enum_action = EnumAction(action)
 
         if EnumAction.FINISH_ONES is enum_action:
@@ -386,7 +398,7 @@ class KniffelAI:
         if EnumAction.NEXT_31 is enum_action:
             kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
-    def test(self, dqn):
+    def test(self, agent):
         points = []
         break_counter = 0
 
@@ -395,7 +407,7 @@ class KniffelAI:
             while True:
                 try:
                     state = kniffel.get_array()
-                    self.predict_and_apply(dqn, kniffel, state)
+                    self.predict_and_apply(agent, kniffel, state)
                 except Exception as e:
                     points.append(kniffel.get_points())
                     break_counter += 1
@@ -442,14 +454,14 @@ class KniffelAI:
         actions = env.action_space.n
 
         model = self.build_model(actions, hyperparameter)
-        dqn = self.build_agent(
+        agent = self.build_agent(
             model, actions, nb_steps=episodes, hyperparameter=hyperparameter
         )
-        dqn.compile(
+        agent.compile(
             Adam(learning_rate=hyperparameter["adam_learning_rate"]), metrics=["mae"]
         )
 
-        dqn.load_weights(f"{path}/weights.h5f")
+        agent.load_weights(f"{path}/weights.h5f")
 
         points = []
         rounds = []
@@ -460,7 +472,7 @@ class KniffelAI:
             while True:
                 try:
                     state = kniffel.get_array()
-                    self.predict_and_apply(dqn, kniffel, state)
+                    self.predict_and_apply(agent, kniffel, state)
                     rounds_counter += 1
                 except:
                     points.append(kniffel.get_points())
@@ -486,11 +498,11 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=True, load=False)
+    ai = KniffelAI(save=True, load=True)
 
-    ai.play(path="weights\p_date=2022-04-23-14_24_28", episodes=1000)
+    # ai.play(path="weights\p_date=2022-04-23-14_24_28", episodes=1000)
 
-    # ai.grid_search_test(nb_steps=1_000)
+    # ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
         "windows_length": 1,
@@ -504,12 +516,13 @@ if __name__ == "__main__":
         "unit_1": 64,
         "unit_2": 64,
         "unit_3": 64,
+        "agents": "dqn"
         # "unit_4": 32,
         # "unit_5": 64,
     }
-    """
+
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=1_000_000,
-        load_path="weights\p_date=2022-04-23-11_07_50",
-    )"""
+        nb_steps=1_500_000,
+        load_path="weights\p_date=2022-04-23-14_24_28",
+    )
