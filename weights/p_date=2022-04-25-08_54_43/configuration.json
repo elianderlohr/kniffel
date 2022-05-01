@@ -1,0 +1,14 @@
+{
+    "windows_length": 1,
+    "adam_learning_rate": 0.00025,
+    "batch_size": 256,
+    "target_model_update": 0.00025,
+    "dueling_option": "avg",
+    "eps": 0.5,
+    "activation": "linear",
+    "layers": 3,
+    "unit_1": 64,
+    "unit_2": 64,
+    "unit_3": 64,
+    "agents": "dqn"
+}

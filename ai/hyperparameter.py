@@ -15,10 +15,8 @@ class Hyperparameter:
         "batch_size": [20],
         "target_model_update": [0.0001],
         "dueling_option": ["avg"],
-        "eps": [0.2],
         "activation": ["linear"],
         "layers": [3],  # range(2, 3),
-        "agents": ["dqn", "cem", "sarsa"],
     }
 
     def __init__(self, randomize=False) -> None:

@@ -76,54 +76,18 @@ class KniffelAI:
             window_length=hyperparameter["windows_length"],
         )
 
-        # policy = BoltzmannQPolicy()
-        train_policy = BoltzmannGumbelQPolicy()
-        test_policy = BoltzmannQPolicy()
-        """
-        policy = LinearAnnealedPolicy(
-            EpsGreedyQPolicy(),
-            attr="eps",
-            value_max=1.0,
-            value_min=0.1,
-            value_test=0.05,
-            nb_steps=10_000,  # nb_steps,
-        )"""
+        train_policy = BoltzmannQPolicy()
 
-        if hyperparameter["agents"] == "dqn":
-
-            agent = DQNAgent(
-                model=model,
-                memory=memory,
-                policy=train_policy,
-                nb_actions=actions,
-                nb_steps_warmup=1_000,
-                target_model_update=hyperparameter["target_model_update"],
-                batch_size=hyperparameter["batch_size"],
-                dueling_type=hyperparameter["dueling_option"],
-            )
-        elif hyperparameter["agents"] == "cem":
-            agent = CEMAgent(
-                model=model,
-                nb_actions=actions,
-                memory=memory,
-                batch_size=hyperparameter["batch_size"],
-                nb_steps_warmup=1_000,
-                train_interval=50,
-                elite_frac=0.05,
-                memory_interval=1,
-                theta_init=None,
-                noise_decay_const=0.0,
-                noise_ampl=0.0,
-            )
-
-        elif hyperparameter["agents"] == "sarsa":
-            agent = SARSAAgent(
-                model=model,
-                nb_actions=actions,
-                policy=train_policy,
-                test_policy=test_policy,
-                nb_steps_warmup=1_000,
-            )
+        agent = DQNAgent(
+            model=model,
+            memory=memory,
+            policy=train_policy,
+            nb_actions=actions,
+            nb_steps_warmup=1_000,
+            target_model_update=hyperparameter["target_model_update"],
+            batch_size=hyperparameter["batch_size"],
+            dueling_type=hyperparameter["dueling_option"],
+        )
 
         return agent
 
@@ -189,14 +153,10 @@ class KniffelAI:
             nb_steps=nb_steps,
             hyperparameter=hyperparameter,
         )
-
-        if hyperparameter["agents"] in ["dqn", "sarsa"]:
-            agent.compile(
-                Adam(learning_rate=hyperparameter["adam_learning_rate"]),
-                metrics=["mae"],
-            )
-        elif hyperparameter["agents"] == "cem":
-            agent.compile()
+        agent.compile(
+            Adam(learning_rate=hyperparameter["adam_learning_rate"]),
+            metrics=["mae"],
+        )
 
         if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
@@ -498,31 +458,27 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=True, load=True)
+    ai = KniffelAI(save=True, load=False)
 
-    # ai.play(path="weights\p_date=2022-04-23-14_24_28", episodes=1000)
+    # ai.play(path="weights\p_date=2022-04-25-08_54_43", episodes=1_000)
 
     # ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.00025,
-        "batch_size": 256,
-        "target_model_update": 0.00025,
+        "adam_learning_rate": 1e-3,
+        "batch_size": 512,
+        "target_model_update": 1e-2,
         "dueling_option": "avg",
-        "eps": 0.5,
         "activation": "linear",
         "layers": 3,
-        "unit_1": 64,
-        "unit_2": 64,
-        "unit_3": 64,
-        "agents": "dqn"
-        # "unit_4": 32,
-        # "unit_5": 64,
+        "unit_1": 32,
+        "unit_2": 32,
+        "unit_3": 32,
     }
 
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=1_500_000,
+        nb_steps=2_000_000,
         load_path="weights\p_date=2022-04-23-14_24_28",
     )
