@@ -62,10 +62,12 @@ class KniffelAI:
     def build_model(self, actions, hyperparameter):
         model = tf.keras.Sequential()
         model.add(Flatten(input_shape=(hyperparameter["windows_length"], 13, 16)))
-        for i in range(1, hyperparameter["layers"]):
+
+        for i in range(1, hyperparameter["layers"] + 1):
             model.add(Dense(hyperparameter["unit_" + str(i)], activation="relu"))
 
         model.add(Dense(actions, activation=hyperparameter["activation"]))
+        model.summary()
         return model
 
     def build_agent(self, model, actions, nb_steps, hyperparameter):
@@ -460,25 +462,24 @@ if __name__ == "__main__":
 
     ai = KniffelAI(save=True, load=False)
 
-    # ai.play(path="weights\p_date=2022-04-25-08_54_43", episodes=1_000)
+    # ai.play(path="weights\p_date=2022-05-04-14_31_58", episodes=1_000)
 
     # ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 1e-3,
+        "adam_learning_rate": 0.0007,
         "batch_size": 512,
-        "target_model_update": 1e-2,
+        "target_model_update": 1e-3,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 3,
-        "unit_1": 32,
-        "unit_2": 32,
-        "unit_3": 32,
+        "layers": 1,
+        "unit_1": 126,
+        "unit_2": 64,
+        "unit_3": 64,
     }
 
     ai.train(
         hyperparameter=hyperparameter,
-        nb_steps=2_000_000,
-        load_path="weights\p_date=2022-04-23-14_24_28",
+        nb_steps=250_000,
     )
