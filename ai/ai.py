@@ -52,10 +52,12 @@ class KniffelAI:
     # Test episodes
     _test_episodes = 100
 
-    def __init__(self, save=False, load=False, test_episodes=100):
+    def __init__(
+        self, save=False, load=False, predefined_layers=False, test_episodes=100
+    ):
         self._save = save
         self._load = load
-        self._hp = Hyperparameter(randomize=True)
+        self._hp = Hyperparameter(randomize=True, predefined_layers=predefined_layers)
         self._test_episodes = test_episodes
 
     # Model
@@ -460,11 +462,11 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=True, load=False)
+    ai = KniffelAI(save=True, load=False, predefined_layers=True)
 
     # ai.play(path="weights\p_date=2022-05-04-14_31_58", episodes=1_000)
 
-    # ai.grid_search_test(nb_steps=10_000)
+    ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
         "windows_length": 1,
@@ -479,7 +481,8 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
+    """
     ai.train(
         hyperparameter=hyperparameter,
         nb_steps=250_000,
-    )
+    )"""

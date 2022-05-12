@@ -1,5 +1,6 @@
 import itertools
 import random
+import numpy as np
 
 
 class Hyperparameter:
@@ -8,16 +9,18 @@ class Hyperparameter:
 
     hps = list()
 
-    units = list(range(16, 128, 16))
+    units = list(range(16, 256, 16))
 
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": [0.0001],
-        "batch_size": [20],
-        "target_model_update": [0.0001],
+        "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
+        "batch_size": [35],
+        "target_model_update": np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [3],  # range(2, 3),
+        "layers": [2],
+        "unit_1": units,
+        "unit_2": units,
     }
 
     def __init__(self, predefined_layers=False, randomize=False) -> None:
@@ -37,10 +40,12 @@ class Hyperparameter:
 
         values_mod = [{i: j for i, j in zip(self.base_hp.keys(), v)} for v in values]
 
-        self.hps = values_mod
+        self.hps = [d for d in values_mod if d["unit_1"] >= d["unit_2"]]
 
         if self._randomize:
             self.hps = random.sample(self.hps, k=len(self.hps))
+
+        print(f"Created {len(self.hps)} combinations to test.")
 
         return self.hps
 
