@@ -4,6 +4,7 @@ import random
 
 class Hyperparameter:
     _randomize = False
+    _predefined_layers = False
 
     hps = list()
 
@@ -19,7 +20,8 @@ class Hyperparameter:
         "layers": [3],  # range(2, 3),
     }
 
-    def __init__(self, randomize=False) -> None:
+    def __init__(self, predefined_layers=False, randomize=False) -> None:
+        self._predefined_layers = predefined_layers
         self._randomize = randomize
         self._create_product()
 
@@ -28,7 +30,8 @@ class Hyperparameter:
             self.base_hp["unit_" + str(i)] = self.units
 
     def _create_product(self):
-        self._pepare()
+        if self._predefined_layers is False:
+            self._pepare()
 
         values = list(itertools.product(*self.base_hp.values()))
 

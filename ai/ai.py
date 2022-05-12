@@ -469,12 +469,12 @@ if __name__ == "__main__":
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0007,
-        "batch_size": 512,
+        "batch_size": 32,
         "target_model_update": 1e-3,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 1,
-        "unit_1": 126,
+        "layers": 2,
+        "unit_1": 128,
         "unit_2": 64,
         "unit_3": 64,
     }
