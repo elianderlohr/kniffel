@@ -130,7 +130,7 @@ class KniffelEnv(Env):
         self._reward_five_dice = reward_five_dice
         self._reward_six_dice = reward_six_dice
 
-    def rewards_calculator(self, dice_count) -> int:
+    def rewards_calculator(self, dice_count) -> float:
         """Calculate reward based on amount of dices used for finishing the round.
 
         :param dice_count: amount of dices

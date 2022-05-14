@@ -1,28 +1,25 @@
-from cgi import test
-from math import gamma
-from pickletools import optimize
+# Standard imports
 from statistics import mean
 from datetime import datetime as dt
-from sympy import N, use
-import random
-
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.optimizers import Adam
-
-from rl.agents import DQNAgent, CEMAgent, SARSAAgent
-from rl.policy import BoltzmannGumbelQPolicy, BoltzmannQPolicy
-from rl.memory import SequentialMemory
-
 import numpy as np
 import os
 import sys
 import inspect
-
 import warnings
 import json
-import matplotlib.pyplot as plt
 
+# Keras / Tensorflow imports
+import tensorflow as tf
+
+from rl.agents import DQNAgent
+from rl.policy import BoltzmannQPolicy
+from rl.memory import SequentialMemory
+from rl.callbacks import FileLogger, ModelIntervalCheckpoint
+
+from keras.layers import Dense, Flatten
+from keras.optimizers import Adam
+
+# Kniffel imports
 sys.path.insert(
     0,
     os.path.dirname(
@@ -35,8 +32,6 @@ from kniffel.classes.kniffel import Kniffel
 from ai.hyperparameter import Hyperparameter
 from env import EnumAction
 from env import KniffelEnv
-
-from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 
 class KniffelAI:
@@ -73,7 +68,14 @@ class KniffelAI:
         return model
 
     def build_agent(self, model, actions, nb_steps, hyperparameter):
+        """Build dqn agent
 
+        :param model: deep neural network model (keras)
+        :param actions: action space
+        :param nb_steps: steps the model should be trained
+        :param hyperparameter: hyperparameter the agent should use
+        :return: agent
+        """
         agent = None
         memory = SequentialMemory(
             limit=500_000,
@@ -157,6 +159,7 @@ class KniffelAI:
             nb_steps=nb_steps,
             hyperparameter=hyperparameter,
         )
+
         agent.compile(
             Adam(learning_rate=hyperparameter["adam_learning_rate"]),
             metrics=["mae"],
@@ -460,13 +463,13 @@ class KniffelAI:
 
 
 if __name__ == "__main__":
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    # warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     ai = KniffelAI(save=True, load=False, predefined_layers=True)
 
     # ai.play(path="weights\p_date=2022-05-04-14_31_58", episodes=1_000)
 
-    ai.grid_search_test(nb_steps=10_000)
+    # ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
         "windows_length": 1,
@@ -481,8 +484,7 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    """
     ai.train(
         hyperparameter=hyperparameter,
         nb_steps=250_000,
-    )"""
+    )
