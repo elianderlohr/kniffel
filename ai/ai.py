@@ -17,7 +17,7 @@ from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 from keras.layers import Dense, Flatten
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 
 # Kniffel imports
 sys.path.insert(
@@ -472,7 +472,7 @@ if __name__ == "__main__":
     # ai.grid_search_test(nb_steps=10_000)
 
     hyperparameter = {
-        "windows_length": 1,
+        "windows_length": 13,
         "adam_learning_rate": 0.0007,
         "batch_size": 32,
         "target_model_update": 1e-3,
