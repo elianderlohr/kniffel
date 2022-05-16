@@ -388,11 +388,11 @@ class KniffelAI:
 
     def play(self, path, episodes, random=False):
         if random:
-            random(episodes)
+            self.play_random(episodes)
         else:
             self.use_model(path, episodes)
 
-    def random(self, episodes):
+    def play_random(self, episodes):
         env = KniffelEnv()
 
         for episode in range(1, episodes + 1):
@@ -467,9 +467,13 @@ if __name__ == "__main__":
 
     ai = KniffelAI(save=True, load=False, predefined_layers=True)
 
-    # ai.play(path="weights\p_date=2022-05-04-14_31_58", episodes=1_000)
+    ai.play(
+        path="weights\p_date=2022-05-04-14_31_58",
+        episodes=1_000,
+        random=True,
+    )
 
-    # ai.grid_search_test(nb_steps=10_000)
+    # ai.grid_search_test(nb_steps=20_000)
 
     hyperparameter = {
         "windows_length": 13,
@@ -484,7 +488,7 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    ai.train(
-        hyperparameter=hyperparameter,
-        nb_steps=250_000,
-    )
+    # ai.train(
+    #    hyperparameter=hyperparameter,
+    #    nb_steps=250_000,
+    # )

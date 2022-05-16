@@ -336,9 +336,10 @@ class KniffelEnv(Env):
         # Set placeholder for info
         info = {}
 
+        kniffel_rounds = self.kniffel.get_played_rounds() / 39
         kniffel_points = self.kniffel.get_points() / 300
 
-        reward += self._reward_step + kniffel_points
+        reward += self._reward_step + kniffel_points + kniffel_rounds
 
         # Return step information
         return self.state, reward, done, info

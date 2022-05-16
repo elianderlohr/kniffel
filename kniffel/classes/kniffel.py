@@ -224,6 +224,17 @@ class Kniffel:
 
         return True if total >= 63 else False
 
+    def get_played_rounds(self):
+        """Count the number of round
+
+        :return: number of rounds played
+        """
+        rounds = 0
+        for turn in self.turns:
+            rounds += len(turn.attempts)
+
+        return rounds
+
     def turns_left(self):
         """
         How many turns are left
