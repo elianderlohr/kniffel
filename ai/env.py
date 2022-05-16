@@ -87,6 +87,9 @@ class KniffelEnv(Env):
         reward_four_dice=0.6,
         reward_five_dice=0.8,
         reward_six_dice=1,
+        reward_kniffel=1.5,
+        reward_small_street=1,
+        reward_large_street=1.1,
     ):
         """Initialize Kniffel Envioronment
 
@@ -129,6 +132,10 @@ class KniffelEnv(Env):
         self._reward_four_dice = reward_four_dice
         self._reward_five_dice = reward_five_dice
         self._reward_six_dice = reward_six_dice
+
+        self._reward_small_street = reward_small_street
+        self._reward_large_street = reward_large_street
+        self._reward_kniffel = reward_kniffel
 
     def rewards_calculator(self, dice_count) -> float:
         """Calculate reward based on amount of dices used for finishing the round.
@@ -189,13 +196,13 @@ class KniffelEnv(Env):
                 reward += self._reward_round
             if EnumAction.FINISH_SMALL_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
-                reward += self._reward_round
+                reward += self._reward_small_street
             if EnumAction.FINISH_LARGE_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
-                reward += self._reward_round
+                reward += self._reward_large_street
             if EnumAction.FINISH_KNIFFEL is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
-                reward += self._reward_round
+                reward += self._reward_kniffel
             if EnumAction.FINISH_CHANCE is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.CHANCE)
                 reward += points / 30
@@ -329,7 +336,9 @@ class KniffelEnv(Env):
         # Set placeholder for info
         info = {}
 
-        reward += self._reward_step
+        kniffel_points = self.kniffel.get_points() / 300
+
+        reward += self._reward_step + kniffel_points
 
         # Return step information
         return self.state, reward, done, info
