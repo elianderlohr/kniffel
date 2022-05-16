@@ -74,9 +74,9 @@ class EnumAction(Enum):
 class KniffelEnv(Env):
     def __init__(
         self,
-        reward_step=-0.1,
+        reward_step=0,
         reward_round=0.5,
-        reward_roll_dice=0,
+        reward_roll_dice=0.25,
         reward_game_over=-10,
         reward_bonus=2,
         reward_finish=10,
