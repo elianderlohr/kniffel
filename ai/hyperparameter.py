@@ -9,7 +9,7 @@ class Hyperparameter:
 
     hps = list()
 
-    units = list(range(16, 256, 16))
+    units = list(range(16, 64, 16))
 
     base_hp = {
         "windows_length": [13],
@@ -20,6 +20,7 @@ class Hyperparameter:
         "activation": ["linear"],
         "layers": [1],
         "unit_1": units,
+        "unit_2": [1],
     }
 
     def __init__(self, predefined_layers=False, randomize=False) -> None:
