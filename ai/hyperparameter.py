@@ -18,7 +18,7 @@ class Hyperparameter:
         "target_model_update": np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [2],
+        "layers": [1],
         "unit_1": units,
     }
 
