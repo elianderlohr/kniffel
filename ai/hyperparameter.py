@@ -12,15 +12,14 @@ class Hyperparameter:
     units = list(range(16, 256, 16))
 
     base_hp = {
-        "windows_length": [1],
+        "windows_length": [13],
         "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
-        "batch_size": [35],
+        "batch_size": [32],
         "target_model_update": np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [2],
         "unit_1": units,
-        "unit_2": units,
     }
 
     def __init__(self, predefined_layers=False, randomize=False) -> None:
