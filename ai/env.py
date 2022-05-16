@@ -74,19 +74,19 @@ class EnumAction(Enum):
 class KniffelEnv(Env):
     def __init__(
         self,
-        reward_step=0,
-        reward_round=3,
-        reward_roll_dice=3,
+        reward_step=-0.1,
+        reward_round=0.5,
+        reward_roll_dice=0,
         reward_game_over=-10,
         reward_bonus=2,
         reward_finish=10,
         reward_zero_dice=-0.5,
         reward_one_dice=-0.2,
         reward_twos_dice=-0.1,
-        reward_three_dice=3,
-        reward_four_dice=4,
-        reward_five_dice=5,
-        reward_six_dice=6,
+        reward_three_dice=0.5,
+        reward_four_dice=0.6,
+        reward_five_dice=0.8,
+        reward_six_dice=1,
     ):
         """Initialize Kniffel Envioronment
 
@@ -180,10 +180,10 @@ class KniffelEnv(Env):
                 reward += self.rewards_calculator(points)
             if EnumAction.FINISH_THREE_TIMES is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-                reward += points / 5
+                reward += points / 30
             if EnumAction.FINISH_FOUR_TIMES is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-                reward += points / 5
+                reward += points / 30
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
                 reward += self._reward_round
@@ -198,7 +198,7 @@ class KniffelEnv(Env):
                 reward += self._reward_round
             if EnumAction.FINISH_CHANCE is enum_action:
                 points = self.kniffel.finish_turn(KniffelOptions.CHANCE)
-                reward += points / 5
+                reward += points / 30
 
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:
