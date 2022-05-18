@@ -12,21 +12,24 @@ class Hyperparameter:
     units = list(range(16, 64, 16))
 
     base_hp = {
-        "windows_length": [13],
+        "windows_length": [1],
         "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
         "batch_size": [32],
         "target_model_update": np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [1],
+        "layers": [2],
         "unit_1": units,
-        "unit_2": [1],
+        "unit_2": units,
     }
 
-    def __init__(self, predefined_layers=False, randomize=False) -> None:
+    def __init__(self, predefined_layers=False, randomize=False, base_hp={}) -> None:
         self._predefined_layers = predefined_layers
         self._randomize = randomize
         self._create_product()
+
+        if len(base_hp.keys()) > 0:
+            self.base_hp = base_hp
 
     def _pepare(self):
         for i in range(max(list(self.base_hp["layers"]))):

@@ -57,10 +57,15 @@ class KniffelAI:
         predefined_layers=False,
         test_episodes=100,
         path_prefix="",
+        hyperparater_base={},
     ):
         self._save = save
         self._load = load
-        self._hp = Hyperparameter(randomize=True, predefined_layers=predefined_layers)
+        self._hp = Hyperparameter(
+            randomize=True,
+            predefined_layers=predefined_layers,
+            base_hp=hyperparater_base,
+        )
         self._test_episodes = test_episodes
 
         if path_prefix == "":
@@ -116,7 +121,7 @@ class KniffelAI:
         return agent
 
     # Train models by applying config
-    def grid_search_test(self, nb_steps=20_000):
+    def grid_search_test(self, nb_steps=20_000, env_config={}):
         datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
         path = f"{self._path_prefix}configuration/p_date={datetime}"
 
@@ -139,8 +144,7 @@ class KniffelAI:
             print()
 
             csv = self.train(
-                hyperparameter=hyperparameter,
-                nb_steps=nb_steps,
+                hyperparameter=hyperparameter, nb_steps=nb_steps, env_config=env_config
             )
 
             self._append_file(f"{path}/csv_configuration.csv", content=csv)
@@ -487,13 +491,29 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    ai = KniffelAI(save=True, load=False, predefined_layers=True)
+    units = list(range(16, 64, 16))
+
+    base_hp = {
+        "windows_length": [13],
+        "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
+        "batch_size": [32],
+        "target_model_update": np.arange(0.0001, 0.001, 0.0002),
+        "dueling_option": ["avg"],
+        "activation": ["linear"],
+        "layers": [2],
+        "unit_1": units,
+        "unit_2": units,
+    }
+
+    ai = KniffelAI(
+        save=True, load=False, predefined_layers=True, hyperparater_base=base_hp
+    )
 
     env_config = {
         "reward_step": 0,
         "reward_round": 0.5,
         "reward_roll_dice": 0.25,
-        "reward_game_over": -2,
+        "reward_game_over": -200,
         "reward_bonus": 2,
         "reward_finish": 10,
         "reward_zero_dice": -0.5,
@@ -514,7 +534,7 @@ if __name__ == "__main__":
     #    random=True,
     # )
 
-    # ai.grid_search_test(nb_steps=20_000)
+    ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
@@ -528,4 +548,4 @@ if __name__ == "__main__":
         "unit_2": 16,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
