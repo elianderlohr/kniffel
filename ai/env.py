@@ -74,15 +74,16 @@ class EnumAction(Enum):
 class KniffelEnv(Env):
     def __init__(
         self,
+        env_config,
         reward_step=0,
         reward_round=0.5,
         reward_roll_dice=0.25,
-        reward_game_over=-10,
+        reward_game_over=-2,
         reward_bonus=2,
         reward_finish=10,
         reward_zero_dice=-0.5,
         reward_one_dice=-0.2,
-        reward_twos_dice=-0.1,
+        reward_two_dice=-0.1,
         reward_three_dice=0.5,
         reward_four_dice=0.6,
         reward_five_dice=0.8,
@@ -118,24 +119,60 @@ class KniffelEnv(Env):
         # Set start
         self.state = self.kniffel.get_array()
 
-        self._reward_step = reward_step
-        self._reward_round = reward_round
-        self._reward_roll_dice = reward_roll_dice
-        self._reward_game_over = reward_game_over
-        self._reward_bonus = reward_bonus
-        self._reward_finish = reward_finish
+        self._reward_step = self.put_parameter(env_config, "reward_step", reward_step)
+        self._reward_round = self.put_parameter(
+            env_config, "reward_round", reward_round
+        )
+        self._reward_roll_dice = self.put_parameter(
+            env_config, "reward_roll_dice", reward_roll_dice
+        )
+        self._reward_game_over = self.put_parameter(
+            env_config, "reward_game_over", reward_game_over
+        )
+        self._reward_bonus = self.put_parameter(
+            env_config, "reward_bonus", reward_bonus
+        )
+        self._reward_finish = self.put_parameter(
+            env_config, "reward_finish", reward_finish
+        )
 
-        self._reward_zero_dice = reward_zero_dice
-        self._reward_one_dice = reward_one_dice
-        self._reward_two_dice = reward_twos_dice
-        self._reward_three_dice = reward_three_dice
-        self._reward_four_dice = reward_four_dice
-        self._reward_five_dice = reward_five_dice
-        self._reward_six_dice = reward_six_dice
+        self._reward_zero_dice = self.put_parameter(
+            env_config, "reward_zero_dice", reward_zero_dice
+        )
+        self._reward_one_dice = self.put_parameter(
+            env_config, "reward_one_dice", reward_one_dice
+        )
+        self._reward_two_dice = self.put_parameter(
+            env_config, "reward_two_dice", reward_two_dice
+        )
+        self._reward_three_dice = self.put_parameter(
+            env_config, "reward_three_dice", reward_three_dice
+        )
+        self._reward_four_dice = self.put_parameter(
+            env_config, "reward_four_dice", reward_four_dice
+        )
+        self._reward_five_dice = self.put_parameter(
+            env_config, "reward_five_dice", reward_five_dice
+        )
+        self._reward_six_dice = self.put_parameter(
+            env_config, "reward_six_dice", reward_six_dice
+        )
 
-        self._reward_small_street = reward_small_street
-        self._reward_large_street = reward_large_street
-        self._reward_kniffel = reward_kniffel
+        self._reward_small_street = self.put_parameter(
+            env_config, "reward_small_street", reward_small_street
+        )
+        self._reward_large_street = self.put_parameter(
+            env_config, "reward_large_street", reward_large_street
+        )
+        self._reward_kniffel = self.put_parameter(
+            env_config, "reward_kniffel", reward_kniffel
+        )
+
+    def put_parameter(self, parameters: dict, key: str, alternative: str):
+        if key in parameters.keys():
+            return parameters[key]
+        else:
+            return alternative
 
     def rewards_calculator(self, dice_count) -> float:
         """Calculate reward based on amount of dices used for finishing the round.
@@ -159,7 +196,7 @@ class KniffelEnv(Env):
             return self._reward_six_dice
 
     def step(self, action):
-        reward = 0
+        reward = 0.0
         has_bonus = self.kniffel.is_bonus()
 
         done = False

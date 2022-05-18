@@ -47,13 +47,31 @@ class KniffelAI:
     # Test episodes
     _test_episodes = 100
 
+    # path prefix
+    _path_prefix = ""
+
     def __init__(
-        self, save=False, load=False, predefined_layers=False, test_episodes=100
+        self,
+        save=False,
+        load=False,
+        predefined_layers=False,
+        test_episodes=100,
+        path_prefix="",
     ):
         self._save = save
         self._load = load
         self._hp = Hyperparameter(randomize=True, predefined_layers=predefined_layers)
         self._test_episodes = test_episodes
+
+        if path_prefix == "":
+            try:
+                import google.colab
+
+                self._path_prefix = "/"
+            except:
+                self._path_prefix = ""
+        else:
+            self._path_prefix = path_prefix
 
     # Model
     def build_model(self, actions, hyperparameter):
@@ -100,7 +118,7 @@ class KniffelAI:
     # Train models by applying config
     def grid_search_test(self, nb_steps=20_000):
         datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
-        path = f"configuration/p_date={datetime}"
+        path = f"{self._path_prefix}configuration/p_date={datetime}"
 
         hyperparameter_csv = ";".join(
             str(e) for e in list(dict(self._hp.get()[0]).keys())
@@ -210,14 +228,9 @@ class KniffelAI:
 
         return csv
 
-    def train(
-        self,
-        hyperparameter,
-        nb_steps=10_000,
-        load_path="",
-    ):
+    def train(self, hyperparameter, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
-        env = KniffelEnv()
+        env = KniffelEnv(env_config)
 
         actions = env.action_space.n
 
@@ -225,7 +238,7 @@ class KniffelAI:
 
         if self._save:
             datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
-            path = f"weights/p_date={datetime}"
+            path = f"{self._path_prefix}weights/p_date={datetime}"
 
             # Create dir
             os.mkdir(path)
@@ -395,18 +408,27 @@ class KniffelAI:
     def play_random(self, episodes):
         env = KniffelEnv()
 
+        round = 1
         for episode in range(1, episodes + 1):
             state = env.reset()
             done = False
             score = 0
 
+            print("####")
+            print(round)
+
+            try_out = 1
             while not done:
                 action = env.action_space.sample()
                 n_state, reward, done, info = env.step(action)
                 score += reward
-                print(n_state)
+                print(f"Try: {try_out}")
+                print(reward)
+                try_out += 1
 
             print("Episode:{} Score:{}".format(episode, score))
+
+            round += 1
 
     def use_model(
         self,
@@ -463,32 +485,47 @@ class KniffelAI:
 
 
 if __name__ == "__main__":
-    # warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     ai = KniffelAI(save=True, load=False, predefined_layers=True)
 
-    ai.play(
-        path="weights\p_date=2022-05-04-14_31_58",
-        episodes=1_000,
-        random=True,
-    )
+    env_config = {
+        "reward_step": 0,
+        "reward_round": 0.5,
+        "reward_roll_dice": 0.25,
+        "reward_game_over": -2,
+        "reward_bonus": 2,
+        "reward_finish": 10,
+        "reward_zero_dice": -0.5,
+        "reward_one_dice": -0.2,
+        "reward_two_dice": -0.1,
+        "reward_three_dice": 0.5,
+        "reward_four_dice": 0.6,
+        "reward_five_dice": 0.8,
+        "reward_six_dice": 1,
+        "reward_kniffel": 1.5,
+        "reward_small_street": 1,
+        "reward_large_street": 1.1,
+    }
+
+    # ai.play(
+    #    path="weights\p_date=2022-05-04-14_31_58",
+    #    episodes=1_000,
+    #    random=True,
+    # )
 
     # ai.grid_search_test(nb_steps=20_000)
 
     hyperparameter = {
-        "windows_length": 13,
+        "windows_length": 1,
         "adam_learning_rate": 0.0007,
         "batch_size": 32,
         "target_model_update": 1e-3,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 2,
-        "unit_1": 128,
-        "unit_2": 64,
-        "unit_3": 64,
+        "unit_1": 32,
+        "unit_2": 16,
     }
 
-    # ai.train(
-    #    hyperparameter=hyperparameter,
-    #    nb_steps=250_000,
-    # )
+    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
