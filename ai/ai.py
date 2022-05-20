@@ -12,7 +12,7 @@ import json
 import tensorflow as tf
 
 from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy
+from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
@@ -105,7 +105,7 @@ class KniffelAI:
             window_length=hyperparameter["windows_length"],
         )
 
-        train_policy = BoltzmannQPolicy()
+        train_policy = EpsGreedyQPolicy()  # BoltzmannQPolicy()
 
         agent = DQNAgent(
             model=model,
@@ -183,7 +183,10 @@ class KniffelAI:
         )
 
         agent.compile(
-            Adam(learning_rate=hyperparameter["adam_learning_rate"]),
+            Adam(
+                learning_rate=hyperparameter["adam_learning_rate"],
+                epsilon=hyperparameter["adam_epsilon"],
+            ),
             metrics=["mae"],
         )
 
@@ -403,14 +406,14 @@ class KniffelAI:
 
     # Use Model
 
-    def play(self, path, episodes, random=False):
+    def play(self, path, episodes, env_config, random=False):
         if random:
-            self.play_random(episodes)
+            self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes)
+            self.use_model(path, episodes, env_config)
 
-    def play_random(self, episodes):
-        env = KniffelEnv()
+    def play_random(self, episodes, env_config):
+        env = KniffelEnv(env_config)
 
         round = 1
         for episode in range(1, episodes + 1):
@@ -434,12 +437,8 @@ class KniffelAI:
 
             round += 1
 
-    def use_model(
-        self,
-        path,
-        episodes,
-    ):
-        env = KniffelEnv()
+    def use_model(self, path, episodes, env_config):
+        env = KniffelEnv(env_config)
 
         f = open(f"{path}/configuration.json")
         hyperparameter = dict(json.load(f))
@@ -494,7 +493,7 @@ if __name__ == "__main__":
     units = list(range(16, 64, 16))
 
     base_hp = {
-        "windows_length": [13],
+        "windows_length": [1],
         "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
         "batch_size": [32],
         "target_model_update": np.arange(0.0001, 0.001, 0.0002),
@@ -513,7 +512,7 @@ if __name__ == "__main__":
         "reward_step": 0,
         "reward_round": 0.5,
         "reward_roll_dice": 0.25,
-        "reward_game_over": -200,
+        "reward_game_over": -100,
         "reward_bonus": 2,
         "reward_finish": 10,
         "reward_zero_dice": -0.5,
@@ -529,18 +528,16 @@ if __name__ == "__main__":
     }
 
     # ai.play(
-    #    path="weights\p_date=2022-05-04-14_31_58",
-    #    episodes=1_000,
-    #    random=True,
+    #    path="weights\p_date=2022-05-19-06_37_37", episodes=1_000, env_config=env_config
     # )
 
     ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0007,
+        "adam_learning_rate": 0.0009,
         "batch_size": 32,
-        "target_model_update": 1e-3,
+        "target_model_update": 0.0009,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 2,
