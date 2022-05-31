@@ -81,7 +81,7 @@ class KniffelAI:
     # Model
     def build_model(self, actions, hyperparameter):
         model = tf.keras.Sequential()
-        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 13, 16)))
+        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 1, 45)))
 
         for i in range(1, hyperparameter["layers"] + 1):
             model.add(Dense(hyperparameter["unit_" + str(i)], activation="relu"))
@@ -393,7 +393,7 @@ class KniffelAI:
             kniffel = Kniffel()
             while True:
                 try:
-                    state = kniffel.get_array()
+                    state = kniffel.get_array_v2()
                     self.predict_and_apply(agent, kniffel, state)
                 except Exception as e:
                     points.append(kniffel.get_points())
@@ -463,7 +463,7 @@ class KniffelAI:
             rounds_counter = 0
             while True:
                 try:
-                    state = kniffel.get_array()
+                    state = kniffel.get_array_v2()
                     self.predict_and_apply(agent, kniffel, state)
                     rounds_counter += 1
                 except:
@@ -531,11 +531,12 @@ if __name__ == "__main__":
     #    path="weights\p_date=2022-05-19-06_37_37", episodes=1_000, env_config=env_config
     # )
 
-    ai.grid_search_test(nb_steps=20_000, env_config=env_config)
+    # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0009,
+        "adam_epsilon": 1e-5,
         "batch_size": 32,
         "target_model_update": 0.0009,
         "dueling_option": "avg",
@@ -545,4 +546,4 @@ if __name__ == "__main__":
         "unit_2": 16,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)

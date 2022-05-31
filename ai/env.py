@@ -110,14 +110,14 @@ class KniffelEnv(Env):
         """
         self.kniffel = Kniffel()
         # Actions we can take
-        self.action_space = spaces.Discrete(44)
+        self.action_space = spaces.Discrete(45)
 
         self.observation_space = spaces.Box(
             low=0, high=13, shape=(13, 16), dtype=np.int32
         )
 
         # Set start
-        self.state = self.kniffel.get_array()
+        self.state = self.kniffel.get_array_v2()
 
         self._reward_step = self.put_parameter(env_config, "reward_step", reward_step)
         self._reward_round = self.put_parameter(
@@ -361,7 +361,7 @@ class KniffelEnv(Env):
             reward += self._reward_game_over
             done = True
 
-        self.state = self.kniffel.get_array()
+        self.state = self.kniffel.get_array_v2()
 
         # Check if shower is done
         if self.kniffel.is_finished():
@@ -391,6 +391,6 @@ class KniffelEnv(Env):
         del self.kniffel
 
         self.kniffel = Kniffel()
-        self.state = self.kniffel.get_array()
+        self.state = self.kniffel.get_array_v2()
 
         return self.state

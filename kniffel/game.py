@@ -51,11 +51,13 @@ def play():
 
     # kniffel.add_turn([1, 1, 1, 1, 1])
 
+    import numpy as np
+
     kniffel.print()
     print(kniffel.get_points())
     print(kniffel.is_bonus())
-    d = kniffel.get_array()
-
+    d = kniffel.get_array_v2()
+    print(np.shape(d))
     print(d)
 
 
