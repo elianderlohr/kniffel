@@ -159,11 +159,6 @@ class Kniffel:
         self.get_turn_option(status, 11)
         self.get_turn_option(status, 12)
 
-        status.append(latest_turn_id + 1)
-        status.append(1 if self.is_finished else 0)
-        status.append(1 if self.is_bonus else 0)
-        status.append(self.get_points())
-
         return np.array([np.array(status)])
 
     def get_array(self):

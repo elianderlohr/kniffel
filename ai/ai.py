@@ -81,7 +81,7 @@ class KniffelAI:
     # Model
     def build_model(self, actions, hyperparameter):
         model = tf.keras.Sequential()
-        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 1, 45)))
+        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 1, 41)))
 
         for i in range(1, hyperparameter["layers"] + 1):
             model.add(Dense(hyperparameter["unit_" + str(i)], activation="relu"))
