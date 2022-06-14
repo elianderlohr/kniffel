@@ -513,6 +513,7 @@ if __name__ == "__main__":
         "reward_round": 0.5,
         "reward_roll_dice": 0.25,
         "reward_game_over": -100,
+        "reward_slash": -10,
         "reward_bonus": 2,
         "reward_finish": 10,
         "reward_zero_dice": -0.5,

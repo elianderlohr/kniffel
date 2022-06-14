@@ -1,3 +1,4 @@
+from select import select
 from classes.status import KniffelStatus
 from classes.options import KniffelOptions
 from classes.dice_set import DiceSet
@@ -62,7 +63,7 @@ class Attempt:
 
             self.attempts.append(dice_set)
 
-    def finish_attempt(self, option: KniffelOptions) -> KniffelOptionClass:
+    def finish_attempt(self, option: KniffelOptions, help: bool = False) -> KniffelOptionClass:
         """
         Finish attempt
 
@@ -101,6 +102,90 @@ class Attempt:
                 selected = KniffelCheck().check_kniffel(self.attempts[-1])
             elif option.value == KniffelOptions.CHANCE.value:
                 selected = KniffelCheck().check_chance(self.attempts[-1])
+
+            if help:
+                if option.value == KniffelOptions.ONES_SLASH.value:
+                    possibility = KniffelCheck().check_1(self.attempts[-1])
+                    selected = KniffelOptionClass("ones_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.ONES_SLASH)
+                elif option.value == KniffelOptions.TWOS_SLASH.value:
+                    possibility = KniffelCheck().check_2(self.attempts[-1])
+                    selected = KniffelOptionClass("twos_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.TWOS_SLASH)
+                elif option.value == KniffelOptions.THREES_SLASH.value:
+                    possibility = KniffelCheck().check_3(self.attempts[-1])
+                    selected = KniffelOptionClass("threes_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.THREES_SLASH)
+                elif option.value == KniffelOptions.FOURS_SLASH.value:
+                    possibility = KniffelCheck().check_4(self.attempts[-1])
+                    selected = KniffelOptionClass("fours_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.FOURS_SLASH)
+                elif option.value == KniffelOptions.FIVES_SLASH.value:
+                    possibility = KniffelCheck().check_5(self.attempts[-1])
+                    selected = KniffelOptionClass("fives_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.FIVES_SLASH)
+                elif option.value == KniffelOptions.SIXES_SLASH.value:
+                    possibility = KniffelCheck().check_6(self.attempts[-1])
+                    selected = KniffelOptionClass("sixes_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.SIXES_SLASH)
+                
+                
+                elif option.value == KniffelOptions.THREE_TIMES_SLASH.value:
+                    possibility = KniffelCheck().check_three_times(self.attempts[-1])
+                    selected = KniffelOptionClass("three_times_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.THREE_TIMES_SLASH)
+                elif option.value == KniffelOptions.FOUR_TIMES_SLASH.value:
+                    possibility = KniffelCheck().check_four_times(self.attempts[-1])
+                    selected = KniffelOptionClass("four_times_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.FOUR_TIMES_SLASH)
+                elif option.value == KniffelOptions.FULL_HOUSE_SLASH.value:
+                    possibility = KniffelCheck().check_full_house(self.attempts[-1])
+                    selected = KniffelOptionClass("full_house_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.FULL_HOUSE_SLASH)
+                elif option.value == KniffelOptions.SMALL_STREET_SLASH.value:
+                    possibility = KniffelCheck().check_small_street(self.attempts[-1])
+                    selected = KniffelOptionClass("small_street_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.SMALL_STREET_SLASH)
+                elif option.value == KniffelOptions.LARGE_STREET_SLASH.value:
+                    possibility = KniffelCheck().check_large_street(self.attempts[-1])
+                    selected = KniffelOptionClass("large_street_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.LARGE_STREET_SLASH)
+                elif option.value == KniffelOptions.KNIFFEL_SLASH.value:
+                    possibility = KniffelCheck().check_kniffel(self.attempts[-1])
+                    selected = KniffelOptionClass("kniffel_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.KNIFFEL_SLASH)
+                elif option.value == KniffelOptions.CHANCE_SLASH.value:
+                    possibility = KniffelCheck().check_chance(self.attempts[-1])
+                    selected = KniffelOptionClass("chance_slash", possibility.points, ds=possibility.dice_set, id=KniffelOptions.CHANCE_SLASH)
+            else:
+                if option.value == KniffelOptions.ONES_SLASH.value:
+                    possibility = KniffelCheck().check_1(self.attempts[-1])
+                    selected = KniffelOptionClass("ones_slash", 0, ds=None, id=KniffelOptions.ONES_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.TWOS_SLASH.value:
+                    possibility = KniffelCheck().check_2(self.attempts[-1])
+                    selected = KniffelOptionClass("twos_slash", 0, ds=None, id=KniffelOptions.TWOS_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.THREES_SLASH.value:
+                    possibility = KniffelCheck().check_3(self.attempts[-1])
+                    selected = KniffelOptionClass("threes_slash", 0, ds=None, id=KniffelOptions.THREES_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.FOURS_SLASH.value:
+                    possibility = KniffelCheck().check_4(self.attempts[-1])
+                    selected = KniffelOptionClass("fours_slash", 0, ds=None, id=KniffelOptions.FOURS_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.FIVES_SLASH.value:
+                    possibility = KniffelCheck().check_5(self.attempts[-1])
+                    selected = KniffelOptionClass("fives_slash", 0, ds=None, id=KniffelOptions.FIVES_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.SIXES_SLASH.value:
+                    possibility = KniffelCheck().check_6(self.attempts[-1])
+                    selected = KniffelOptionClass("sixes_slash", 0, ds=None, id=KniffelOptions.SIXES_SLASH, is_possible=True if possibility.points == 0 else False)
+                
+                elif option.value == KniffelOptions.THREE_TIMES_SLASH.value:
+                    possibility = KniffelCheck().check_three_times(self.attempts[-1])
+                    selected = KniffelOptionClass("three_times_slash", 0, ds=None, id=KniffelOptions.THREE_TIMES_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.FOUR_TIMES_SLASH.value:
+                    possibility = KniffelCheck().check_four_times(self.attempts[-1])
+                    selected = KniffelOptionClass("four_times_slash", 0, ds=None, id=KniffelOptions.FOUR_TIMES_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.FULL_HOUSE_SLASH.value:
+                    possibility = KniffelCheck().check_full_house(self.attempts[-1])
+                    selected = KniffelOptionClass("full_house_slash", 0, ds=None, id=KniffelOptions.FULL_HOUSE_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.SMALL_STREET_SLASH.value:
+                    possibility = KniffelCheck().check_small_street(self.attempts[-1])
+                    selected = KniffelOptionClass("small_street_slash", 0, ds=None, id=KniffelOptions.SMALL_STREET_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.LARGE_STREET_SLASH.value:
+                    possibility = KniffelCheck().check_large_street(self.attempts[-1])
+                    selected = KniffelOptionClass("large_street_slash", 0, ds=None, id=KniffelOptions.LARGE_STREET_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.KNIFFEL_SLASH.value:
+                    possibility = KniffelCheck().check_kniffel(self.attempts[-1])
+                    selected = KniffelOptionClass("kniffel_slash", 0, ds=None, id=KniffelOptions.KNIFFEL_SLASH, is_possible=True if possibility.points == 0 else False)
+                elif option.value == KniffelOptions.CHANCE_SLASH.value:
+                    possibility = KniffelCheck().check_chance(self.attempts[-1])
+                    selected = KniffelOptionClass("chance_slash", 0, ds=None, id=KniffelOptions.CHANCE_SLASH, is_possible=True if possibility.points == 0 else False)
 
             self.selected_option = selected
 

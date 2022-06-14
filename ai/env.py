@@ -70,6 +70,20 @@ class EnumAction(Enum):
     NEXT_30 = 43  # 30  	1	1	1	1	0
     NEXT_31 = 44  # 31  	1	1	1	1	1
 
+    # Finish Actions
+    FINISH_ONES_SLASH = 45
+    FINISH_TWOS_SLASH = 46
+    FINISH_THREES_SLASH = 47
+    FINISH_FOURS_SLASH = 48
+    FINISH_FIVES_SLASH = 49
+    FINISH_SIXES_SLASH = 50
+    FINISH_THREE_TIMES_SLASH = 51
+    FINISH_FOUR_TIMES_SLASH = 52
+    FINISH_FULL_HOUSE_SLASH = 53
+    FINISH_SMALL_STREET_SLASH = 54
+    FINISH_LARGE_STREET_SLASH = 55
+    FINISH_KNIFFEL_SLASH = 56
+    FINISH_CHANCE_SLASH = 57
 
 class KniffelEnv(Env):
     def __init__(
@@ -79,6 +93,7 @@ class KniffelEnv(Env):
         reward_round=0.5,
         reward_roll_dice=0.25,
         reward_game_over=-2,
+        reward_slash=-10,
         reward_bonus=2,
         reward_finish=10,
         reward_zero_dice=-0.5,
@@ -110,10 +125,10 @@ class KniffelEnv(Env):
         """
         self.kniffel = Kniffel()
         # Actions we can take
-        self.action_space = spaces.Discrete(45)
+        self.action_space = spaces.Discrete(57)
 
         self.observation_space = spaces.Box(
-            low=0, high=13, shape=(13, 16), dtype=np.int32
+            low=0, high=30, shape=(1, 41), dtype=np.int32
         )
 
         # Set start
@@ -128,6 +143,9 @@ class KniffelEnv(Env):
         )
         self._reward_game_over = self.put_parameter(
             env_config, "reward_game_over", reward_game_over
+        )
+        self._reward_slash = self.put_parameter(
+            env_config, "reward_slash", reward_slash
         )
         self._reward_bonus = self.put_parameter(
             env_config, "reward_bonus", reward_bonus
@@ -341,6 +359,46 @@ class KniffelEnv(Env):
             if EnumAction.NEXT_31 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
                 reward += self._reward_roll_dice
+
+            if EnumAction.FINISH_ONES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.ONES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_TWOS_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.TWOS_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_THREES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.THREES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_FOURS_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.FOURS_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_FIVES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.FIVES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_SIXES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.SIXES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.THREE_TIMES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.SMALL_STREET_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.LARGE_STREET_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
+                reward += self._reward_slash
+            if EnumAction.FINISH_CHANCE_SLASH is enum_action:
+                self.kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
+                reward += self._reward_slash
 
             if (
                 self.kniffel.is_bonus()

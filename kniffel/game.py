@@ -1,4 +1,4 @@
-from click import option
+#from click import option
 from classes.kniffel import Kniffel
 from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
@@ -43,8 +43,8 @@ def play():
     kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
     kniffel.finish_turn(KniffelOptions.LARGE_STREET)
 
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.KNIFFEL)
+    kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
+    kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.CHANCE)
