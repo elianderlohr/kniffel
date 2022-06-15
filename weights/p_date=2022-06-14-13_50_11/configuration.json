@@ -8,5 +8,5 @@
     "activation": "linear",
     "layers": 2,
     "unit_1": 48,
-    "unit_2": 16,
+    "unit_2": 16
 }

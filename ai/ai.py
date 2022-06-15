@@ -539,8 +539,8 @@ if __name__ == "__main__":
         "reward_step": 0,
         "reward_round": 0.5,
         "reward_roll_dice": 0.25,
-        "reward_game_over": -100,
-        "reward_slash": -10,
+        "reward_game_over": -10,
+        "reward_slash": -5,
         "reward_bonus": 2,
         "reward_finish": 10,
         "reward_zero_dice": -0.5,
@@ -555,9 +555,9 @@ if __name__ == "__main__":
         "reward_large_street": 1.1,
     }
 
-    # ai.play(
-    #    path="weights\p_date=2022-05-19-06_37_37", episodes=1_000, env_config=env_config
-    # )
+    ai.play(
+       path="weights\p_date=2022-06-14-13_50_11", episodes=5, env_config=env_config, random=True
+    )
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
@@ -574,4 +574,4 @@ if __name__ == "__main__":
         "unit_2": 16,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
