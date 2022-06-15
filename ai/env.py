@@ -86,6 +86,9 @@ class EnumAction(Enum):
     FINISH_CHANCE_SLASH = 57
 
 class KniffelEnv(Env):
+
+    kniffel = None
+
     def __init__(
         self,
         env_config,
@@ -106,6 +109,7 @@ class KniffelEnv(Env):
         reward_kniffel=1.5,
         reward_small_street=1,
         reward_large_street=1.1,
+        logging = False
     ):
         """Initialize Kniffel Envioronment
 
@@ -123,7 +127,7 @@ class KniffelEnv(Env):
         :param reward_five_dice: Reward if five dices used, defaults to 5.66
         :param reward_six_dice: Reward if six dices used, defaults to 6
         """
-        self.kniffel = Kniffel()
+        self.kniffel = Kniffel(logging=logging)
         # Actions we can take
         self.action_space = spaces.Discrete(57)
 

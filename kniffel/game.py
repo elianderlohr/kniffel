@@ -5,7 +5,7 @@ from classes.options import KniffelOptions
 
 
 def play():
-    kniffel = Kniffel(False)
+    kniffel = Kniffel(True)
 
     kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
     kniffel.finish_turn(KniffelOptions.ONES)
@@ -22,16 +22,9 @@ def play():
     kniffel.mock(DiceSet([5, 5, 5, 5, 5]))
     kniffel.finish_turn(KniffelOptions.FIVES)
 
-    print(kniffel.get_array_v2())
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    print(kniffel.get_array_v2())
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-
-    print(kniffel.get_array_v2())
-
     kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-
-    print(kniffel.get_array_v2())        
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))

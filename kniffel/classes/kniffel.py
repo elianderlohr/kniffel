@@ -25,7 +25,7 @@ class Kniffel:
         self.turns = []
         self.logging = logging
 
-        self.add_turn()
+        self.start()
 
     def get_turn_as_dict(self, id: int):
         if 0 <= id < len(self.turns):
@@ -229,6 +229,11 @@ class Kniffel:
         else:
             raise Exception("Cannot play more then 13 rounds. Play a new game!")
 
+        if self.logging:
+            print("Attempt:")
+            print(f"   Keep: {keep}")
+            print(f"   Array: {self.get_array_v2()}")
+
     def finish_turn(self, option: KniffelOptions) -> int:
         """
         Finish turn
@@ -238,6 +243,12 @@ class Kniffel:
         if self.is_option_possible(option):
             if self.is_new_game() is False and self.is_turn_finished() is False:
                 kniffel_option = self.turns[-1].finish_attempt(option)
+
+                if self.logging:
+                    print("Finish:")
+                    print(f"   Action: {option}")
+                    print(f"   Array: {self.get_array_v2()}")
+
                 return kniffel_option.points
 
             elif self.is_new_game():

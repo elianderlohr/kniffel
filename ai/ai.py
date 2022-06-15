@@ -1,4 +1,5 @@
 # Standard imports
+import logging
 from statistics import mean
 from datetime import datetime as dt
 import numpy as np
@@ -206,8 +207,8 @@ class KniffelAI:
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
 
-        # print(np.mean(scores.history["episode_reward"]))
-        # _ = agent.test(env, nb_episodes=15, visualize=False)
+        print(np.mean(scores.history["episode_reward"]))
+        _ = agent.test(env, nb_episodes=15, visualize=False)
 
         return scores
 
@@ -250,13 +251,13 @@ class KniffelAI:
             # Create dir
             os.mkdir(path)
 
-            checkpoint_weights_filename = path + "/agent_weights_{step}.h5f"
+            checkpoint_weights_filename = path + "/agent_weights_steps.h5f"
             log_filename = path + "/agent_log.json"
 
             callbacks = [
-                ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250000)
+                ModelIntervalCheckpoint(checkpoint_weights_filename, interval=100_000)
             ]
-            callbacks += [FileLogger(log_filename, interval=100)]
+            callbacks += [FileLogger(log_filename, interval=10_000)]
 
         agent, train_score = self.train_agent(
             actions=actions,
@@ -285,6 +286,8 @@ class KniffelAI:
             json_object = json.dumps(hyperparameter, indent=4)
 
             self._append_file(f"{path}/configuration.json", json_object)
+
+            self.play(path, 1000, env_config)
 
         return csv
 
@@ -440,7 +443,7 @@ class KniffelAI:
             self.use_model(path, episodes, env_config)
 
     def play_random(self, episodes, env_config):
-        env = KniffelEnv(env_config)
+        env = KniffelEnv(env_config, logging=True)
 
         round = 1
         for episode in range(1, episodes + 1):
@@ -458,7 +461,7 @@ class KniffelAI:
                 score += reward
                 print(f"Try: {try_out}")
                 print(f"Action: {action}")
-                print(f"Reward: {reward}")
+                print(f"Score: {score}")
                 print(n_state)
                 try_out += 1
 
@@ -557,9 +560,9 @@ if __name__ == "__main__":
         "reward_large_street": 1.1,
     }
 
-    #ai.play(
-    #   path="weights\p_date=2022-06-14-13_50_11", episodes=5, env_config=env_config, random=True
-    #)
+    ai.play(
+      path="weights\p_date=2022-06-15-10_47_41", episodes=1, env_config=env_config, random=True
+    )
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
@@ -576,4 +579,4 @@ if __name__ == "__main__":
         "unit_2": 16,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=1_000_000, env_config=env_config)
