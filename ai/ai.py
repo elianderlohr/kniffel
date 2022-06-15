@@ -385,6 +385,33 @@ class KniffelAI:
         if EnumAction.NEXT_31 is enum_action:
             kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
+        if EnumAction.FINISH_ONES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.ONES_SLASH)
+        if EnumAction.FINISH_TWOS_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.TWOS_SLASH)
+        if EnumAction.FINISH_THREES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.THREES_SLASH)
+        if EnumAction.FINISH_FOURS_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.FOURS_SLASH)
+        if EnumAction.FINISH_FIVES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.FIVES_SLASH)
+        if EnumAction.FINISH_SIXES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.SIXES_SLASH)
+        if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.THREE_TIMES_SLASH)
+        if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.FOUR_TIMES_SLASH)
+        if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.FULL_HOUSE_SLASH)
+        if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.SMALL_STREET_SLASH)
+        if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.LARGE_STREET_SLASH)
+        if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
+        if EnumAction.FINISH_CHANCE_SLASH is enum_action:
+            kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
+
     def test(self, agent):
         points = []
         break_counter = 0
