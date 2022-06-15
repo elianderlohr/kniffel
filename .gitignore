@@ -1,7 +1,6 @@
-ai/__pycache__/*
-kniffel/__pycache__/*
 .vscode
 .idea
-.pyc
-.cpython-310.pyc
 *.pyc
+*/*/*/__pycache__/
+*/*/__pycache__/
+*/__pycache__/

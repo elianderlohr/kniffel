@@ -74,9 +74,16 @@ class Kniffel:
         status.append(points)
         return status
 
-    def get_turn_as_array(self, id: int, with_option=True):
+    def get_turn_as_array(self, id: int, with_option=True, only_last_two=False):
+        turn = []
+        
+        attempt1 = None
+        attempt2 = None
+        attempt3 = None
+        selected_option = None
+        
         if 0 <= id < len(self.turns):
-            turn = []
+            
             attempt1 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
                 if len(self.turns[id].attempts) <= 0
@@ -103,19 +110,39 @@ class Kniffel:
                         [self.turns[id].selected_option.get_id()], dtype=np.int8
                     )
                 )
-
-                turn = list(
-                    itertools.chain(attempt1, attempt2, attempt3, selected_option)
-                )
-            else:
-                turn = list(itertools.chain(attempt1, attempt2, attempt3))
         else:
             attempt1 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
             attempt2 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
             attempt3 = np.array([0, 0, 0, 0, 0], dtype=np.int8)
             selected_option = np.array([0], dtype=np.int8)
 
-            turn = list(itertools.chain(attempt1, attempt2, attempt3, selected_option))
+        if with_option:
+            if only_last_two:
+                if attempt3[0] == 0:
+                    turn = list(
+                        itertools.chain(attempt1, attempt2, selected_option)
+                    )
+                else:
+                    turn = list(
+                        itertools.chain(attempt2, attempt3, selected_option)
+                    )
+            else:
+                turn = list(
+                    itertools.chain(attempt1, attempt2, attempt3, selected_option)
+                )
+        else:
+            if only_last_two:
+                if attempt3[0] == 0:
+                    turn = list(
+                        itertools.chain(attempt1, attempt2)
+                    )
+                else:
+                    turn = list(
+                        itertools.chain(attempt2, attempt3)
+                    )
+            else:
+                turn = list(itertools.chain(attempt1, attempt2, attempt3))
+
 
         return turn
 
@@ -139,11 +166,12 @@ class Kniffel:
         return turns
 
     def get_array_v2(self):
-
-        status = []
-
         latest_turn_id = len(self.turns) - 1
-        status = self.get_turn_as_array(latest_turn_id, False)
+
+        if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
+            latest_turn_id += 1
+
+        status = self.get_turn_as_array(latest_turn_id, with_option=False, only_last_two=False)
 
         self.get_turn_option(status, 0)
         self.get_turn_option(status, 1)

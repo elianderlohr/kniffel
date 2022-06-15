@@ -457,7 +457,9 @@ class KniffelAI:
                 n_state, reward, done, info = env.step(action)
                 score += reward
                 print(f"Try: {try_out}")
-                print(reward)
+                print(f"Action: {action}")
+                print(f"Reward: {reward}")
+                print(n_state)
                 try_out += 1
 
             print("Episode:{} Score:{}".format(episode, score))
@@ -555,9 +557,9 @@ if __name__ == "__main__":
         "reward_large_street": 1.1,
     }
 
-    ai.play(
-       path="weights\p_date=2022-06-14-13_50_11", episodes=5, env_config=env_config, random=True
-    )
+    #ai.play(
+    #   path="weights\p_date=2022-06-14-13_50_11", episodes=5, env_config=env_config, random=True
+    #)
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
@@ -574,4 +576,4 @@ if __name__ == "__main__":
         "unit_2": 16,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
