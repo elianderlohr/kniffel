@@ -5,7 +5,7 @@
 jobs:
   CloneRepo:
     resources:
-      instance-type: C5
+      instance-type: Free-RTX5000
     outputs:
       repo:
         type: volume
@@ -14,7 +14,7 @@ jobs:
       url: context.event.github.url
   HelloWorld:
     resources:
-      instance-type: C5
+      instance-type: Free-RTX5000
     needs:
       - CloneRepo
     inputs:
