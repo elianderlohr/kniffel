@@ -31,6 +31,7 @@ jobs:
     resources:
       instance-type: C4
     needs:
+      - InstallDept
       - CloneRepo
     inputs:
       repo: CloneRepo.outputs.repo
