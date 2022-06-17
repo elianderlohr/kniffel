@@ -12,7 +12,7 @@ jobs:
     uses: git-checkout@v1
     with:
       url: context.event.github.url
-  InstallDept:
+  RunScript:
     resources:
       instance-type: C4
     needs:
@@ -26,16 +26,5 @@ jobs:
         pip install keras-rl2
         pip install gym
         pip install sympy
-      image: tensorflow/tensorflow:1.14.0-py3
-  RunScript:
-    resources:
-      instance-type: C4
-    needs:
-      - InstallDept
-      - CloneRepo
-    inputs:
-      repo: CloneRepo.outputs.repo
-    uses: script@v1
-    with:
-      script: python /inputs/repo/ai/commands/train.py
+        python /inputs/repo/ai/commands/train.py
       image: tensorflow/tensorflow:1.14.0-py3
