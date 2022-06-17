@@ -22,10 +22,10 @@ jobs:
     uses: script@v1
     with:
       script: |
-        python pip install keras-rl
-        python pip install keras-rl2
-        python pip install gym
-        python pip install sympy
+        pip install keras-rl
+        pip install keras-rl2
+        pip install gym
+        pip install sympy
       image: tensorflow/tensorflow:1.14.0-py3
   RunScript:
     resources:
