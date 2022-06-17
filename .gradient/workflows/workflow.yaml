@@ -12,7 +12,7 @@ jobs:
     uses: git-checkout@v1
     with:
       url: context.event.github.url
-  HelloWorld:
+  RunScript:
     resources:
       instance-type: C4
     needs:
@@ -21,5 +21,9 @@ jobs:
       repo: CloneRepo.outputs.repo
     uses: script@v1
     with:
-      script: python /inputs/repo/hello.py
+      script: pip install pip install keras-rl
+      script: pip install keras-rl2
+      script: pip install gym
+      script: pip install sympy
+      script: python ai\commands\train.py
       image: tensorflow/tensorflow:1.14.0-py3
