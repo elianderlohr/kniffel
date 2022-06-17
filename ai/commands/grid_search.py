@@ -1,3 +1,14 @@
+import os
+import sys
+import inspect
+
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    ),
+)
+
 import warnings
 import numpy as np
 from ai import KniffelAI
