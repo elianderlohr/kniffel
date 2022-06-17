@@ -22,9 +22,5 @@ jobs:
     uses: script@v1
     with:
       script:
-        - python pip install keras-rl
-        - python pip install keras-rl2
-        - python pip install gym
-        - python pip install sympy
         - python /inputs/repo/ai/commands/train.py
       image: tensorflow/tensorflow:1.14.0-py3
