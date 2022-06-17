@@ -26,5 +26,5 @@ jobs:
         - pip install keras-rl2
         - pip install gym
         - pip install sympy
-        - python ai\commands\train.py
+        - python /inputs/repo/ai/commands/train.py
       image: tensorflow/tensorflow:1.14.0-py3
