@@ -2,10 +2,11 @@
   github:
     branches:
       only: feature/new-ai
+      
 jobs:
   CloneRepo:
     resources:
-      instance-type: Free-RTX5000
+      instance-type: C4
     outputs:
       repo:
         type: volume
@@ -14,7 +15,7 @@ jobs:
       url: context.event.github.url
   HelloWorld:
     resources:
-      instance-type: Free-RTX5000
+      instance-type: C4
     needs:
       - CloneRepo
     inputs:
