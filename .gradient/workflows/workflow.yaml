@@ -22,7 +22,7 @@ jobs:
     uses: script@v1
     with:
       script: 
-        - pip install pip install keras-rl
+        - pip install keras-rl
         - pip install keras-rl2
         - pip install gym
         - pip install sympy
