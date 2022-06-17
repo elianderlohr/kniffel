@@ -21,9 +21,10 @@ jobs:
       repo: CloneRepo.outputs.repo
     uses: script@v1
     with:
-      script: pip install pip install keras-rl
-      script: pip install keras-rl2
-      script: pip install gym
-      script: pip install sympy
-      script: python ai\commands\train.py
+      script: 
+        - pip install pip install keras-rl
+        - pip install keras-rl2
+        - pip install gym
+        - pip install sympy
+        - python ai\commands\train.py
       image: tensorflow/tensorflow:1.14.0-py3
