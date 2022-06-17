@@ -8,7 +8,7 @@ jobs:
       instance-type: C4
     outputs:
       repo:
-        type: volume
+        type: volume^^
     uses: git-checkout@v1
     with:
       url: context.event.github.url
@@ -21,10 +21,10 @@ jobs:
       repo: CloneRepo.outputs.repo
     uses: script@v1
     with:
-      script: 
-        - pip install keras-rl
-        - pip install keras-rl2
-        - pip install gym
-        - pip install sympy
+      script:
+        - python pip install keras-rl
+        - python pip install keras-rl2
+        - python pip install gym
+        - python pip install sympy
         - python /inputs/repo/ai/commands/train.py
       image: tensorflow/tensorflow:1.14.0-py3
