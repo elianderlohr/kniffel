@@ -1,8 +1,8 @@
-'on':
+on:
   github:
     branches:
       only: feature/new-ai
-      
+
 jobs:
   CloneRepo:
     resources:
