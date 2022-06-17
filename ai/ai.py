@@ -561,7 +561,10 @@ if __name__ == "__main__":
     }
 
     ai.play(
-      path="weights\p_date=2022-06-15-10_47_41", episodes=1, env_config=env_config, random=True
+        path="weights\p_date=2022-06-15-10_47_41",
+        episodes=1,
+        env_config=env_config,
+        random=True,
     )
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
