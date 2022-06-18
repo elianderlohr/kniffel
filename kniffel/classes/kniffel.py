@@ -361,7 +361,7 @@ class Kniffel:
             return True
 
     def is_finished(self):
-        if self.turns_left == 0:
+        if self.turns_left() == 0:
             return True
         else:
             return False

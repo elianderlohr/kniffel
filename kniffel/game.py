@@ -34,6 +34,8 @@ def play():
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
 
+    print(kniffel.is_finished())
+
     kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
     kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
 
@@ -60,6 +62,7 @@ def play():
     print(np.shape(d))
     print(d)
 
+    print(kniffel.is_finished())
 
 if __name__ == "__main__":
     play()
