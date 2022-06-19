@@ -76,14 +76,14 @@ class Kniffel:
 
     def get_turn_as_array(self, id: int, with_option=True, only_last_two=False):
         turn = []
-        
+
         attempt1 = None
         attempt2 = None
         attempt3 = None
         selected_option = None
-        
+
         if 0 <= id < len(self.turns):
-            
+
             attempt1 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
                 if len(self.turns[id].attempts) <= 0
@@ -119,13 +119,9 @@ class Kniffel:
         if with_option:
             if only_last_two:
                 if attempt3[0] == 0:
-                    turn = list(
-                        itertools.chain(attempt1, attempt2, selected_option)
-                    )
+                    turn = list(itertools.chain(attempt1, attempt2, selected_option))
                 else:
-                    turn = list(
-                        itertools.chain(attempt2, attempt3, selected_option)
-                    )
+                    turn = list(itertools.chain(attempt2, attempt3, selected_option))
             else:
                 turn = list(
                     itertools.chain(attempt1, attempt2, attempt3, selected_option)
@@ -133,37 +129,13 @@ class Kniffel:
         else:
             if only_last_two:
                 if attempt3[0] == 0:
-                    turn = list(
-                        itertools.chain(attempt1, attempt2)
-                    )
+                    turn = list(itertools.chain(attempt1, attempt2))
                 else:
-                    turn = list(
-                        itertools.chain(attempt2, attempt3)
-                    )
+                    turn = list(itertools.chain(attempt2, attempt3))
             else:
                 turn = list(itertools.chain(attempt1, attempt2, attempt3))
 
-
         return turn
-
-    def get_dict(self):
-        turns = {
-            "turn1": self.get_turn_as_dict(0),
-            "turn2": self.get_turn_as_dict(1),
-            "turn3": self.get_turn_as_dict(2),
-            "turn4": self.get_turn_as_dict(3),
-            "turn5": self.get_turn_as_dict(4),
-            "turn6": self.get_turn_as_dict(5),
-            "turn7": self.get_turn_as_dict(6),
-            "turn8": self.get_turn_as_dict(7),
-            "turn9": self.get_turn_as_dict(8),
-            "turn10": self.get_turn_as_dict(9),
-            "turn11": self.get_turn_as_dict(10),
-            "turn12": self.get_turn_as_dict(11),
-            "turn13": self.get_turn_as_dict(12),
-        }
-
-        return turns
 
     def get_array_v2(self):
         latest_turn_id = len(self.turns) - 1
@@ -171,7 +143,9 @@ class Kniffel:
         if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
             latest_turn_id += 1
 
-        status = self.get_turn_as_array(latest_turn_id, with_option=False, only_last_two=False)
+        status = self.get_turn_as_array(
+            latest_turn_id, with_option=False, only_last_two=False
+        )
 
         self.get_turn_option(status, 0)
         self.get_turn_option(status, 1)
@@ -188,26 +162,6 @@ class Kniffel:
         self.get_turn_option(status, 12)
 
         return np.array([np.array(status)])
-
-    def get_array(self):
-        turns = []
-
-        turns.append(self.get_turn_as_array(0))
-        turns.append(self.get_turn_as_array(1))
-        turns.append(self.get_turn_as_array(2))
-        turns.append(self.get_turn_as_array(3))
-        turns.append(self.get_turn_as_array(4))
-        turns.append(self.get_turn_as_array(5))
-        turns.append(self.get_turn_as_array(6))
-        turns.append(self.get_turn_as_array(7))
-        turns.append(self.get_turn_as_array(8))
-        turns.append(self.get_turn_as_array(9))
-        turns.append(self.get_turn_as_array(10))
-        turns.append(self.get_turn_as_array(11))
-        turns.append(self.get_turn_as_array(12))
-
-        # return tf.convert_to_tensor(np.array(turns, dtype=np.int8), dtype=tf.int8)
-        return np.asarray(turns, dtype=np.int32).reshape(13, 16)
 
     def start(self):
         """
@@ -233,6 +187,7 @@ class Kniffel:
             print("Attempt:")
             print(f"   Keep: {keep}")
             print(f"   Array: {self.get_array_v2()}")
+            print(f"   Status: {self.status()}")
 
     def finish_turn(self, option: KniffelOptions) -> int:
         """
@@ -248,6 +203,7 @@ class Kniffel:
                     print("Finish:")
                     print(f"   Action: {option}")
                     print(f"   Array: {self.get_array_v2()}")
+                    print(f"   Status: {self.status()}")
 
                 return kniffel_option.points
 
@@ -300,7 +256,7 @@ class Kniffel:
                             return False
 
                 return True
-                
+
         return False
 
     def is_bonus(self):
@@ -361,7 +317,7 @@ class Kniffel:
             return True
 
     def is_finished(self):
-        if self.turns_left == 0:
+        if self.turns_left() == 0:
             return True
         else:
             return False
@@ -376,59 +332,85 @@ class Kniffel:
 
         check = dict()
 
-        check[KniffelOptions.ONES.value] = True if KniffelCheck().check_1(ds).is_possible else False
-        check[KniffelOptions.TWOS.value] = True if KniffelCheck().check_2(ds).is_possible else False
-        check[KniffelOptions.THREES.value] = True if KniffelCheck().check_3(ds).is_possible else False
-        check[KniffelOptions.FOURS.value] = True if KniffelCheck().check_4(ds).is_possible else False
-        check[KniffelOptions.FIVES.value] = True if KniffelCheck().check_5(ds).is_possible else False
-        check[KniffelOptions.SIXES.value] = True if KniffelCheck().check_6(ds).is_possible else False
-        check[KniffelOptions.THREE_TIMES.value] = True if KniffelCheck().check_three_times(ds).is_possible else False
-        check[KniffelOptions.FOUR_TIMES.value] = True if KniffelCheck().check_four_times(ds).is_possible else False
-        check[KniffelOptions.FULL_HOUSE.value] = True if KniffelCheck().check_full_house(ds).is_possible else False
-        check[KniffelOptions.SMALL_STREET.value] = True if KniffelCheck().check_small_street(ds).is_possible else False
-        check[KniffelOptions.LARGE_STREET.value] = True if KniffelCheck().check_large_street(ds).is_possible else False
-        check[KniffelOptions.KNIFFEL.value] = True if KniffelCheck().check_kniffel(ds).is_possible else False
-        check[KniffelOptions.CHANCE.value] = True if KniffelCheck().check_chance(ds).is_possible else False
+        check[KniffelOptions.ONES.value] = (
+            True if KniffelCheck().check_1(ds).is_possible else False
+        )
+        check[KniffelOptions.TWOS.value] = (
+            True if KniffelCheck().check_2(ds).is_possible else False
+        )
+        check[KniffelOptions.THREES.value] = (
+            True if KniffelCheck().check_3(ds).is_possible else False
+        )
+        check[KniffelOptions.FOURS.value] = (
+            True if KniffelCheck().check_4(ds).is_possible else False
+        )
+        check[KniffelOptions.FIVES.value] = (
+            True if KniffelCheck().check_5(ds).is_possible else False
+        )
+        check[KniffelOptions.SIXES.value] = (
+            True if KniffelCheck().check_6(ds).is_possible else False
+        )
+        check[KniffelOptions.THREE_TIMES.value] = (
+            True if KniffelCheck().check_three_times(ds).is_possible else False
+        )
+        check[KniffelOptions.FOUR_TIMES.value] = (
+            True if KniffelCheck().check_four_times(ds).is_possible else False
+        )
+        check[KniffelOptions.FULL_HOUSE.value] = (
+            True if KniffelCheck().check_full_house(ds).is_possible else False
+        )
+        check[KniffelOptions.SMALL_STREET.value] = (
+            True if KniffelCheck().check_small_street(ds).is_possible else False
+        )
+        check[KniffelOptions.LARGE_STREET.value] = (
+            True if KniffelCheck().check_large_street(ds).is_possible else False
+        )
+        check[KniffelOptions.KNIFFEL.value] = (
+            True if KniffelCheck().check_kniffel(ds).is_possible else False
+        )
+        check[KniffelOptions.CHANCE.value] = (
+            True if KniffelCheck().check_chance(ds).is_possible else False
+        )
 
-        check[KniffelOptions.ONES_SLASH.value] = False if KniffelCheck().check_1(ds).is_possible else True
-        check[KniffelOptions.TWOS_SLASH.value] = False if KniffelCheck().check_2(ds).is_possible else True
-        check[KniffelOptions.THREES_SLASH.value] = False if KniffelCheck().check_3(ds).is_possible else True
-        check[KniffelOptions.FOURS_SLASH.value] = False if KniffelCheck().check_4(ds).is_possible else True
-        check[KniffelOptions.FIVES_SLASH.value] = False if KniffelCheck().check_5(ds).is_possible else True
-        check[KniffelOptions.SIXES_SLASH.value] = False if KniffelCheck().check_6(ds).is_possible else True
-        check[KniffelOptions.THREE_TIMES_SLASH.value] = False if KniffelCheck().check_three_times(ds).is_possible else True
-        check[KniffelOptions.FOUR_TIMES_SLASH.value] = False if KniffelCheck().check_four_times(ds).is_possible else True
-        check[KniffelOptions.FULL_HOUSE_SLASH.value] = False if KniffelCheck().check_full_house(ds).is_possible else True
-        check[KniffelOptions.SMALL_STREET_SLASH.value] = False if KniffelCheck().check_small_street(ds).is_possible else True
-        check[KniffelOptions.LARGE_STREET_SLASH.value] = False if KniffelCheck().check_large_street(ds).is_possible else True
-        check[KniffelOptions.KNIFFEL_SLASH.value] = False if KniffelCheck().check_kniffel(ds).is_possible else True
-        check[KniffelOptions.CHANCE_SLASH.value] = False if KniffelCheck().check_chance(ds).is_possible else True
-
-        return check
-
-    def check(self):
-        """
-        Check latest dice set for possible points
-        """
-        latest_turn = self.turns[-1]
-
-        ds = latest_turn.attempts[-1]
-
-        check = dict()
-
-        check["ones"] = KniffelCheck().check_1(ds)
-        check["twos"] = KniffelCheck().check_2(ds)
-        check["threes"] = KniffelCheck().check_3(ds)
-        check["fours"] = KniffelCheck().check_4(ds)
-        check["fives"] = KniffelCheck().check_5(ds)
-        check["sixes"] = KniffelCheck().check_6(ds)
-        check["three-time"] = KniffelCheck().check_three_times(ds)
-        check["four-time"] = KniffelCheck().check_four_times(ds)
-        check["full-house"] = KniffelCheck().check_full_house(ds)
-        check["small-street"] = KniffelCheck().check_small_street(ds)
-        check["large-street"] = KniffelCheck().check_large_street(ds)
-        check["kniffel"] = KniffelCheck().check_kniffel(ds)
-        check["chance"] = KniffelCheck().check_chance(ds)
+        check[KniffelOptions.ONES_SLASH.value] = (
+            False if KniffelCheck().check_1(ds).is_possible else True
+        )
+        check[KniffelOptions.TWOS_SLASH.value] = (
+            False if KniffelCheck().check_2(ds).is_possible else True
+        )
+        check[KniffelOptions.THREES_SLASH.value] = (
+            False if KniffelCheck().check_3(ds).is_possible else True
+        )
+        check[KniffelOptions.FOURS_SLASH.value] = (
+            False if KniffelCheck().check_4(ds).is_possible else True
+        )
+        check[KniffelOptions.FIVES_SLASH.value] = (
+            False if KniffelCheck().check_5(ds).is_possible else True
+        )
+        check[KniffelOptions.SIXES_SLASH.value] = (
+            False if KniffelCheck().check_6(ds).is_possible else True
+        )
+        check[KniffelOptions.THREE_TIMES_SLASH.value] = (
+            False if KniffelCheck().check_three_times(ds).is_possible else True
+        )
+        check[KniffelOptions.FOUR_TIMES_SLASH.value] = (
+            False if KniffelCheck().check_four_times(ds).is_possible else True
+        )
+        check[KniffelOptions.FULL_HOUSE_SLASH.value] = (
+            False if KniffelCheck().check_full_house(ds).is_possible else True
+        )
+        check[KniffelOptions.SMALL_STREET_SLASH.value] = (
+            False if KniffelCheck().check_small_street(ds).is_possible else True
+        )
+        check[KniffelOptions.LARGE_STREET_SLASH.value] = (
+            False if KniffelCheck().check_large_street(ds).is_possible else True
+        )
+        check[KniffelOptions.KNIFFEL_SLASH.value] = (
+            False if KniffelCheck().check_kniffel(ds).is_possible else True
+        )
+        check[KniffelOptions.CHANCE_SLASH.value] = (
+            False if KniffelCheck().check_chance(ds).is_possible else True
+        )
 
         return check
 
@@ -447,7 +429,9 @@ class Kniffel:
         """
         Print the check of possible options
         """
-        options = {k: v for k, v in self.check().items() if v.is_possible == True}
+        options = {
+            k: v for k, v in self.system_check().items() if v.is_possible == True
+        }
         print(options)
 
     def to_list(self):
@@ -468,3 +452,9 @@ class Kniffel:
             print("# Turn: " + str(i) + "/13")
             round.print()
             i += 1
+
+    def status(self):
+        status = {}
+        status["game-over"] = self.is_finished()
+        status["bonus"] = self.is_bonus()
+        return status

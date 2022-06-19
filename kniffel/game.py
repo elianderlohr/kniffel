@@ -1,4 +1,4 @@
-#from click import option
+# from click import option
 from classes.kniffel import Kniffel
 from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
@@ -49,16 +49,8 @@ def play():
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.CHANCE)
 
-    # kniffel.add_turn([1, 1, 1, 1, 1])
-
-    import numpy as np
-
+    print()
     kniffel.print()
-    print(kniffel.get_points())
-    print(kniffel.is_bonus())
-    d = kniffel.get_array_v2()
-    print(np.shape(d))
-    print(d)
 
 
 if __name__ == "__main__":
