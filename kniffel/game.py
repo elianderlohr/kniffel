@@ -56,5 +56,6 @@ def play():
 
     print(kniffel.is_finished())
 
+
 if __name__ == "__main__":
     play()

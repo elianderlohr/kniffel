@@ -85,6 +85,7 @@ class EnumAction(Enum):
     FINISH_KNIFFEL_SLASH = 56
     FINISH_CHANCE_SLASH = 57
 
+
 class KniffelEnv(Env):
 
     kniffel = None
@@ -93,10 +94,10 @@ class KniffelEnv(Env):
         self,
         env_config,
         reward_step=0,
-        reward_round=0.5,
-        reward_roll_dice=0.25,
-        reward_game_over=-2,
-        reward_slash=-10,
+        reward_round=0,
+        reward_roll_dice=0.1,
+        reward_game_over=-20,
+        reward_slash=-5,
         reward_bonus=2,
         reward_finish=10,
         reward_zero_dice=-0.5,
@@ -109,7 +110,7 @@ class KniffelEnv(Env):
         reward_kniffel=1.5,
         reward_small_street=1,
         reward_large_street=1.1,
-        logging = False
+        logging=False,
     ):
         """Initialize Kniffel Envioronment
 
@@ -189,6 +190,26 @@ class KniffelEnv(Env):
         self._reward_kniffel = self.put_parameter(
             env_config, "reward_kniffel", reward_kniffel
         )
+
+        print()
+        print("_______________________")
+        print("Using the following environment configs:")
+        print(f"reward_step: {self._reward_step}")
+        print(f"reward_roll_dice: {self._reward_roll_dice}")
+        print(f"reward_game_over: {self._reward_game_over}")
+        print(f"reward_slash: {self._reward_slash}")
+        print(f"reward_finish: {self._reward_finish}")
+        print(f"reward_zero_dice: {self._reward_zero_dice}")
+        print(f"reward_two_dice: {self._reward_two_dice}")
+        print(f"reward_three_dice: {self._reward_three_dice}")
+        print(f"reward_four_dice: {self._reward_four_dice}")
+        print(f"reward_five_dice: {self._reward_five_dice}")
+        print(f"reward_six_dice: {self._reward_six_dice}")
+        print(f"reward_small_street: {self._reward_small_street}")
+        print(f"reward_large_street: {self._reward_large_street}")
+        print(f"reward_kniffel: {self._reward_kniffel}")
+        print("_______________________")
+        print()
 
     def put_parameter(self, parameters: dict, key: str, alternative: str):
         if key in parameters.keys():

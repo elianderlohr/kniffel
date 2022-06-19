@@ -297,7 +297,7 @@ class KniffelAI:
         enum_action = EnumAction(action)
 
         if logging:
-            print(f"    Action: {enum_action}")
+            print(f"      Action: {enum_action}")
 
         if EnumAction.FINISH_ONES is enum_action:
             kniffel.finish_turn(KniffelOptions.ONES)
@@ -439,11 +439,11 @@ class KniffelAI:
         return break_counter, mean(points), max(points), min(points)
 
     # Use Model
-    def play(self, path, episodes, env_config, random=False):
+    def play(self, path, episodes, env_config, random=False, logging=False):
         if random:
             self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes, env_config)
+            self.use_model(path, episodes, env_config, logging)
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(env_config, logging=True)
@@ -473,7 +473,7 @@ class KniffelAI:
             round += 1
 
     def use_model(self, path, episodes, env_config, logging=False):
-        env = KniffelEnv(env_config)
+        env = KniffelEnv(env_config, logging=logging)
 
         f = open(f"{path}/configuration.json")
         hyperparameter = dict(json.load(f))
@@ -500,28 +500,34 @@ class KniffelAI:
             kniffel = Kniffel()
             rounds_counter = 0
             while True:
+                state = kniffel.get_array_v2()
                 if logging:
                     print(f"    Round: {rounds_counter}")
 
                 try:
-                    state = kniffel.get_array_v2()
                     self.predict_and_apply(agent, kniffel, state, logging)
                     rounds_counter += 1
+                    print(f"    State: {state}")
+                    print(f"       Points: {kniffel.get_points()}")
+                    print("       Prediction Allowed: True")
                 except:
                     points.append(kniffel.get_points())
                     break_counter += 1
                     rounds_counter = 0
+
+                    print("       Prediction Allowed: False")
+
                     break
 
                 rounds.append(rounds_counter)
                 points.append(kniffel.get_points())
 
         print()
-        print(f"break_counter: {break_counter}")
-        print(f"AVG. {sum(points) / len(points)}")
-        print(f"MAX: {max(points)}")
-        print(f"MIN: {min(points)}")
-        print(f"AVG rounds: {mean(rounds)}")
+        print(f"Finished games: {episodes - break_counter}")
+        print(f"Average reward: {sum(points) / len(points)}")
+        print(f"Max reward: {max(points)}")
+        print(f"Min reward: {min(points)}")
+        print(f"Average rounds: {mean(rounds)}")
         print(f"Max rounds: {max(rounds)}")
         print(f"Min rounds: {min(rounds)}")
 
@@ -533,30 +539,37 @@ if __name__ == "__main__":
 
     units = list(range(16, 64, 16))
 
+    units = list(range(16, 64, 16))
+
     base_hp = {
         "windows_length": [1],
         "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
+        "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
         "target_model_update": np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [2],
+        "layers": [1, 2],
         "unit_1": units,
         "unit_2": units,
     }
 
     ai = KniffelAI(
-        save=True, load=False, predefined_layers=True, hyperparater_base=base_hp
+        save=True,
+        load=False,
+        predefined_layers=True,
+        hyperparater_base=base_hp,
     )
 
     env_config = {
         "reward_step": 0,
-        "reward_round": 0.5,
-        "reward_roll_dice": 0.25,
-        "reward_game_over": -100,
+        "reward_round": 0,
+        "reward_roll_dice": 0.1,
+        "reward_game_over": -20,
+        "reward_slash": -5,
         "reward_bonus": 2,
         "reward_finish": 10,
-        "reward_zero_dice": -0.5,
+        "reward_zero_dice": -5,
         "reward_one_dice": -0.2,
         "reward_two_dice": -0.1,
         "reward_three_dice": 0.5,
@@ -568,20 +581,26 @@ if __name__ == "__main__":
         "reward_large_street": 1.1,
     }
 
-    ai.play(path="weights/test", episodes=1_000, env_config=env_config)
+    # ai.play(
+    #    path="weights/p_date=2022-06-19-21_34_39",
+    #    episodes=10,
+    #    env_config=env_config,
+    #    logging=True,
+    # )
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0009,
-        "batch_size": 32,
-        "target_model_update": 0.0009,
+        "adam_learning_rate": 0.0005,
+        "batch_size": 128,
+        "target_model_update": 0.00001,
+        "adam_epsilon": 0.01,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 2,
-        "unit_1": 32,
-        "unit_2": 16,
+        "unit_1": 48,
+        "unit_2": 48,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
