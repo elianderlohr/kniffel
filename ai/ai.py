@@ -33,7 +33,7 @@ from kniffel.classes.kniffel import Kniffel
 from hyperparameter import Hyperparameter
 from env import EnumAction
 from env import KniffelEnv
-
+import kniffel.classes.custom_exceptions as ex
 
 class KniffelAI:
     # Save model
@@ -287,7 +287,7 @@ class KniffelAI:
 
             self._append_file(f"{path}/configuration.json", json_object)
 
-            self.play(path, 1000, env_config)
+            self.play(path, 1_000, env_config, logging=False)
 
         return csv
 
@@ -423,16 +423,20 @@ class KniffelAI:
         points = []
         break_counter = 0
 
-        for i in range(self._test_episodes):
+        for _ in range(self._test_episodes):
             kniffel = Kniffel()
             while True:
                 try:
-                    state = kniffel.get_array_v2()
+                    state = kniffel.get_state()
                     self.predict_and_apply(agent, kniffel, state)
-                except Exception as e:
-                    points.append(kniffel.get_points())
-                    break_counter += 1
-                    break
+                except BaseException as e:
+                    if e == ex.GameFinishedException:
+                        points.append(kniffel.get_points())
+                        break
+                    else:
+                        points.append(kniffel.get_points())
+                        break_counter += 1
+                        break
 
                 points.append(kniffel.get_points())
 
@@ -443,7 +447,7 @@ class KniffelAI:
         if random:
             self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes, env_config, logging)
+            self.use_model(path, episodes, env_config, logging=logging)
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(env_config, logging=True)
@@ -473,6 +477,7 @@ class KniffelAI:
             round += 1
 
     def use_model(self, path, episodes, env_config, logging=False):
+
         env = KniffelEnv(env_config, logging=logging)
 
         f = open(f"{path}/configuration.json")
@@ -498,26 +503,38 @@ class KniffelAI:
                 print(f"Game: {e}")
 
             kniffel = Kniffel()
-            rounds_counter = 0
+            rounds_counter = 1
             while True:
-                state = kniffel.get_array_v2()
+                state = kniffel.get_state()
                 if logging:
                     print(f"    Round: {rounds_counter}")
 
                 try:
                     self.predict_and_apply(agent, kniffel, state, logging)
                     rounds_counter += 1
-                    print(f"    State: {state}")
-                    print(f"       Points: {kniffel.get_points()}")
-                    print("       Prediction Allowed: True")
-                except:
-                    points.append(kniffel.get_points())
-                    break_counter += 1
-                    rounds_counter = 0
+                    if logging:
+                        print(f"    State: {state}")
+                        print(f"       Points: {kniffel.get_points()}")
+                        print(f"       Prediction Allowed: True")
+                except BaseException as e:
+                    if e == ex.GameFinishedException:
+                        points.append(kniffel.get_points())
+                        rounds_counter = 1
 
-                    print("       Prediction Allowed: False")
+                        if logging:
+                            print("       Prediction Allowed: False")
+                            print("       Game Finished: True")
 
-                    break
+                        break
+                    else:
+                        points.append(kniffel.get_points())
+                        break_counter += 1
+                        rounds_counter = 1
+
+                        if logging:
+                            print("       Prediction Allowed: False")
+
+                        break
 
                 rounds.append(rounds_counter)
                 points.append(kniffel.get_points())
@@ -568,7 +585,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        save=False,
+        save=True,
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
@@ -594,12 +611,12 @@ if __name__ == "__main__":
         "reward_large_street": 4,
     }
 
-    # ai.play(
-    #    path="weights/p_date=2022-06-19-21_34_39",
-    #    episodes=10,
+    #ai.play(
+    #    path="weights/p_date=2022-06-20-13_55_41",
+    #    episodes=1_000,
     #    env_config=env_config,
-    #    logging=True,
-    # )
+    #    logging=False,
+    #)
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
@@ -616,4 +633,4 @@ if __name__ == "__main__":
         "unit_2": 32,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)

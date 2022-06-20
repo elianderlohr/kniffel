@@ -5,7 +5,7 @@ from classes.dice_set import DiceSet
 from classes.kniffel_check import KniffelCheck
 from classes.kniffel_option import KniffelOptionClass
 from enum import Enum
-
+import classes.custom_exceptions as ex
 
 class Attempt:
     attempts = []
@@ -48,7 +48,7 @@ class Attempt:
             dice_set = DiceSet()
 
         if self.count() >= 3:
-            raise Exception("Cannot do more then 3 attempts per round.")
+            raise ex.TurnFinishedException("Cannot do more then 3 attempts per round.")
         else:
             if self.is_active() and self.count() > 0 and keep is not None:
                 old_set = self.attempts[-1]

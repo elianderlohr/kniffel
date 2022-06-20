@@ -12,6 +12,7 @@ from classes.options import KniffelOptions
 from classes.dice_set import DiceSet
 from classes.attempt import Attempt
 from classes.kniffel_check import KniffelCheck
+import classes.custom_exceptions as ex
 
 import numpy as np
 import itertools
@@ -24,36 +25,15 @@ class Kniffel:
     def __init__(self, logging: bool = False):
         self.turns = []
         self.logging = logging
-
         self.start()
 
-    def get_turn_as_dict(self, id: int):
-        if 0 <= id < len(self.turns):
-            turn = {
-                "attempt1": [0, 0, 0, 0, 0]
-                if len(self.turns[id].attempts) <= 0
-                else self.turns[id].attempts[0].get_as_array(),
-                "attempt2": [0, 0, 0, 0, 0]
-                if len(self.turns[id].attempts) <= 1
-                else self.turns[id].attempts[1].get_as_array(),
-                "attempt3": [0, 0, 0, 0, 0]
-                if len(self.turns[id].attempts) <= 2
-                else self.turns[id].attempts[2].get_as_array(),
-                "selected_option": 0
-                if self.turns[id].selected_option is None
-                else self.turns[id].selected_option.get_id(),
-            }
-        else:
-            turn = {
-                "attempt1": [0, 0, 0, 0, 0],
-                "attempt2": [0, 0, 0, 0, 0],
-                "attempt3": [0, 0, 0, 0, 0],
-                "selected_option": -1,
-            }
+    def get_selected_option(self, status: list, id: int) -> list:
+        """Return the selected option from the attempt with the defined id
 
-        return turn
-
-    def get_turn_option(self, status, id: int):
+        :param status: list to append the info
+        :param id: if of the attempt
+        :return: return list with infos appended
+        """
         if id < len(self.turns):
             selected_option = (
                 0
@@ -74,7 +54,14 @@ class Kniffel:
         status.append(points)
         return status
 
-    def get_turn_as_array(self, id: int, with_option=True, only_last_two=False):
+    def get_turn_as_array(self, id: int, with_option=True, only_last_two=False) -> list:
+        """Get the turn with defined id as a list
+
+        :param id: id of the attempt to return
+        :param with_option: return selected option as well, defaults to True
+        :param only_last_two: return only the last two attempts, defaults to False
+        :return: list of attempts and optional the selected option
+        """
         turn = []
 
         attempt1 = None
@@ -137,7 +124,11 @@ class Kniffel:
 
         return turn
 
-    def get_array_v2(self):
+    def get_state(self):
+        """Get state of game as list of integers
+
+        :return: state of game as list of integer
+        """
         latest_turn_id = len(self.turns) - 1
 
         if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
@@ -147,19 +138,19 @@ class Kniffel:
             latest_turn_id, with_option=False, only_last_two=False
         )
 
-        self.get_turn_option(status, 0)
-        self.get_turn_option(status, 1)
-        self.get_turn_option(status, 2)
-        self.get_turn_option(status, 3)
-        self.get_turn_option(status, 4)
-        self.get_turn_option(status, 5)
-        self.get_turn_option(status, 6)
-        self.get_turn_option(status, 7)
-        self.get_turn_option(status, 8)
-        self.get_turn_option(status, 9)
-        self.get_turn_option(status, 10)
-        self.get_turn_option(status, 11)
-        self.get_turn_option(status, 12)
+        self.get_selected_option(status, 0)
+        self.get_selected_option(status, 1)
+        self.get_selected_option(status, 2)
+        self.get_selected_option(status, 3)
+        self.get_selected_option(status, 4)
+        self.get_selected_option(status, 5)
+        self.get_selected_option(status, 6)
+        self.get_selected_option(status, 7)
+        self.get_selected_option(status, 8)
+        self.get_selected_option(status, 9)
+        self.get_selected_option(status, 10)
+        self.get_selected_option(status, 11)
+        self.get_selected_option(status, 12)
 
         return np.array([np.array(status)])
 
@@ -179,14 +170,17 @@ class Kniffel:
             if self.is_new_game() or self.is_turn_finished():
                 self.turns.append(Attempt())
 
-            self.turns[-1].add_attempt(keep)
+            try:
+                self.turns[-1].add_attempt(keep)
+            except ex.Error as e:
+                raise e
         else:
-            raise Exception("Cannot play more then 13 rounds. Play a new game!")
+            raise ex.GameFinishedException("Cannot play more then 13 rounds. Play a new game!")
 
         if self.logging:
             print("Attempt:")
             print(f"   Keep: {keep}")
-            print(f"   Array: {self.get_array_v2()}")
+            print(f"   Array: {self.get_state()}")
             print(f"   Status: {self.status()}")
 
     def finish_turn(self, option: KniffelOptions) -> int:
@@ -196,23 +190,24 @@ class Kniffel:
         :param KniffelOptions option: selected option how to finish the turn
         """
         if self.is_option_possible(option):
-            if self.is_new_game() is False and self.is_turn_finished() is False:
+            if self.is_new_game() is False and self.is_turn_finished() is False and self.is_finished() is False:
                 kniffel_option = self.turns[-1].finish_attempt(option)
 
                 if self.logging:
                     print("Finish:")
                     print(f"   Action: {option}")
-                    print(f"   Array: {self.get_array_v2()}")
+                    print(f"   Array: {self.get_state()}")
                     print(f"   Status: {self.status()}")
 
                 return kniffel_option.points
-
+            elif self.is_finished():
+                raise ex.GameFinishedException("Game finished!")
             elif self.is_new_game():
-                raise Exception("Cannot finish new game!")
+                raise ex.NewGameException("Cannot finish new game!")
             elif self.is_turn_finished():
-                raise Exception("Cannot finish finished round!")
+                raise ex.TurnFinishedException("Cannot finish finished round!")
         else:
-            raise Exception(
+            raise ex.SelectedOptionException(
                 "Cannot select the same Option again or not possible for this. Select another Option!"
             )
 

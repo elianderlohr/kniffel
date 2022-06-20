@@ -18,7 +18,7 @@ sys.path.insert(
 
 from kniffel.classes.options import KniffelOptions
 from kniffel.classes.kniffel import Kniffel
-
+import kniffel.classes.custom_exceptions as ex 
 
 class EnumAction(Enum):
     # Finish Actions
@@ -137,7 +137,7 @@ class KniffelEnv(Env):
         )
 
         # Set start
-        self.state = self.kniffel.get_array_v2()
+        self.state = self.kniffel.get_state()
 
         self._reward_step = self.put_parameter(env_config, "reward_step", reward_step)
         self._reward_round = self.put_parameter(
@@ -212,6 +212,13 @@ class KniffelEnv(Env):
         print()
 
     def put_parameter(self, parameters: dict, key: str, alternative: str):
+        """Take passed parameter or take alternative
+
+        :param parameters: dict of parameters
+        :param key: key of the parameter
+        :param alternative: default value for the parameter
+        :return: value of the parameter
+        """
         if key in parameters.keys():
             return parameters[key]
         else:
@@ -439,27 +446,23 @@ class KniffelEnv(Env):
                 )
             ):
                 reward += self._reward_bonus
+        except BaseException as e:
+            if e == ex.GameFinishedException:
+                reward += self._reward_finish
+                done = True
+            else:
+                reward += self._reward_game_over
+                done = True
 
-        except Exception as e:
-            reward += self._reward_game_over
-            done = True
-
-        self.state = self.kniffel.get_array_v2()
-
-        # Check if shower is done
-        if self.kniffel.is_finished():
-            reward += self._reward_finish
-            done = True
-        elif done is False:
-            done = False
+        self.state = self.kniffel.get_state()
 
         # Set placeholder for info
         info = {}
 
-        kniffel_rounds = self.kniffel.get_played_rounds() / 39
-        kniffel_points = self.kniffel.get_points() / 300
+        #kniffel_rounds = self.kniffel.get_played_rounds() / 39
+        #kniffel_points = self.kniffel.get_points() / 300
 
-        reward += self._reward_step + kniffel_points + kniffel_rounds
+        #reward += self._reward_step + kniffel_points + kniffel_rounds
 
         # Return step information
         return self.state, reward, done, info
@@ -474,6 +477,6 @@ class KniffelEnv(Env):
         del self.kniffel
 
         self.kniffel = Kniffel()
-        self.state = self.kniffel.get_array_v2()
+        self.state = self.kniffel.get_state()
 
         return self.state
