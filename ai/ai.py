@@ -539,8 +539,7 @@ if __name__ == "__main__":
 
     units = list(range(16, 64, 16))
 
-    units = list(range(16, 64, 16))
-
+    """
     base_hp = {
         "windows_length": [1],
         "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
@@ -553,9 +552,23 @@ if __name__ == "__main__":
         "unit_1": units,
         "unit_2": units,
     }
+    """
+
+    base_hp = {
+        "windows_length": [1,2,3],
+        "adam_learning_rate": [0.0009],
+        "adam_epsilon":[0.0001],
+        "target_model_update": [0.0007],
+        "batch_size": [32],
+        "dueling_option": ["avg"],
+        "activation": ["linear"],
+        "layers": [2],
+        "unit_1": [32, 64],
+        "unit_2": [32, 64],
+    }
 
     ai = KniffelAI(
-        save=True,
+        save=False,
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
@@ -565,11 +578,11 @@ if __name__ == "__main__":
         "reward_step": 0,
         "reward_round": 4,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -25,
-        "reward_slash": -5,
+        "reward_game_over": -40,
+        "reward_slash": -10,
         "reward_bonus": 2,
         "reward_finish": 10,
-        "reward_zero_dice": -5,
+        "reward_zero_dice": -10,
         "reward_one_dice": -1.5,
         "reward_two_dice": -1,
         "reward_three_dice": 1,
@@ -592,15 +605,15 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0005,
+        "adam_learning_rate": 0.0009,
         "batch_size": 128,
-        "target_model_update": 0.00001,
-        "adam_epsilon": 0.01,
+        "target_model_update": 0.0007,
+        "adam_epsilon": 0.0001,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 2,
-        "unit_1": 48,
-        "unit_2": 48,
+        "unit_1": 64,
+        "unit_2": 32,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
+    # ai.train(hyperparameter=hyperparameter, nb_steps=250_000, env_config=env_config)
