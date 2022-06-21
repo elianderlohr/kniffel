@@ -35,6 +35,7 @@ from env import EnumAction
 from env import KniffelEnv
 import kniffel.classes.custom_exceptions as ex
 
+
 class KniffelAI:
     # Save model
     _save = False
@@ -197,10 +198,23 @@ class KniffelAI:
 
         if self._save:
             history = agent.fit(
-                env, nb_steps=nb_steps, verbose=1, visualize=False, callbacks=callbacks
+                env,
+                nb_steps=nb_steps,
+                verbose=1,
+                visualize=False,
+                callbacks=callbacks,
+                # action_repetition=2,
+                log_interval=10_000,
             )
         else:
-            history = agent.fit(env, nb_steps=nb_steps, verbose=1, visualize=False)
+            history = agent.fit(
+                env,
+                nb_steps=nb_steps,
+                verbose=1,
+                visualize=False,
+                # action_repetition=2,
+                log_interval=10_000,
+            )
 
         return agent, history
 
@@ -251,13 +265,20 @@ class KniffelAI:
             # Create dir
             os.mkdir(path)
 
-            checkpoint_weights_filename = path + "/agent_weights_steps.h5f"
-            log_filename = path + "/agent_log.json"
+            # Create Callbacks
+            checkpoint_weights_filename = path + "/weights_{step}.h5f"
+            log_file = path + "/training_log.json"
 
             callbacks = [
-                ModelIntervalCheckpoint(checkpoint_weights_filename, interval=100_000)
+                ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
             ]
-            callbacks += [FileLogger(log_filename, interval=10_000)]
+
+            callbacks += [FileLogger(log_file, interval=1_000)]
+
+            # Save configuration json
+            json_object = json.dumps(hyperparameter, indent=4)
+
+            self._append_file(f"{path}/configuration.json", json_object)
 
         agent, train_score = self.train_agent(
             actions=actions,
@@ -282,10 +303,6 @@ class KniffelAI:
         if self._save:
             # save weights and configuration as json
             agent.save_weights(f"{path}/weights.h5f", overwrite=False)
-
-            json_object = json.dumps(hyperparameter, indent=4)
-
-            self._append_file(f"{path}/configuration.json", json_object)
 
             self.play(path, 1_000, env_config, logging=False)
 
@@ -558,17 +575,17 @@ if __name__ == "__main__":
 
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": [0.0009], # np.arange(0.0001, 0.001, 0.0002),
-        "adam_epsilon": [0.0001], #[1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+        "adam_learning_rate": [0.0009],  # np.arange(0.0001, 0.001, 0.0002),
+        "adam_epsilon": [0.0001],  # [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
-        "target_model_update": [0.0007], #np.arange(0.0001, 0.001, 0.0002),
+        "target_model_update": [0.0007],  # np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [2],
         "unit_1": units,
         "unit_2": units,
     }
-    
+
     ai = KniffelAI(
         save=True,
         load=False,
@@ -578,32 +595,21 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_step": 0,
-        "reward_round": 4,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -40,
+        "reward_game_over": -50,
         "reward_slash": -10,
-        "reward_bonus": 2,
-        "reward_finish": 10,
-        "reward_zero_dice": -10,
-        "reward_one_dice": -1.5,
-        "reward_two_dice": -1,
-        "reward_three_dice": 1,
-        "reward_four_dice": 2,
-        "reward_five_dice": 3,
-        "reward_six_dice": 4,
-        "reward_kniffel": 6,
-        "reward_small_street": 3,
-        "reward_large_street": 4,
+        "reward_bonus": 20,
+        "reward_finish": 50,
     }
 
-    #ai.play(
-    #    path="weights/p_date=2022-06-20-13_55_41",
+    # ai.play(
+    #    path="weights/p_date=2022-06-21-14_10_39",
     #    episodes=1_000,
     #    env_config=env_config,
     #    logging=False,
-    #)
+    # )
 
-    ai.grid_search_test(nb_steps=20_000, env_config=env_config)
+    # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
@@ -619,4 +625,4 @@ if __name__ == "__main__":
         "unit_3": 16,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)

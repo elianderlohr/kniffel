@@ -175,7 +175,9 @@ class Kniffel:
             except ex.Error as e:
                 raise e
         else:
-            raise ex.GameFinishedException("Cannot play more then 13 rounds. Play a new game!")
+            raise ex.GameFinishedException(
+                "Cannot play more then 13 rounds. Play a new game!"
+            )
 
         if self.logging:
             print("Attempt:")
@@ -190,7 +192,11 @@ class Kniffel:
         :param KniffelOptions option: selected option how to finish the turn
         """
         if self.is_option_possible(option):
-            if self.is_new_game() is False and self.is_turn_finished() is False and self.is_finished() is False:
+            if (
+                self.is_new_game() is False
+                and self.is_turn_finished() is False
+                and self.is_finished() is False
+            ):
                 kniffel_option = self.turns[-1].finish_attempt(option)
 
                 if self.logging:
@@ -288,7 +294,7 @@ class Kniffel:
         """
         How many turns are left
         """
-        return 13 - len(self.turns)
+        return 14 - len(self.turns)
 
     def is_new_game(self):
         """
