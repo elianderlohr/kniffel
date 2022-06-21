@@ -554,36 +554,21 @@ class KniffelAI:
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    units = list(range(16, 64, 16))
+    units = list(range(16, 96, 16))
 
-    """
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": np.arange(0.0001, 0.001, 0.0002),
-        "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+        "adam_learning_rate": [0.0009], # np.arange(0.0001, 0.001, 0.0002),
+        "adam_epsilon": [0.0001], #[1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
-        "target_model_update": np.arange(0.0001, 0.001, 0.0002),
-        "dueling_option": ["avg"],
-        "activation": ["linear"],
-        "layers": [1, 2],
-        "unit_1": units,
-        "unit_2": units,
-    }
-    """
-
-    base_hp = {
-        "windows_length": [1,2,3],
-        "adam_learning_rate": [0.0009],
-        "adam_epsilon":[0.0001],
-        "target_model_update": [0.0007],
-        "batch_size": [32],
+        "target_model_update": [0.0007], #np.arange(0.0001, 0.001, 0.0002),
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [2],
-        "unit_1": [32, 64],
-        "unit_2": [32, 64],
+        "unit_1": units,
+        "unit_2": units,
     }
-
+    
     ai = KniffelAI(
         save=True,
         load=False,
@@ -618,19 +603,20 @@ if __name__ == "__main__":
     #    logging=False,
     #)
 
-    # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
+    ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0009,
+        "adam_learning_rate": 0.0071,
         "batch_size": 128,
-        "target_model_update": 0.0007,
-        "adam_epsilon": 0.0001,
+        "target_model_update": 0.0081,
+        "adam_epsilon": 0.001,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 2,
-        "unit_1": 64,
-        "unit_2": 32,
+        "layers": 3,
+        "unit_1": 32,
+        "unit_2": 16,
+        "unit_3": 16,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)
+    # ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)
