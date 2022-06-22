@@ -252,7 +252,9 @@ class KniffelAI:
 
     def train(self, hyperparameter, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
-        env = KniffelEnv(env_config, config_file_path=f"{self._path_prefix}Kniffel.csv")
+        env = KniffelEnv(
+            env_config, config_file_path=f"{self._path_prefix}ai/Kniffel.csv"
+        )
 
         actions = env.action_space.n
 
