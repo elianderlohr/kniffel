@@ -268,11 +268,11 @@ class KniffelEnv(Env):
                 finished_turn = True
             if EnumAction.FINISH_SMALL_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
-                reward += float(self.config["Kleine Straße"]["perfect"])
+                reward += float(self.config["Kleine Strasse"]["perfect"])
                 finished_turn = True
             if EnumAction.FINISH_LARGE_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
-                reward += float(self.config["Große Straße"]["perfect"])
+                reward += float(self.config["Grosse Strasse"]["perfect"])
                 finished_turn = True
             if EnumAction.FINISH_KNIFFEL is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
