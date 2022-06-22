@@ -1,0 +1,1 @@
+duration;nb_steps;mean_train;max_train;min_train;mean_test_agent;max_test_agent;min_test_agent;mean_test_own;max_test_own;min_test_own;break_counter;n;windows_length;adam_learning_rate;adam_epsilon;batch_size;target_model_update;dueling_option;activation;layers;unit_1;unit_2;unit_3
