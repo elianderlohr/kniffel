@@ -52,6 +52,8 @@ class KniffelAI:
     # path prefix
     _path_prefix = ""
 
+    _config_path = ""
+
     def __init__(
         self,
         save=False,
@@ -60,6 +62,7 @@ class KniffelAI:
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
+        config_path="ai/Kniffel.CSV"
     ):
         self._save = save
         self._load = load
@@ -69,6 +72,7 @@ class KniffelAI:
             base_hp=hyperparater_base,
         )
         self._test_episodes = test_episodes
+        self._config_path = config_path
 
         if path_prefix == "":
             try:
@@ -253,7 +257,7 @@ class KniffelAI:
 
     def train(self, hyperparameter, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
-        env = KniffelEnv(env_config)
+        env = KniffelEnv(env_config, config_file_path=self._config_path)
 
         actions = env.action_space.n
 
@@ -468,7 +472,7 @@ class KniffelAI:
             self.use_model(path, episodes, env_config, logging=logging)
 
     def play_random(self, episodes, env_config):
-        env = KniffelEnv(env_config, logging=True)
+        env = KniffelEnv(env_config, logging=True, config_file_path=self._config_path)
 
         round = 1
         for episode in range(1, episodes + 1):
@@ -496,7 +500,7 @@ class KniffelAI:
 
     def use_model(self, path, episodes, env_config, logging=False):
 
-        env = KniffelEnv(env_config, logging=logging)
+        env = KniffelEnv(env_config, logging=logging, config_file_path=self._config_path)
 
         f = open(f"{path}/configuration.json")
         hyperparameter = dict(json.load(f))
