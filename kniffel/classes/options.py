@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class KniffelOptions(Enum):
     ONES = 1
     TWOS = 2
@@ -13,6 +15,7 @@ class KniffelOptions(Enum):
     LARGE_STREET = 11
     KNIFFEL = 12
     CHANCE = 13
+
     ONES_SLASH = 14
     TWOS_SLASH = 15
     THREES_SLASH = 16

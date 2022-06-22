@@ -95,6 +95,7 @@ class EnumAction(Enum):
 class KniffelEnv(Env):
 
     kniffel = None
+    logging = False
 
     def __init__(
         self,
@@ -117,6 +118,8 @@ class KniffelEnv(Env):
         self.observation_space = spaces.Box(
             low=0, high=30, shape=(1, 41), dtype=np.int32
         )
+
+        self.logging = logging
 
         # Set start
         self.state = self.kniffel.get_state()
@@ -217,6 +220,9 @@ class KniffelEnv(Env):
     def step(self, action):
         reward = 0.0
         has_bonus = self.kniffel.is_bonus()
+
+        if self.logging:
+            print(self.kniffel.get_state())
 
         finished_turn = False
         done = False
@@ -431,7 +437,6 @@ class KniffelEnv(Env):
                 reward += self._reward_bonus
         except BaseException as e:
             if e == ex.GameFinishedException:
-                reward += self.kniffel.get_points()
                 done = True
             else:
                 reward += self._reward_game_over
