@@ -1,0 +1,12 @@
+{
+    "windows_length": 1,
+    "adam_learning_rate": 0.00030000000000000003,
+    "adam_epsilon": 0.01,
+    "batch_size": 32,
+    "target_model_update": 0.0009000000000000002,
+    "dueling_option": "avg",
+    "activation": "linear",
+    "layers": 1,
+    "unit_1": 48,
+    "unit_2": 48
+}
