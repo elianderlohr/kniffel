@@ -118,6 +118,7 @@ class KniffelAI:
             target_model_update=hyperparameter["target_model_update"],
             batch_size=hyperparameter["batch_size"],
             dueling_type=hyperparameter["dueling_option"],
+            enable_double_dqn=True,
         )
 
         return agent
@@ -252,9 +253,7 @@ class KniffelAI:
 
     def train(self, hyperparameter, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
-        env = KniffelEnv(
-            env_config
-        )
+        env = KniffelEnv(env_config)
 
         actions = env.action_space.n
 
@@ -538,6 +537,7 @@ class KniffelAI:
                 except BaseException as e:
                     if e == ex.GameFinishedException:
                         points.append(kniffel.get_points())
+                        rounds.append(rounds_counter)
                         rounds_counter = 1
 
                         if logging:
@@ -547,6 +547,7 @@ class KniffelAI:
                         break
                     else:
                         points.append(kniffel.get_points())
+                        rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
 
@@ -555,14 +556,11 @@ class KniffelAI:
 
                         break
 
-                rounds.append(rounds_counter)
-                points.append(kniffel.get_points())
-
         print()
         print(f"Finished games: {episodes - break_counter}")
-        print(f"Average reward: {sum(points) / len(points)}")
-        print(f"Max reward: {max(points)}")
-        print(f"Min reward: {min(points)}")
+        print(f"Average points: {mean(points)}")
+        print(f"Max points: {max(points)}")
+        print(f"Min points: {min(points)}")
         print(f"Average rounds: {mean(rounds)}")
         print(f"Max rounds: {max(rounds)}")
         print(f"Min rounds: {min(rounds)}")
@@ -577,15 +575,20 @@ if __name__ == "__main__":
 
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": [0.0009],  # np.arange(0.0001, 0.001, 0.0002),
-        "adam_epsilon": [0.0001],  # [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+        "adam_learning_rate": np.arange(
+            0.0001, 0.1, 0.1
+        ),
+        "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
-        "target_model_update": [0.0007],  # np.arange(0.0001, 0.001, 0.0002),
+        "target_model_update": np.arange(
+            100, 1000, 100
+        ),
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [2],
-        "unit_1": units,
-        "unit_2": units,
+        "layers": [3],
+        "unit_1": [96],
+        "unit_2": [80],
+        "unit_3": [64],
     }
 
     ai = KniffelAI(
@@ -604,27 +607,29 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    # ai.play(
-    #    path="weights/p_date=2022-06-21-14_10_39",
-    #    episodes=1_000,
-    #    env_config=env_config,
-    #    logging=False,
-    # )
+    """
+    ai.play(
+        path="weights/p_date=2022-06-22-08_57_42",
+        episodes=1_000,
+        env_config=env_config,
+        logging=False,
+    )
+    """
 
     # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0071,
-        "batch_size": 128,
-        "target_model_update": 0.0081,
+        "adam_learning_rate": 0.00025,
+        "batch_size": 32,
+        "target_model_update": 500,
         "adam_epsilon": 0.001,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 3,
-        "unit_1": 32,
-        "unit_2": 16,
-        "unit_3": 16,
+        "unit_1": 96,
+        "unit_2": 80,
+        "unit_3": 64,
     }
 
     ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)

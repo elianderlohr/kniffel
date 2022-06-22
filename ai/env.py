@@ -100,7 +100,7 @@ class KniffelEnv(Env):
     def __init__(
         self,
         env_config,
-        config_file_path="Kniffel.CSV",
+        config_file_path="ai/Kniffel.CSV",
         logging=False,
         reward_step=0,
         reward_round=0,
