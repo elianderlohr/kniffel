@@ -205,6 +205,9 @@ class Kniffel:
                     print(f"   Array: {self.get_state()}")
                     print(f"   Status: {self.status()}")
 
+                if self.turns_left() > 1:
+                    self.add_turn()
+
                 return kniffel_option.points
             elif self.is_finished():
                 raise ex.GameFinishedException("Game finished!")

@@ -611,8 +611,8 @@ if __name__ == "__main__":
 
     """
     ai.play(
-        path="weights/p_date=2022-06-22-08_57_42",
-        episodes=1_000,
+        path="weights/one_day_training",
+        episodes=10_000,
         env_config=env_config,
         logging=False,
     )
@@ -623,7 +623,7 @@ if __name__ == "__main__":
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0001,
-        "batch_size": 32,
+        "batch_size": 128,
         "target_model_update": 400,
         "adam_epsilon": 0.01,
         "dueling_option": "avg",
