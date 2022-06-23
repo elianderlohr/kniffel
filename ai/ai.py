@@ -62,7 +62,7 @@ class KniffelAI:
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
-        config_path="ai/Kniffel.CSV"
+        config_path="ai/Kniffel.CSV",
     ):
         self._save = save
         self._load = load
@@ -500,7 +500,9 @@ class KniffelAI:
 
     def use_model(self, path, episodes, env_config, logging=False):
 
-        env = KniffelEnv(env_config, logging=logging, config_file_path=self._config_path)
+        env = KniffelEnv(
+            env_config, logging=logging, config_file_path=self._config_path
+        )
 
         f = open(f"{path}/configuration.json")
         hyperparameter = dict(json.load(f))
@@ -579,14 +581,10 @@ if __name__ == "__main__":
 
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": np.arange(
-            0.0001, 0.1, 0.1
-        ),
+        "adam_learning_rate": np.arange(0.0001, 0.1, 0.1),
         "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
-        "target_model_update": np.arange(
-            100, 1000, 100
-        ),
+        "target_model_update": np.arange(100, 1000, 100),
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [3],
@@ -624,10 +622,10 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.00025,
+        "adam_learning_rate": 0.0001,
         "batch_size": 32,
-        "target_model_update": 500,
-        "adam_epsilon": 0.001,
+        "target_model_update": 400,
+        "adam_epsilon": 0.01,
         "dueling_option": "avg",
         "activation": "linear",
         "layers": 3,
@@ -636,4 +634,4 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=2_000_000, env_config=env_config)
+    ai.train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
