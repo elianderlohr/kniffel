@@ -581,10 +581,27 @@ if __name__ == "__main__":
 
     base_hp = {
         "windows_length": [1],
-        "adam_learning_rate": np.arange(0.0001, 0.1, 0.1),
+        "adam_learning_rate": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+        ],  # np.arange(0.0001, 0.1, 0.01),
         "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
-        "target_model_update": np.arange(100, 1000, 100),
+        "target_model_update": [
+            50,
+            100,
+            200,
+            300,
+            400,
+            500,
+            750,
+            1000,
+        ],  # np.arange(1, 1000, 70),
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [3],
@@ -594,7 +611,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        save=True,
+        save=False,
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
@@ -618,7 +635,7 @@ if __name__ == "__main__":
     )
     """
 
-    # ai.grid_search_test(nb_steps=20_000, env_config=env_config)
+    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
@@ -634,4 +651,4 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    ai.train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
+    # ai.train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
