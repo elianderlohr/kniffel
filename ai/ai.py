@@ -8,6 +8,7 @@ import sys
 import inspect
 import warnings
 import json
+from sympy import chebyshevu
 
 # Keras / Tensorflow imports
 import tensorflow as tf
@@ -37,14 +38,14 @@ import kniffel.classes.custom_exceptions as ex
 
 
 class KniffelAI:
-    # Save model
-    _save = False
-
     # Load model from path
     _load = False
 
     # Hyperparameter object
     _hp = None
+
+    # Grid Search
+    _is_grid_search = False
 
     # Test episodes
     _test_episodes = 100
@@ -52,22 +53,26 @@ class KniffelAI:
     # path prefix
     _path_prefix = ""
 
+    # Path to config csv
     _config_path = ""
+
+    # Current date
+    datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
     def __init__(
         self,
-        save=False,
+        is_grid_search=False,
         load=False,
         predefined_layers=False,
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
         config_path="ai/Kniffel.CSV",
+        randomize_hyperparam=True
     ):
-        self._save = save
         self._load = load
         self._hp = Hyperparameter(
-            randomize=True,
+            randomize=randomize_hyperparam,
             predefined_layers=predefined_layers,
             base_hp=hyperparater_base,
         )
@@ -129,8 +134,9 @@ class KniffelAI:
 
     # Train models by applying config
     def grid_search_test(self, nb_steps=20_000, env_config={}):
-        datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
-        path = f"{self._path_prefix}configuration/p_date={datetime}"
+        self._is_grid_search = True
+
+        path = f"{self._path_prefix}configuration/p_date={self.datetime}"
 
         hyperparameter_csv = ";".join(
             str(e) for e in list(dict(self._hp.get()[0]).keys())
@@ -138,7 +144,7 @@ class KniffelAI:
         print(hyperparameter_csv)
         self._append_file(
             f"{path}/csv_configuration.csv",
-            content=f"duration;nb_steps;mean_train;max_train;min_train;mean_test_agent;max_test_agent;min_test_agent;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
+            content=f"id;duration;nb_steps;mean_train;max_train;min_train;mean_test_agent;max_test_agent;min_test_agent;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
         )
 
         i = 1
@@ -150,10 +156,14 @@ class KniffelAI:
             print(hyperparameter)
             print()
 
-            csv = self.train(
-                hyperparameter=hyperparameter, nb_steps=nb_steps, env_config=env_config
+            csv = self._train(
+                hyperparameter=hyperparameter,
+                nb_steps=nb_steps,
+                env_config=env_config,
+                name=str(i),
             )
 
+            csv = str(i) + ";" + csv
             self._append_file(f"{path}/csv_configuration.csv", content=csv)
 
             i = i + 1
@@ -201,25 +211,15 @@ class KniffelAI:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
             agent.load_weights(f"{load_path}/weights.h5f")
 
-        if self._save:
-            history = agent.fit(
-                env,
-                nb_steps=nb_steps,
-                verbose=1,
-                visualize=False,
-                callbacks=callbacks,
-                # action_repetition=2,
-                log_interval=10_000,
-            )
-        else:
-            history = agent.fit(
-                env,
-                nb_steps=nb_steps,
-                verbose=1,
-                visualize=False,
-                # action_repetition=2,
-                log_interval=10_000,
-            )
+        history = agent.fit(
+            env,
+            nb_steps=nb_steps,
+            verbose=1,
+            visualize=False,
+            callbacks=callbacks,
+            # action_repetition=2,
+            log_interval=1_000,
+        )
 
         return agent, history
 
@@ -255,7 +255,20 @@ class KniffelAI:
 
         return csv
 
-    def train(self, hyperparameter, nb_steps=10_000, load_path="", env_config=""):
+    def train(
+        self, hyperparameter, nb_steps=10_000, load_path="", env_config="", name=""
+    ):
+        self._is_grid_search = False
+        self._train(
+            hyperparameter,
+            nb_steps=nb_steps,
+            load_path=load_path,
+            env_config=env_config,
+        )
+
+    def _train(
+        self, hyperparameter, nb_steps=10_000, load_path="", env_config="", name=""
+    ):
         date_start = dt.today()
         env = KniffelEnv(env_config, config_file_path=self._config_path)
 
@@ -263,16 +276,20 @@ class KniffelAI:
 
         callbacks = []
 
-        if self._save:
-            datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
-            path = f"{self._path_prefix}weights/p_date={datetime}"
+        if self._is_grid_search:
+            path = f"{self._path_prefix}configuration/p_date={self.datetime}"
+
+            log_file = path + "/log_" + name + ".json"
+
+            callbacks = [FileLogger(log_file, interval=1_000)]
+        else:
+            path = f"{self._path_prefix}weights/p_date={self.datetime}"
 
             # Create dir
             os.mkdir(path)
 
             # Create Callbacks
             checkpoint_weights_filename = path + "/weights_{step}.h5f"
-            log_file = path + "/training_log.json"
 
             callbacks = [
                 ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
@@ -296,20 +313,20 @@ class KniffelAI:
 
         test_scores = self.validate_model(agent, env=env)
 
-        csv = self.get_configuration(
-            agent=agent,
-            train_scores=train_score,
-            test_scores=test_scores,
-            date_start=date_start,
-            hyperparameter=hyperparameter,
-            nb_steps=nb_steps,
-        )
-
-        if self._save:
+        if self._is_grid_search:
+            csv = self.get_configuration(
+                agent=agent,
+                train_scores=train_score,
+                test_scores=test_scores,
+                date_start=date_start,
+                hyperparameter=hyperparameter,
+                nb_steps=nb_steps,
+            )
+        else:
             # save weights and configuration as json
             agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
-            self.play(path, 1_000, env_config, logging=False)
+            self.play(path, 10_000, env_config, logging=False)
 
         return csv
 
@@ -611,7 +628,6 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        save=False,
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
@@ -651,4 +667,4 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    # ai.train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
+    # ai._train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
