@@ -14,7 +14,7 @@ from sympy import chebyshevu
 import tensorflow as tf
 
 from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy
+from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
@@ -68,7 +68,7 @@ class KniffelAI:
         path_prefix="",
         hyperparater_base={},
         config_path="ai/Kniffel.CSV",
-        randomize_hyperparam=True
+        randomize_hyperparam=True,
     ):
         self._load = load
         self._hp = Hyperparameter(
@@ -116,7 +116,14 @@ class KniffelAI:
             window_length=hyperparameter["windows_length"],
         )
 
-        train_policy = EpsGreedyQPolicy()  # BoltzmannQPolicy()
+        train_policy = LinearAnnealedPolicy(
+            EpsGreedyQPolicy(),
+            attr="eps",
+            value_max=0.1,
+            value_min=0.001,
+            value_test=0.002,
+            nb_steps=50_000,
+        )
 
         agent = DQNAgent(
             model=model,
@@ -218,7 +225,7 @@ class KniffelAI:
             visualize=False,
             callbacks=callbacks,
             # action_repetition=2,
-            log_interval=1_000,
+            log_interval=10_000,
         )
 
         return agent, history
@@ -294,6 +301,9 @@ class KniffelAI:
             callbacks = [
                 ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
             ]
+
+            # Log
+            log_file = path + "/log.json"
 
             callbacks += [FileLogger(log_file, interval=1_000)]
 
@@ -651,13 +661,13 @@ if __name__ == "__main__":
     )
     """
 
-    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0001,
         "batch_size": 128,
-        "target_model_update": 400,
+        "target_model_update": 2_500,
         "adam_epsilon": 0.01,
         "dueling_option": "avg",
         "activation": "linear",
@@ -667,4 +677,4 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    # ai._train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
+    ai._train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
