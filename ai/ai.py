@@ -36,6 +36,8 @@ from env import EnumAction
 from env import KniffelEnv
 import kniffel.classes.custom_exceptions as ex
 
+from keras.callbacks import EarlyStopping
+
 
 class KniffelAI:
     # Load model from path
@@ -306,6 +308,10 @@ class KniffelAI:
             log_file = path + "/log.json"
 
             callbacks += [FileLogger(log_file, interval=1_000)]
+
+            callbacks += [
+                EarlyStopping(patience=10, monitor="episode_reward", mode="max")
+            ]
 
             # Save configuration json
             json_object = json.dumps(hyperparameter, indent=4)
