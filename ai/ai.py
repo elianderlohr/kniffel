@@ -121,9 +121,9 @@ class KniffelAI:
         train_policy = LinearAnnealedPolicy(
             EpsGreedyQPolicy(),
             attr="eps",
-            value_max=0.1,
-            value_min=0.001,
-            value_test=0.002,
+            value_max=1,
+            value_min=0.1,
+            value_test=0.05,
             nb_steps=50_000,
         )
 
@@ -652,7 +652,7 @@ if __name__ == "__main__":
     env_config = {
         "reward_step": 0,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -50,
+        "reward_game_over": -1000,
         "reward_slash": -10,
         "reward_bonus": 20,
         "reward_finish": 50,
@@ -660,10 +660,10 @@ if __name__ == "__main__":
 
     """
     ai.play(
-        path="weights/one_day_training",
-        episodes=10_000,
+        path="weights/p_date=2022-07-05-11_51_32",
+        episodes=1,
         env_config=env_config,
-        logging=False,
+        logging=True,
     )
     """
 
@@ -683,4 +683,9 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    ai._train(hyperparameter=hyperparameter, nb_steps=5_000_000, env_config=env_config)
+    ai._train(
+        hyperparameter=hyperparameter,
+        nb_steps=1_000_000,
+        env_config=env_config,
+        # load_path="weights/one_week_training",
+    )
