@@ -658,14 +658,12 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    """
-    ai.play(
-        path="weights/p_date=2022-07-05-11_51_32",
-        episodes=1,
-        env_config=env_config,
-        logging=True,
-    )
-    """
+    # ai.play(
+    #    path="weights/one_week_training",
+    #    episodes=1_000,
+    #    env_config=env_config,
+    #    logging=False,
+    # )
 
     # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
@@ -683,9 +681,9 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    ai._train(
-        hyperparameter=hyperparameter,
-        nb_steps=1_000_000,
-        env_config=env_config,
-        # load_path="weights/one_week_training",
-    )
+    # ai._train(
+    #    hyperparameter=hyperparameter,
+    #    nb_steps=1_000_000,
+    #    env_config=env_config,
+    #    # load_path="weights/one_week_training",
+    # )
