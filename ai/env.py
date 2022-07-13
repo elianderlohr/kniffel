@@ -221,10 +221,14 @@ class KniffelEnv(Env):
         reward = 0.0
         has_bonus = self.kniffel.is_bonus()
 
+        info = {"finished": False, "error": False}
+
         if self.logging:
             print(self.kniffel.get_state())
 
         finished_turn = False
+        finished_game = False
+
         done = False
         # Apply action
         enum_action = EnumAction(action)
@@ -384,42 +388,55 @@ class KniffelEnv(Env):
             if EnumAction.FINISH_ONES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.ONES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_TWOS_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.TWOS_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_THREES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.THREES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_FOURS_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FOURS_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_FIVES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FIVES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_SIXES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SIXES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.THREE_TIMES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SMALL_STREET_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.LARGE_STREET_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
             if EnumAction.FINISH_CHANCE_SLASH is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
                 reward += self._reward_slash
+                finished_turn = True
 
             if (
                 self.kniffel.is_bonus()
@@ -435,21 +452,34 @@ class KniffelEnv(Env):
                 )
             ):
                 reward += self._reward_bonus
+
         except BaseException as e:
             if e == ex.GameFinishedException:
                 done = True
+                info = {
+                    "finished": True,
+                    "error": False,
+                    "exception": True,
+                    "exception_description": e,
+                }
             else:
                 reward += self._reward_game_over
                 done = True
+                info = {
+                    "finished": True,
+                    "error": True,
+                    "exception": True,
+                    "exception_description": e,
+                }
 
-        if self.kniffel.turns_left() == 1 and finished_turn:
-            reward += self.kniffel.get_points()
-            done = True
+        # if self.kniffel.turns_left() == 1 and finished_turn:
+        #    reward += self.kniffel.get_points()
+        #    done = True
+        #    info = {"finished": True, "error": False, "exception": False}
 
         self.state = self.kniffel.get_state()
 
         # Set placeholder for info
-        info = {}
 
         # kniffel_rounds = self.kniffel.get_played_rounds() / 39
         # kniffel_points = self.kniffel.get_points() / 300
