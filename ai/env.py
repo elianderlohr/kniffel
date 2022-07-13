@@ -456,6 +456,8 @@ class KniffelEnv(Env):
         except BaseException as e:
             if e == ex.GameFinishedException:
                 done = True
+                reward += self.kniffel.get_points()
+
                 info = {
                     "finished": True,
                     "error": False,
@@ -463,8 +465,9 @@ class KniffelEnv(Env):
                     "exception_description": e,
                 }
             else:
-                reward += self._reward_game_over
                 done = True
+                reward += self._reward_game_over
+
                 info = {
                     "finished": True,
                     "error": True,
