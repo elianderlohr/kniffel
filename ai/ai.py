@@ -634,6 +634,11 @@ if __name__ == "__main__":
             500,
             750,
             1000,
+            2_500,
+            5_000,
+            7_500,
+            10_000,
+            15_000,
         ],  # np.arange(1, 1000, 70),
         "dueling_option": ["avg"],
         "activation": ["linear"],
@@ -665,7 +670,7 @@ if __name__ == "__main__":
     #    logging=False,
     # )
 
-    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,

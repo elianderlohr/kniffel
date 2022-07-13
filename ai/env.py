@@ -462,7 +462,7 @@ class KniffelEnv(Env):
                     "finished": True,
                     "error": False,
                     "exception": True,
-                    "exception_description": e,
+                    "exception_description": str(e),
                 }
             else:
                 done = True
@@ -472,7 +472,7 @@ class KniffelEnv(Env):
                     "finished": True,
                     "error": True,
                     "exception": True,
-                    "exception_description": e,
+                    "exception_description": str(e),
                 }
 
         # if self.kniffel.turns_left() == 1 and finished_turn:
