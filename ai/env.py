@@ -490,7 +490,7 @@ class KniffelEnv(Env):
         # reward += self._reward_step + kniffel_points + kniffel_rounds
 
         # Return step information
-        return self.state, reward, done, info
+        return self.state, reward, done, {}  # info
 
     def render(self):
         # Implement viz
