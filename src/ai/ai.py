@@ -69,7 +69,7 @@ class KniffelAI:
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
-        config_path="ai/Kniffel.CSV",
+        config_path="src/ai/Kniffel.CSV",
         randomize_hyperparam=True,
     ):
         self._load = load
@@ -145,7 +145,7 @@ class KniffelAI:
     def grid_search_test(self, nb_steps=20_000, env_config={}):
         self._is_grid_search = True
 
-        path = f"{self._path_prefix}configuration/p_date={self.datetime}"
+        path = f"{self._path_prefix}output/configuration/p_date={self.datetime}"
 
         hyperparameter_csv = ";".join(
             str(e) for e in list(dict(self._hp.get()[0]).keys())
@@ -286,13 +286,13 @@ class KniffelAI:
         callbacks = []
 
         if self._is_grid_search:
-            path = f"{self._path_prefix}configuration/p_date={self.datetime}"
+            path = f"{self._path_prefix}output/configuration/p_date={self.datetime}"
 
             log_file = path + "/log_" + name + ".json"
 
             callbacks = [FileLogger(log_file, interval=1_000)]
         else:
-            path = f"{self._path_prefix}weights/p_date={self.datetime}"
+            path = f"{self._path_prefix}output/weights/p_date={self.datetime}"
 
             # Create dir
             os.mkdir(path)

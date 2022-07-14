@@ -3,6 +3,8 @@ from classes.kniffel import Kniffel
 from classes.dice_set import DiceSet
 from classes.options import KniffelOptions
 
+import numpy as np
+
 
 def play():
     kniffel = Kniffel(True)
@@ -28,7 +30,6 @@ def play():
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.SIXES)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
@@ -49,12 +50,15 @@ def play():
     kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.CHANCE)
+    # kniffel.finish_turn(KniffelOptions.CHANCE)
 
     print()
     kniffel.print()
 
     print(kniffel.is_finished())
+    print(kniffel.get_state())
+    print()
+    print(np.shape(kniffel.get_state()))
 
 
 if __name__ == "__main__":
