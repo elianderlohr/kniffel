@@ -1,3 +1,0 @@
-gym
-sympy
-keras-rl2
