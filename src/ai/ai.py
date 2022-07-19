@@ -124,7 +124,7 @@ class KniffelAI:
             value_max=1,
             value_min=0.1,
             value_test=0.05,
-            nb_steps=2_500_000,
+            nb_steps=1_000_000,
         )
 
         agent = DQNAgent(
