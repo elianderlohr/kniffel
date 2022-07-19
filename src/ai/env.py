@@ -1,3 +1,4 @@
+from distutils.sysconfig import customize_compiler
 from tokenize import Triple
 from gym import Env
 import gym.spaces as spaces
@@ -232,6 +233,7 @@ class KniffelEnv(Env):
         done = False
         # Apply action
         enum_action = EnumAction(action)
+
         try:
             # Finish Actions
             if EnumAction.FINISH_ONES is enum_action:
@@ -453,10 +455,15 @@ class KniffelEnv(Env):
             ):
                 reward += self._reward_bonus
 
-        except BaseException as e:
-            if e == ex.GameFinishedException:
+        except Exception as e:
+            if (
+                str(type(e))
+                == "<class 'classes.custom_exceptions.GameFinishedException'>"
+            ):
+                # print(f"Game finished: {e}")
+
                 done = True
-                reward += self.kniffel.get_points()
+                reward += self.kniffel.get_points() * self._reward_finish
 
                 info = {
                     "finished": True,
@@ -465,6 +472,8 @@ class KniffelEnv(Env):
                     "exception_description": str(e),
                 }
             else:
+                # print(f"Error in game: {e}")
+
                 done = True
                 reward += self._reward_game_over
 

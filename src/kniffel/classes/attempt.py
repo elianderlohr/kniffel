@@ -48,7 +48,7 @@ class Attempt:
             dice_set = DiceSet()
 
         if self.count() >= 3:
-            raise ex.TurnFinishedException("Cannot do more then 3 attempts per round.")
+            raise ex.TurnFinishedException()
         else:
             if self.is_active() and self.count() > 0 and keep is not None:
                 old_set = self.attempts[-1]

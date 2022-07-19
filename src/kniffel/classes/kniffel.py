@@ -169,15 +169,12 @@ class Kniffel:
         if self.turns_left() > 0:
             if self.is_new_game() or self.is_turn_finished():
                 self.turns.append(Attempt())
-
             try:
                 self.turns[-1].add_attempt(keep)
-            except ex.Error as e:
+            except Exception as e:
                 raise e
         else:
-            raise ex.GameFinishedException(
-                "Cannot play more then 13 rounds. Play a new game!"
-            )
+            raise ex.GameFinishedException()
 
         if self.logging:
             print("Attempt:")
@@ -210,15 +207,13 @@ class Kniffel:
 
                 return kniffel_option.points
             elif self.is_finished():
-                raise ex.GameFinishedException("Game finished!")
+                raise ex.GameFinishedException()
             elif self.is_new_game():
-                raise ex.NewGameException("Cannot finish new game!")
+                raise ex.NewGameException()
             elif self.is_turn_finished():
-                raise ex.TurnFinishedException("Cannot finish finished round!")
+                raise ex.TurnFinishedException()
         else:
-            raise ex.SelectedOptionException(
-                "Cannot select the same Option again or not possible for this. Select another Option!"
-            )
+            raise ex.SelectedOptionException()
 
     def get_points(self):
         """

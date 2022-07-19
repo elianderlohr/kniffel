@@ -670,7 +670,7 @@ if __name__ == "__main__":
     #    logging=False,
     # )
 
-    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
@@ -686,9 +686,9 @@ if __name__ == "__main__":
         "unit_3": 64,
     }
 
-    # ai._train(
-    #    hyperparameter=hyperparameter,
-    #    nb_steps=1_000_000,
-    #    env_config=env_config,
-    #    # load_path="weights/one_week_training",
-    # )
+    ai._train(
+        hyperparameter=hyperparameter,
+        nb_steps=1_000_000,
+        env_config=env_config,
+        # load_path="weights/one_week_training",
+    )
