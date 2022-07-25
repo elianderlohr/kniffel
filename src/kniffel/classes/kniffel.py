@@ -7,12 +7,12 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from classes.status import KniffelStatus
-from classes.options import KniffelOptions
-from classes.dice_set import DiceSet
-from classes.attempt import Attempt
-from classes.kniffel_check import KniffelCheck
-import classes.custom_exceptions as ex
+from src.kniffel.classes.status import KniffelStatus
+from src.kniffel.classes.options import KniffelOptions
+from src.kniffel.classes.dice_set import DiceSet
+from src.kniffel.classes.attempt import Attempt
+from src.kniffel.classes.kniffel_check import KniffelCheck
+import src.kniffel.classes.custom_exceptions as ex
 
 import numpy as np
 import itertools

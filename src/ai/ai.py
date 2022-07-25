@@ -1,14 +1,10 @@
 # Standard imports
-import logging
 from statistics import mean
 from datetime import datetime as dt
 import numpy as np
 import os
-import sys
-import inspect
 import warnings
 import json
-from sympy import chebyshevu
 
 # Keras / Tensorflow imports
 import tensorflow as tf
@@ -21,20 +17,18 @@ from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 from keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
-# Kniffel imports
-sys.path.insert(
-    0,
-    os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    ),
-)
+from pathlib import Path
+import sys
 
-from kniffel.classes.options import KniffelOptions
-from kniffel.classes.kniffel import Kniffel
-from hyperparameter import Hyperparameter
-from env import EnumAction
-from env import KniffelEnv
-import kniffel.classes.custom_exceptions as ex
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
+
+from src.kniffel.classes.options import KniffelOptions
+from src.kniffel.classes.kniffel import Kniffel
+from src.ai.hyperparameter import Hyperparameter
+from src.ai.env import EnumAction
+from src.ai.env import KniffelEnv
+import src.kniffel.classes.custom_exceptions as ex
 
 from keras.callbacks import EarlyStopping
 
@@ -652,6 +646,8 @@ if __name__ == "__main__":
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
+        config_path="../../src/ai/Kniffel.CSV",
+        path_prefix="../../",
     )
 
     env_config = {
@@ -688,7 +684,7 @@ if __name__ == "__main__":
 
     ai._train(
         hyperparameter=hyperparameter,
-        nb_steps=1_000_000,
+        nb_steps=3_000_000,
         env_config=env_config,
         # load_path="weights/one_week_training",
     )
