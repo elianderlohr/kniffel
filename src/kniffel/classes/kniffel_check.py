@@ -1,19 +1,17 @@
-from classes.status import KniffelStatus
-from classes.options import KniffelOptions
-from classes.dice_set import DiceSet
-from classes.kniffel_option import KniffelOptionClass
+from src.kniffel.classes.status import KniffelStatus
+from src.kniffel.classes.options import KniffelOptions
+from src.kniffel.classes.dice_set import DiceSet
+from src.kniffel.classes.kniffel_option import KniffelOptionClass
 
 
 class KniffelCheck:
     def occures_n_times(self, ds: DiceSet, n: int, blacklist: list = []):
-        points = 0
-
         base_list = [1, 2, 3, 4, 5, 6]
 
-        c = [x for x in base_list if x not in blacklist]
+        base = [x for x in base_list if x not in blacklist]
 
         dice_list = ds.to_list()
-        for v in c:
+        for v in base:
             if dice_list.count(v) >= n:
                 return True
 

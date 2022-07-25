@@ -1,5 +1,5 @@
-from classes.dice_set import DiceSet
-from classes.options import KniffelOptions
+from src.kniffel.classes.dice_set import DiceSet
+from src.kniffel.classes.options import KniffelOptions
 
 
 class KniffelOptionClass:

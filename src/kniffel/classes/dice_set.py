@@ -1,4 +1,4 @@
-from classes.dice import Dice
+from src.kniffel.classes.dice import Dice
 
 
 class DiceSet:
@@ -32,9 +32,6 @@ class DiceSet:
         Get dices
         """
         return self.dices
-
-    def get_as_array(self):
-        return [v.get() for k, v in self.dices.items()]
 
     def get_dice(self, index: int):
         """
