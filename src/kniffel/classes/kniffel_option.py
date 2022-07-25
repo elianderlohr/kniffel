@@ -18,7 +18,14 @@ class KniffelOptionClass:
         is_possible: bool = False,
     ):
         self.name = name
-        self.is_possible = True if points > 0 else False
+
+        possible = True if points > 0 else False
+
+        if is_possible == False:
+            self.is_possible = possible
+        else:
+            self.is_possible = is_possible
+
         self.points = points
         self.dice_set = ds
         self.id = id.value

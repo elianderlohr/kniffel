@@ -14,7 +14,7 @@ from src.kniffel.classes.options import KniffelOptions
 
 
 def test_what_occures_n_times():
-    """Check that 1 occure 3, 2 or 1 times"""
+    """Check that 1 occures 3, 2 or 1 times"""
     dice_set = DiceSet(mock=[1, 1, 1, 2, 2])
 
     assert KniffelCheck().what_occures_n_times(dice_set, 3) == 1

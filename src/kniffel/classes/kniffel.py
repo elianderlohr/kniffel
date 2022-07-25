@@ -189,11 +189,7 @@ class Kniffel:
         :param KniffelOptions option: selected option how to finish the turn
         """
         if self.is_option_possible(option):
-            if (
-                self.is_new_game() is False
-                and self.is_turn_finished() is False
-                and self.is_finished() is False
-            ):
+            if self.is_new_game() is False and self.is_turn_finished() is False:
                 kniffel_option = self.turns[-1].finish_attempt(option)
 
                 if self.logging:
@@ -202,12 +198,13 @@ class Kniffel:
                     print(f"   Array: {self.get_state()}")
                     print(f"   Status: {self.status()}")
 
-                if self.turns_left() > 1:
+                if self.is_finished():
+                    raise ex.GameFinishedException()
+                elif self.turns_left() > 1:
                     self.add_turn()
 
                 return kniffel_option.points
-            elif self.is_finished():
-                raise ex.GameFinishedException()
+
             elif self.is_new_game():
                 raise ex.NewGameException()
             elif self.is_turn_finished():

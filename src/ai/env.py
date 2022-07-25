@@ -8,10 +8,6 @@ import os
 import sys
 import inspect
 import csv
-from sympy import elliptic_f
-import tensorflow as tf
-from kniffel.classes import kniffel
-from kniffel.classes.dice_set import DiceSet
 
 sys.path.insert(
     0,
@@ -20,9 +16,11 @@ sys.path.insert(
     ),
 )
 
-from kniffel.classes.options import KniffelOptions
-from kniffel.classes.kniffel import Kniffel
-import kniffel.classes.custom_exceptions as ex
+from src.kniffel.classes.options import KniffelOptions
+from src.kniffel.classes.kniffel import Kniffel
+import src.kniffel.classes.custom_exceptions as ex
+from src.kniffel.classes import kniffel
+from src.kniffel.classes.dice_set import DiceSet
 
 
 class EnumAction(Enum):
@@ -215,7 +213,7 @@ class KniffelEnv(Env):
         return reward
 
     def mock(self, dices: list):
-        print(f"Mock dice: {dices}")
+        # print(f"Mock dice: {dices}")
         self.kniffel.mock(DiceSet(dices))
 
     def step(self, action):
