@@ -371,19 +371,45 @@ class Kniffel:
             True if KniffelCheck().check_chance(ds).is_possible else False
         )
 
-        check[KniffelOptions.ONES_SLASH.value] = True
-        check[KniffelOptions.TWOS_SLASH.value] = True
-        check[KniffelOptions.THREES_SLASH.value] = True
-        check[KniffelOptions.FOURS_SLASH.value] = True
-        check[KniffelOptions.FIVES_SLASH.value] = True
-        check[KniffelOptions.SIXES_SLASH.value] = True
-        check[KniffelOptions.THREE_TIMES_SLASH.value] = True
-        check[KniffelOptions.FOUR_TIMES_SLASH.value] = True
-        check[KniffelOptions.FULL_HOUSE_SLASH.value] = True
-        check[KniffelOptions.SMALL_STREET_SLASH.value] = True
-        check[KniffelOptions.LARGE_STREET_SLASH.value] = True
-        check[KniffelOptions.KNIFFEL_SLASH.value] = True
-        check[KniffelOptions.CHANCE_SLASH.value] = True
+        check[KniffelOptions.ONES_SLASH.value] = (
+            False if KniffelCheck().check_1(ds).is_possible else True
+        )
+        check[KniffelOptions.TWOS_SLASH.value] = (
+            False if KniffelCheck().check_2(ds).is_possible else True
+        )
+        check[KniffelOptions.THREES_SLASH.value] = (
+            False if KniffelCheck().check_3(ds).is_possible else True
+        )
+        check[KniffelOptions.FOURS_SLASH.value] = (
+            False if KniffelCheck().check_4(ds).is_possible else True
+        )
+        check[KniffelOptions.FIVES_SLASH.value] = (
+            False if KniffelCheck().check_5(ds).is_possible else True
+        )
+        check[KniffelOptions.SIXES_SLASH.value] = (
+            False if KniffelCheck().check_6(ds).is_possible else True
+        )
+        check[KniffelOptions.THREE_TIMES_SLASH.value] = (
+            False if KniffelCheck().check_three_times(ds).is_possible else True
+        )
+        check[KniffelOptions.FOUR_TIMES_SLASH.value] = (
+            False if KniffelCheck().check_four_times(ds).is_possible else True
+        )
+        check[KniffelOptions.FULL_HOUSE_SLASH.value] = (
+            False if KniffelCheck().check_full_house(ds).is_possible else True
+        )
+        check[KniffelOptions.SMALL_STREET_SLASH.value] = (
+            False if KniffelCheck().check_small_street(ds).is_possible else True
+        )
+        check[KniffelOptions.LARGE_STREET_SLASH.value] = (
+            False if KniffelCheck().check_large_street(ds).is_possible else True
+        )
+        check[KniffelOptions.KNIFFEL_SLASH.value] = (
+            False if KniffelCheck().check_kniffel(ds).is_possible else True
+        )
+        check[KniffelOptions.CHANCE_SLASH.value] = (
+            False if KniffelCheck().check_chance(ds).is_possible else True
+        )
 
         return check
 
