@@ -70,7 +70,6 @@ class Kniffel:
         selected_option = None
 
         if 0 <= id < len(self.turns):
-
             attempt1 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
                 if len(self.turns[id].attempts) <= 0
@@ -176,27 +175,17 @@ class Kniffel:
         else:
             raise ex.GameFinishedException()
 
-        if self.logging:
-            print("Attempt:")
-            print(f"   Keep: {keep}")
-            print(f"   Array: {self.get_state()}")
-            print(f"   Status: {self.status()}")
-
     def finish_turn(self, option: KniffelOptions) -> int:
         """
         Finish turn
 
         :param KniffelOptions option: selected option how to finish the turn
         """
+
         if self.is_option_possible(option):
             if self.is_new_game() is False and self.is_turn_finished() is False:
-                kniffel_option = self.turns[-1].finish_attempt(option)
 
-                if self.logging:
-                    print("Finish:")
-                    print(f"   Action: {option}")
-                    print(f"   Array: {self.get_state()}")
-                    print(f"   Status: {self.status()}")
+                kniffel_option = self.turns[-1].finish_attempt(option)
 
                 if self.is_finished():
                     raise ex.GameFinishedException()
@@ -250,9 +239,7 @@ class Kniffel:
                             return False
                         if option.value == turn.option.value:
                             return False
-
                 return True
-
         return False
 
     def is_bonus(self):
@@ -368,45 +355,19 @@ class Kniffel:
             True if KniffelCheck().check_chance(ds).is_possible else False
         )
 
-        check[KniffelOptions.ONES_SLASH.value] = (
-            False if KniffelCheck().check_1(ds).is_possible else True
-        )
-        check[KniffelOptions.TWOS_SLASH.value] = (
-            False if KniffelCheck().check_2(ds).is_possible else True
-        )
-        check[KniffelOptions.THREES_SLASH.value] = (
-            False if KniffelCheck().check_3(ds).is_possible else True
-        )
-        check[KniffelOptions.FOURS_SLASH.value] = (
-            False if KniffelCheck().check_4(ds).is_possible else True
-        )
-        check[KniffelOptions.FIVES_SLASH.value] = (
-            False if KniffelCheck().check_5(ds).is_possible else True
-        )
-        check[KniffelOptions.SIXES_SLASH.value] = (
-            False if KniffelCheck().check_6(ds).is_possible else True
-        )
-        check[KniffelOptions.THREE_TIMES_SLASH.value] = (
-            False if KniffelCheck().check_three_times(ds).is_possible else True
-        )
-        check[KniffelOptions.FOUR_TIMES_SLASH.value] = (
-            False if KniffelCheck().check_four_times(ds).is_possible else True
-        )
-        check[KniffelOptions.FULL_HOUSE_SLASH.value] = (
-            False if KniffelCheck().check_full_house(ds).is_possible else True
-        )
-        check[KniffelOptions.SMALL_STREET_SLASH.value] = (
-            False if KniffelCheck().check_small_street(ds).is_possible else True
-        )
-        check[KniffelOptions.LARGE_STREET_SLASH.value] = (
-            False if KniffelCheck().check_large_street(ds).is_possible else True
-        )
-        check[KniffelOptions.KNIFFEL_SLASH.value] = (
-            False if KniffelCheck().check_kniffel(ds).is_possible else True
-        )
-        check[KniffelOptions.CHANCE_SLASH.value] = (
-            False if KniffelCheck().check_chance(ds).is_possible else True
-        )
+        check[KniffelOptions.ONES_SLASH.value] = True
+        check[KniffelOptions.TWOS_SLASH.value] = True
+        check[KniffelOptions.THREES_SLASH.value] = True
+        check[KniffelOptions.FOURS_SLASH.value] = True
+        check[KniffelOptions.FIVES_SLASH.value] = True
+        check[KniffelOptions.SIXES_SLASH.value] = True
+        check[KniffelOptions.THREE_TIMES_SLASH.value] = True
+        check[KniffelOptions.FOUR_TIMES_SLASH.value] = True
+        check[KniffelOptions.FULL_HOUSE_SLASH.value] = True
+        check[KniffelOptions.SMALL_STREET_SLASH.value] = True
+        check[KniffelOptions.LARGE_STREET_SLASH.value] = True
+        check[KniffelOptions.KNIFFEL_SLASH.value] = True
+        check[KniffelOptions.CHANCE_SLASH.value] = True
 
         return check
 

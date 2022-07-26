@@ -646,14 +646,14 @@ if __name__ == "__main__":
         load=False,
         predefined_layers=True,
         hyperparater_base=base_hp,
-        config_path="../../src/ai/Kniffel.CSV",
-        path_prefix="../../",
+        config_path="src/ai/Kniffel.CSV",
+        path_prefix="",
     )
 
     env_config = {
         "reward_step": 0,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -1000,
+        "reward_game_over": -100,
         "reward_slash": -10,
         "reward_bonus": 20,
         "reward_finish": 50,
