@@ -620,6 +620,13 @@ if __name__ == "__main__":
         "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
         "target_model_update": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
             50,
             100,
             200,
@@ -666,25 +673,24 @@ if __name__ == "__main__":
     #    logging=False,
     # )
 
-    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
         "adam_learning_rate": 0.0001,
         "batch_size": 128,
-        "target_model_update": 2_500,
+        "target_model_update": 0.0001,
         "adam_epsilon": 0.01,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 3,
-        "unit_1": 96,
-        "unit_2": 80,
-        "unit_3": 64,
+        "layers": 2,
+        "unit_1": 80,
+        "unit_2": 64,
     }
 
-    ai._train(
-        hyperparameter=hyperparameter,
-        nb_steps=3_000_000,
-        env_config=env_config,
-        # load_path="weights/one_week_training",
-    )
+    # ai._train(
+    #    hyperparameter=hyperparameter,
+    #    nb_steps=3_000_000,
+    #    env_config=env_config,
+    #    # load_path="weights/one_week_training",
+    # )

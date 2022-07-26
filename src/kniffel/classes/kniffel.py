@@ -27,6 +27,13 @@ class Kniffel:
         self.logging = logging
         self.start()
 
+    def get_length(self) -> int:
+        return len(self.turns)
+
+    def get(self, id: int) -> Attempt:
+        if id < self.get_length():
+            return self.turns[id]
+
     def get_selected_option(self, status: list, id: int) -> list:
         """Return the selected option from the attempt with the defined id
 
@@ -34,17 +41,17 @@ class Kniffel:
         :param id: if of the attempt
         :return: return list with infos appended
         """
-        if id < len(self.turns):
+        if id < self.get_length():
             selected_option = (
                 0
-                if self.turns[id].selected_option is None
-                else self.turns[id].selected_option.get_id()
+                if self.get(id).selected_option is None
+                else self.get(id).selected_option.get_id()
             )
 
             points = (
                 0
-                if self.turns[id].selected_option is None
-                else self.turns[id].selected_option.points
+                if self.get(id).selected_option is None
+                else self.get(id).selected_option.get_points()
             )
         else:
             selected_option = 0
@@ -69,7 +76,7 @@ class Kniffel:
         attempt3 = None
         selected_option = None
 
-        if 0 <= id < len(self.turns):
+        if 0 <= id < self.get_length():
             attempt1 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
                 if len(self.turns[id].attempts) <= 0
@@ -123,15 +130,23 @@ class Kniffel:
 
         return turn
 
+    def get_last_id(self) -> int:
+        latest_turn_id = len(self.turns) - 1
+
+        if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
+            latest_turn_id += 1
+
+        return latest_turn_id
+
+    def get_last(self) -> Attempt:
+        return self.turns[-1]
+
     def get_state(self):
         """Get state of game as list of integers
 
         :return: state of game as list of integer
         """
-        latest_turn_id = len(self.turns) - 1
-
-        if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
-            latest_turn_id += 1
+        latest_turn_id = self.get_last_id()
 
         status = self.get_turn_as_array(
             latest_turn_id, with_option=False, only_last_two=False
@@ -168,8 +183,9 @@ class Kniffel:
         if self.turns_left() > 0:
             if self.is_new_game() or self.is_turn_finished():
                 self.turns.append(Attempt())
+
             try:
-                self.turns[-1].add_attempt(keep)
+                self.get_last().add_attempt(keep)
             except Exception as e:
                 raise e
         else:
@@ -185,7 +201,7 @@ class Kniffel:
         if self.is_option_possible(option):
             if self.is_new_game() is False and self.is_turn_finished() is False:
 
-                kniffel_option = self.turns[-1].finish_attempt(option)
+                kniffel_option = self.get_last().finish_attempt(option)
 
                 if self.is_finished():
                     raise ex.GameFinishedException()
@@ -377,7 +393,7 @@ class Kniffel:
 
         :param DiceSet mock: mock dice set
         """
-        if self.is_new_game() is True or self.is_turn_finished() is True:
+        if self.is_new_game() or self.is_turn_finished():
             self.turns.append(Attempt())
 
         self.turns[-1].mock(mock)
@@ -386,9 +402,7 @@ class Kniffel:
         """
         Print the check of possible options
         """
-        options = {
-            k: v for k, v in self.system_check().items() if v.is_possible == True
-        }
+        options = {k: v for k, v in self.system_check().items() if v.is_possible}
         print(options)
 
     def to_list(self):

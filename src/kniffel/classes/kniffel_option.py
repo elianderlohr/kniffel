@@ -36,6 +36,9 @@ class KniffelOptionClass:
     def get_id(self):
         return self.id
 
+    def get_points(self):
+        return self.points
+
     def __repr__(self):
         return (
             "{name: '"

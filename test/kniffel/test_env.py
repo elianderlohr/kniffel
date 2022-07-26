@@ -150,3 +150,5 @@ def test_slash_game():
     score = send_step([4, 4, 4, 4, 4], env, 48, score)
 
     assert -12
+
+    print(env.kniffel.get_state())
