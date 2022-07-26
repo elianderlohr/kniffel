@@ -1,5 +1,3 @@
-import pytest
-
 from pathlib import Path
 import sys
 
@@ -7,6 +5,7 @@ path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
 from src.ai.env import KniffelEnv
+
 
 env_config = {
     "reward_step": 0,
@@ -145,10 +144,20 @@ def test_slash_game():
 
     score = send_step([2, 2, 2, 2, 2], env, 47, score)
 
-    assert -16
+    assert score == -16
 
     score = send_step([4, 4, 4, 4, 4], env, 48, score)
 
-    assert -12
+    assert score == -12
 
-    print(env.kniffel.get_state())
+
+def test_broken_game():
+    score = 0
+
+    env = KniffelEnv(env_config, logging=False, config_file_path="src/ai/Kniffel.CSV")
+
+    # try 1
+    score = send_step([], env, 13, score)
+    score = send_step([1, 1, 1, 1, 1], env, 2, score)
+
+    assert score == -99.5
