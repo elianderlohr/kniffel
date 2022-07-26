@@ -99,7 +99,7 @@ class KniffelEnv(Env):
     def __init__(
         self,
         env_config,
-        config_file_path="../../src/ai/Kniffel.CSV",
+        config_file_path="Kniffel.CSV",
         logging=False,
         reward_step=0,
         reward_round=0,
@@ -454,10 +454,7 @@ class KniffelEnv(Env):
                 reward += self._reward_bonus
 
         except Exception as e:
-            if (
-                str(type(e))
-                == "<class 'classes.custom_exceptions.GameFinishedException'>"
-            ):
+            if e.args[0] == "Game finished!":
                 # print(f"Game finished: {e}")
 
                 done = True
@@ -489,13 +486,11 @@ class KniffelEnv(Env):
 
         self.state = self.kniffel.get_state()
 
-        # Set placeholder for info
+        kniffel_rounds = self.kniffel.get_played_rounds() / 39 * 3
+        kniffel_points = self.kniffel.get_points() / 375 * 3
 
-        # kniffel_rounds = self.kniffel.get_played_rounds() / 39
-        # kniffel_points = self.kniffel.get_points() / 300
-
-        # reward += self._reward_step + kniffel_points + kniffel_rounds
-
+        reward += kniffel_points + kniffel_rounds
+        # print(f"reward: {reward}")
         # Return step information
         return self.state, reward, done, {}  # info
 

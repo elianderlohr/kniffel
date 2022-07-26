@@ -14,7 +14,10 @@ def send_step(dice, env, action, score):
         env.mock(dice)
     n_state, reward, done, info = env.step(action)
 
-    return reward
+    score += reward
+    # print(f"Score: {score}")
+
+    return score
 
 
 def test_env():
@@ -29,49 +32,47 @@ def test_env():
 
     score = 0
 
-    env = KniffelEnv(
-        env_config, logging=False, config_file_path="../../src/ai/Kniffel.csv"
-    )
+    env = KniffelEnv(env_config, logging=False, config_file_path="src/ai/Kniffel.CSV")
 
     # try 1
-    score += send_step([], env, 13, score)
-    score += send_step([1, 1, 1, 1, 1], env, 0, score)
+    score = send_step([], env, 13, score)
+    score = send_step([1, 1, 1, 1, 1], env, 0, score)
 
     # try 2
-    score += send_step([], env, 13, score)
-    score += send_step([2, 2, 2, 2, 2], env, 1, score)
+    score = send_step([], env, 13, score)
+    score = send_step([2, 2, 2, 2, 2], env, 1, score)
 
     # try 3
-    score += send_step([3, 3, 3, 3, 3], env, 2, score)
+    score = send_step([3, 3, 3, 3, 3], env, 2, score)
 
     # try 4
-    score += send_step([4, 4, 4, 4, 4], env, 3, score)
+    score = send_step([4, 4, 4, 4, 4], env, 3, score)
 
     # try 5
-    score += send_step([5, 5, 5, 5, 5], env, 4, score)
+    score = send_step([5, 5, 5, 5, 5], env, 4, score)
 
     # try 6
-    score += send_step([6, 6, 6, 6, 6], env, 5, score)
+    score = send_step([6, 6, 6, 6, 6], env, 5, score)
 
     # try 7
-    score += send_step([6, 6, 6, 6, 6], env, 6, score)
+    score = send_step([6, 6, 6, 6, 6], env, 6, score)
 
     # try 8
-    score += send_step([6, 6, 6, 6, 6], env, 7, score)
+    score = send_step([6, 6, 6, 6, 6], env, 7, score)
 
     # try 9
-    score += send_step([6, 6, 6, 5, 5], env, 8, score)
+    score = send_step([6, 6, 6, 5, 5], env, 8, score)
 
     # try 10
-    score += send_step([1, 2, 3, 4, 5], env, 9, score)
+    score = send_step([1, 2, 3, 4, 5], env, 9, score)
 
     # try 11
-    score += send_step([1, 2, 3, 4, 5], env, 10, score)
+    score = send_step([1, 2, 3, 4, 5], env, 10, score)
 
     # try 12
-    score += send_step([6, 6, 6, 6, 6], env, 11, score)
+    score = send_step([6, 6, 6, 6, 6], env, 11, score)
 
     # try 13
-    score += send_step([6, 6, 6, 6, 6], env, 12, score)
+    score = send_step([6, 6, 6, 6, 6], env, 12, score)
 
-    assert score == 18836.0
+    assert score == 18871.144615384615
