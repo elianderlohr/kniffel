@@ -31,7 +31,7 @@ from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
 
-from keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 class KniffelAI:

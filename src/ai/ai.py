@@ -30,7 +30,7 @@ from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
 
-from keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 class KniffelAI:
@@ -610,36 +610,11 @@ if __name__ == "__main__":
         "windows_length": [1],
         "adam_learning_rate": [
             0.0001,
-            0.0005,
-            0.001,
-            0.005,
-            0.01,
-            0.05,
-            0.1,
         ],  # np.arange(0.0001, 0.1, 0.01),
-        "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        "batch_size": [32],
+        "adam_epsilon": [1e-5],
+        "batch_size": [32, 64, 128, 256, 512, 1024, 1280, 1536, 2056],
         "target_model_update": [
             0.0001,
-            0.0005,
-            0.001,
-            0.005,
-            0.01,
-            0.05,
-            0.1,
-            50,
-            100,
-            200,
-            300,
-            400,
-            500,
-            750,
-            1000,
-            2_500,
-            5_000,
-            7_500,
-            10_000,
-            15_000,
         ],  # np.arange(1, 1000, 70),
         "dueling_option": ["avg"],
         "activation": ["linear"],
@@ -673,7 +648,7 @@ if __name__ == "__main__":
     #    logging=False,
     # )
 
-    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
@@ -688,9 +663,9 @@ if __name__ == "__main__":
         "unit_2": 64,
     }
 
-    ai._train(
-        hyperparameter=hyperparameter,
-        nb_steps=3_000_000,
-        env_config=env_config,
-        # load_path="weights/one_week_training",
-    )
+    # ai._train(
+    #    hyperparameter=hyperparameter,
+    #    nb_steps=3_000_000,
+    #    env_config=env_config,
+    #    # load_path="weights/one_week_training",
+    # )
