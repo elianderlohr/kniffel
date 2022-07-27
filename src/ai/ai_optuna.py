@@ -568,23 +568,42 @@ def objective(trial):
     return score
 
 
-if __name__ == "__main__":
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-
+def optuna_func():
     study = optuna.load_study(
         study_name="kniffel",
         storage="mysql://kniffel:AVNS_SPq4Z0yR4wUrtxNJVVb@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
     study.optimize(objective, n_trials=50)
-    joblib.dump(study, "study.pkl")
 
-    print("Number of finished trials: {}".format(len(study.trials)))
 
-    print("Best trial:")
-    trial = study.best_trial
+def runInParallel(*fns):
+    proc = []
 
-    print("  Value: {}".format(trial.value))
+    for fn in fns:
+        p = Process(target=fn)
+        p.start()
+        proc.append(p)
 
-    print("  Params: ")
-    for key, value in trial.params.items():
-        print("    {}: {}".format(key, value))
+    for p in proc:
+        p.join()
+
+
+from multiprocessing import Process
+
+if __name__ == "__main__":
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    runInParallel(optuna_func, optuna_func, optuna_func)
+
+    # joblib.dump(study, "study.pkl")
+
+    # print("Number of finished trials: {}".format(len(study.trials)))
+
+    # print("Best trial:")
+    # trial = study.best_trial
+
+    # print("  Value: {}".format(trial.value))
+
+    # print("  Params: ")
+    # for key, value in trial.params.items():
+    #    print("    {}: {}".format(key, value))
