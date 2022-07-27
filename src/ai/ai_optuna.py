@@ -1,11 +1,14 @@
 # Standard imports
 from statistics import mean
 from datetime import datetime as dt
+from tokenize import Triple
 import warnings
 import numpy as np
 import json
 import optuna
 import os
+from pathlib import Path
+import sys
 
 # Keras / Tensorflow imports
 import tensorflow as tf
@@ -17,9 +20,10 @@ from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 
-from pathlib import Path
-import sys
+
+# Kniffel
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -31,12 +35,6 @@ from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
 
-from tensorflow.keras.callbacks import EarlyStopping
-import joblib
-
-import calendar
-import time
-
 
 class KniffelAI:
     # Load model from path
@@ -44,9 +42,6 @@ class KniffelAI:
 
     # Hyperparameter object
     _hyperparater_base = {}
-
-    # Grid Search
-    _is_grid_search = False
 
     # Test episodes
     _test_episodes = 100
@@ -58,14 +53,13 @@ class KniffelAI:
     _config_path = ""
 
     # Optuna trial
-    _trial = None
+    _trial: optuna.trial.Trial = None
 
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
     def __init__(
         self,
-        is_grid_search=False,
         load=False,
         test_episodes=100,
         path_prefix="",
@@ -89,13 +83,8 @@ class KniffelAI:
         else:
             self._path_prefix = path_prefix
 
-    def _return_trial(self, key, type):
-        # if type == "categorical":
+    def _return_trial(self, key):
         return self._trial.suggest_categorical(key, self._hyperparater_base[key])
-        # if type == "float":
-        #    return self._trial.suggest_float(key, self._hyperparater_base[key])
-        # if type == "int":
-        #    return self._trial.suggest_int(key, self._hyperparater_base[key])
 
     # Model
     def build_model(self, actions):
@@ -103,17 +92,17 @@ class KniffelAI:
         model.add(
             Flatten(
                 input_shape=(
-                    self._return_trial("windows_length", "int"),
+                    self._return_trial("windows_length"),
                     1,
                     41,
                 )
             )
         )
 
-        for i in range(1, self._return_trial("layers", "int") + 1):
+        for i in range(1, self._return_trial("layers") + 1):
             model.add(
                 Dense(
-                    self._return_trial("unit_" + str(i), "int"),
+                    self._return_trial("n_units_l" + str(i)),
                     activation="relu",
                 )
             )
@@ -121,7 +110,7 @@ class KniffelAI:
         model.add(
             Dense(
                 actions,
-                activation=self._return_trial("activation", "categorical"),
+                activation=self._return_trial("activation"),
             )
         )
 
@@ -140,7 +129,7 @@ class KniffelAI:
         agent = None
         memory = SequentialMemory(
             limit=500_000,
-            window_length=self._return_trial("windows_length", "int"),
+            window_length=self._return_trial("windows_length"),
         )
 
         train_policy = LinearAnnealedPolicy(
@@ -158,9 +147,9 @@ class KniffelAI:
             policy=train_policy,
             nb_actions=actions,
             nb_steps_warmup=1_000,
-            target_model_update=self._return_trial("target_model_update", "float"),
-            batch_size=self._return_trial("batch_size", "int"),
-            dueling_type=self._return_trial("dueling_option", "categorical"),
+            target_model_update=self._return_trial("target_model_update"),
+            batch_size=self._return_trial("batch_size"),
+            dueling_type=self._return_trial("dueling_option"),
             enable_double_dqn=True,
         )
 
@@ -173,17 +162,19 @@ class KniffelAI:
         nb_steps,
         load_path="",
     ):
-        model = self.build_model(actions)
-        agent = self.build_agent(
-            model,
+        model = self.build_model(
             actions,
-            nb_steps=nb_steps,
         )
+        agent = self.build_agent(model, actions, nb_steps=nb_steps)
 
         agent.compile(
             Adam(
-                learning_rate=self._return_trial("adam_learning_rate", "float"),
-                epsilon=self._return_trial("adam_epsilon", "float"),
+                learning_rate=self._return_trial(
+                    "adam_learning_rate",
+                ),
+                epsilon=self._return_trial(
+                    "adam_epsilon",
+                ),
             ),
             metrics=["mae", "accuracy"],
         )
@@ -211,7 +202,6 @@ class KniffelAI:
         return np.mean(scores.history["episode_reward"])
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
-        self._is_grid_search = False
         return self._train(
             nb_steps=nb_steps,
             load_path=load_path,
@@ -431,7 +421,9 @@ class KniffelAI:
 
         actions = env.action_space.n
 
-        model = self.build_model(actions, hyperparameter)
+        model = self.build_model(
+            actions, hyperparameter, hyperparameter["window_length"]
+        )
 
         agent = self.build_agent(
             model, actions, nb_steps=episodes, hyperparameter=hyperparameter
@@ -504,10 +496,8 @@ class KniffelAI:
 
 
 def objective(trial):
-    units = list(range(16, 96, 16))
-
     base_hp = {
-        "windows_length": [1],
+        "windows_length": range(1, 3),
         "adam_learning_rate": [
             0.0001,
             0.0005,
@@ -516,7 +506,7 @@ def objective(trial):
             0.01,
             0.05,
             0.1,
-        ],  # np.arange(0.0001, 0.1, 0.01),
+        ],
         "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [32],
         "target_model_update": [
@@ -540,19 +530,19 @@ def objective(trial):
             7_500,
             10_000,
             15_000,
-        ],  # np.arange(1, 1000, 70),
+        ],
         "dueling_option": ["avg"],
         "activation": ["linear"],
         "layers": [3, 2, 1],
-        "unit_1": [96, 64, 32, 16],
-        "unit_2": [96, 64, 32, 16],
-        "unit_3": [96, 64, 32, 16],
+        "n_units_l1": [128, 96, 64, 32, 16],
+        "n_units_l2": [128, 96, 64, 32, 16],
+        "n_units_l3": [128, 96, 64, 32, 16],
     }
 
     env_config = {
         "reward_step": 0,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -100,
+        "reward_game_over": -200,
         "reward_slash": -10,
         "reward_bonus": 20,
         "reward_finish": 50,
@@ -571,10 +561,10 @@ def objective(trial):
     return score
 
 
-def optuna_func():
+def optuna_func(pw, study_name):
     study = optuna.load_study(
-        study_name="kniffel",
-        storage="mysql://kniffel:AVNS_SPq4Z0yR4wUrtxNJVVb@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+        study_name=study_name,
+        storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
     study.optimize(objective, n_trials=50)
 
@@ -596,17 +586,21 @@ from multiprocessing import Process
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    # study_name = f"kniffel_{calendar.timegm(time.gmtime())}"
-
-    study_name = "kniffel_full_run"
+    pw = [s for s in sys.argv if s.startswith("p=")][0].split("=")[1]
+    study_name = [s for s in sys.argv if s.startswith("name=")][0].split("=")[1]
 
     study = optuna.create_study(
         study_name=study_name,
         direction="maximize",
-        storage="mysql://kniffel:AVNS_SPq4Z0yR4wUrtxNJVVb@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+        storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    runInParallel(optuna_func, optuna_func, optuna_func)
+    runInParallel(
+        optuna_func(pw, study_name),
+        optuna_func(pw, study_name),
+        optuna_func(pw, study_name),
+        optuna_func(pw, study_name),
+    )
 
     # joblib.dump(study, "study.pkl")
 
