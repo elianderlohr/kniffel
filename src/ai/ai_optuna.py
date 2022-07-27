@@ -508,7 +508,7 @@ def objective(trial):
             0.1,
         ],
         "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        "batch_size": [32],
+        "batch_size": [128],
         "target_model_update": [
             0.0001,
             0.0005,
@@ -561,11 +561,12 @@ def objective(trial):
     return score
 
 
-def optuna_func(pw, study_name):
+def optuna_func():
     study = optuna.load_study(
-        study_name=study_name,
-        storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+        study_name=_study_name,
+        storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
+
     study.optimize(objective, n_trials=50)
 
 
@@ -581,7 +582,10 @@ def runInParallel(*fns):
         p.join()
 
 
-from multiprocessing import Process
+import concurrent.futures
+
+_pw = ""
+_study_name = ""
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -589,20 +593,20 @@ if __name__ == "__main__":
     pw = [s for s in sys.argv if s.startswith("p=")][0].split("=")[1]
     study_name = [s for s in sys.argv if s.startswith("name=")][0].split("=")[1]
 
+    _pw = pw
+    _study_name = study_name
+
     study = optuna.create_study(
         study_name=study_name,
         direction="maximize",
         storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    runInParallel(
-        optuna_func(pw, study_name),
-        optuna_func(pw, study_name),
-        optuna_func(pw, study_name),
-        optuna_func(pw, study_name),
-    )
-
-    # joblib.dump(study, "study.pkl")
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        process1 = executor.submit(optuna_func)
+        process2 = executor.submit(optuna_func)
+        process3 = executor.submit(optuna_func)
+        process4 = executor.submit(optuna_func)
 
     # print("Number of finished trials: {}".format(len(study.trials)))
 
