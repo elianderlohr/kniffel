@@ -7,3 +7,6 @@
 */*/*/.ipynb_checkpoints/
 */*/.ipynb_checkpoints/
 */.ipynb_checkpoints/
+*/*/.ipynb.amltmp
+*/.ipynb.amltmp
+.ipynb.amltmp
