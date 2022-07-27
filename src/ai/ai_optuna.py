@@ -34,6 +34,9 @@ import src.kniffel.classes.custom_exceptions as ex
 from tensorflow.keras.callbacks import EarlyStopping
 import joblib
 
+import calendar
+import time
+
 
 class KniffelAI:
     # Load model from path
@@ -592,6 +595,16 @@ from multiprocessing import Process
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    # study_name = f"kniffel_{calendar.timegm(time.gmtime())}"
+
+    study_name = "kniffel_full_run"
+
+    study = optuna.create_study(
+        study_name=study_name,
+        direction="maximize",
+        storage="mysql://kniffel:AVNS_SPq4Z0yR4wUrtxNJVVb@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+    )
 
     runInParallel(optuna_func, optuna_func, optuna_func)
 
