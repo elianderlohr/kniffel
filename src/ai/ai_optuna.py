@@ -32,6 +32,7 @@ from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
 
 from tensorflow.keras.callbacks import EarlyStopping
+import joblib
 
 
 class KniffelAI:
@@ -567,12 +568,13 @@ def objective(trial):
     return score
 
 
-import joblib
-
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    study = optuna.create_study(direction="maximize")
+    study = optuna.load_study(
+        study_name="kniffel",
+        storage="mysql://kniffel:AVNS_SPq4Z0yR4wUrtxNJVVb@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+    )
     study.optimize(objective, n_trials=50)
     joblib.dump(study, "study.pkl")
 
