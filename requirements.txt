@@ -4,5 +4,4 @@ gym
 sympy
 optuna
 joblib
-mysql-python
-mysqlclient
+mysql-connector-python
