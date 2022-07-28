@@ -197,9 +197,12 @@ class KniffelAI:
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
 
-        print(np.mean(scores.history["episode_reward"]))
+        episode_reward = np.mean(scores.history["episode_reward"])
+        nb_steps = np.mean(scores.history["nb_steps"])
+        print(f"episode_reward: {episode_reward}")
+        print(f"nb_steps: {nb_steps}")
 
-        return np.mean(scores.history["episode_reward"])
+        return nb_steps
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
         return self._train(
@@ -533,10 +536,11 @@ def objective(trial):
         ],
         "dueling_option": ["avg"],
         "activation": ["linear"],
-        "layers": [3, 2, 1],
-        "n_units_l1": [128, 96, 64, 32, 16],
-        "n_units_l2": [128, 96, 64, 32, 16],
-        "n_units_l3": [128, 96, 64, 32, 16],
+        "layers": [4, 3, 2, 1],
+        "n_units_l1": [256, 128, 96, 64, 32, 16],
+        "n_units_l2": [256, 128, 96, 64, 32, 16],
+        "n_units_l3": [256, 128, 96, 64, 32, 16],
+        "n_units_l4": [256, 128, 96, 64, 32, 16],
     }
 
     env_config = {
@@ -567,7 +571,7 @@ def optuna_func():
         storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=100)
 
 
 def runInParallel(*fns):

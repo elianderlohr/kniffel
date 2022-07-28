@@ -206,7 +206,7 @@ class KniffelAI:
                 learning_rate=hyperparameter["adam_learning_rate"],
                 epsilon=hyperparameter["adam_epsilon"],
             ),
-            metrics=["mae"],
+            metrics=["mae", "accuracy"],
         )
 
         if self._load:
@@ -228,8 +228,10 @@ class KniffelAI:
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
 
-        print(np.mean(scores.history["episode_reward"]))
-        _ = agent.test(env, nb_episodes=15, visualize=False)
+        episode_reward = np.mean(scores.history["episode_reward"])
+        nb_steps = np.mean(scores.history["nb_steps"])
+        print(f"episode_reward: {episode_reward}")
+        print(f"nb_steps: {nb_steps}")
 
         return scores
 
@@ -647,24 +649,23 @@ if __name__ == "__main__":
     #    logging=False,
     # )
 
-    ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
 
     hyperparameter = {
         "windows_length": 1,
-        "adam_learning_rate": 0.0001,
+        "adam_learning_rate": 0.0005,
         "batch_size": 128,
-        "target_model_update": 0.0001,
-        "adam_epsilon": 0.01,
+        "target_model_update": 200,
+        "adam_epsilon": 0.0001,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 2,
-        "unit_1": 80,
-        "unit_2": 64,
+        "layers": 1,
+        "unit_1": 96,
     }
 
-    # ai._train(
-    #    hyperparameter=hyperparameter,
-    #    nb_steps=3_000_000,
-    #    env_config=env_config,
-    #    # load_path="weights/one_week_training",
-    # )
+    ai._train(
+        hyperparameter=hyperparameter,
+        nb_steps=2_000,
+        env_config=env_config,
+        # load_path="weights/one_week_training",
+    )
