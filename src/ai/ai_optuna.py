@@ -13,8 +13,16 @@ import sys
 # Keras / Tensorflow imports
 import tensorflow as tf
 
-from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy, LinearAnnealedPolicy
+from rl.agents import DQNAgent, CEMAgent, SARSAAgent
+from rl.policy import (
+    BoltzmannQPolicy,
+    EpsGreedyQPolicy,
+    LinearAnnealedPolicy,
+    SoftmaxPolicy,
+    GreedyQPolicy,
+    MaxBoltzmannQPolicy,
+    BoltzmannGumbelQPolicy,
+)
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
@@ -117,6 +125,53 @@ class KniffelAI:
         model.summary()
         return model
 
+    def get_policy(self, key):
+
+        policy = None
+        if key == "LinearAnnealedPolicy":
+
+            policy = LinearAnnealedPolicy(
+                EpsGreedyQPolicy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+
+        elif key == "SoftmaxPolicy":
+
+            policy = SoftmaxPolicy()
+
+        elif key == "EpsGreedyQPolicy":
+
+            policy = EpsGreedyQPolicy(
+                eps=self._return_trial(
+                    "adam_epsilon",
+                )
+            )
+
+        elif key == "GreedyQPolicy":
+
+            policy = GreedyQPolicy()
+
+        elif key == "BoltzmannQPolicy":
+
+            policy = BoltzmannQPolicy()
+
+        elif key == "MaxBoltzmannQPolicy":
+
+            policy = MaxBoltzmannQPolicy(
+                eps=self._return_trial(
+                    "adam_epsilon",
+                )
+            )
+        elif key == "BoltzmannGumbelQPolicy":
+
+            policy = BoltzmannGumbelQPolicy()
+
+        return policy
+
     def build_agent(self, model, actions, nb_steps):
         """Build dqn agent
 
@@ -127,31 +182,47 @@ class KniffelAI:
         :return: agent
         """
         agent = None
+        train_policy = None
+        policy = None
+
         memory = SequentialMemory(
             limit=500_000,
             window_length=self._return_trial("windows_length"),
         )
 
-        train_policy = LinearAnnealedPolicy(
-            EpsGreedyQPolicy(),
-            attr="eps",
-            value_max=1,
-            value_min=0.1,
-            value_test=0.05,
-            nb_steps=1_000_000,
-        )
+        agent_value = self._return_trial("agent")
 
-        agent = DQNAgent(
-            model=model,
-            memory=memory,
-            policy=train_policy,
-            nb_actions=actions,
-            nb_steps_warmup=1_000,
-            target_model_update=self._return_trial("target_model_update"),
-            batch_size=self._return_trial("batch_size"),
-            dueling_type=self._return_trial("dueling_option"),
-            enable_double_dqn=self._return_trial("enable_double_dqn"),
-        )
+        if agent_value == "DQN":
+            agent = DQNAgent(
+                model=model,
+                memory=memory,
+                policy=self.get_policy(self._return_trial("train_policy")),
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                target_model_update=self._return_trial("target_model_update"),
+                batch_size=self._return_trial("batch_size"),
+                dueling_type=self._return_trial("dueling_option"),
+                enable_double_dqn=self._return_trial("enable_double_dqn"),
+            )
+
+        elif agent_value == "CEM":
+            agent = CEMAgent(
+                model=model,
+                memory=memory,
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                batch_size=self._return_trial("batch_size"),
+            )
+
+        elif agent_value == "SARSA":
+            agent = SARSAAgent(
+                model=model,
+                policy=self.get_policy(self._return_trial("train_policy")),
+                test_policy=self.get_policy(self._return_trial("test_policy")),
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                gamma=self._return_trial("gamma"),
+            )
 
         return agent
 
@@ -546,6 +617,27 @@ def objective(trial):
         "n_units_l3": [256, 128, 96, 64, 32, 16],
         "n_units_l4": [256, 128, 96, 64, 32, 16],
         "enable_double_dqn": [True, False],
+        "agent": ["DQN", "CEM", "SARSA"],
+        "gamma": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0, 9],
+        "train_policy": [
+            "LinearAnnealedPolicy",
+            "SoftmaxPolicy",
+            "SoftmaxPolicy",
+            "EpsGreedyQPolicy",
+            "GreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+            "BoltzmannGumbelQPolicy",
+        ],
+        "test_policy": [
+            "LinearAnnealedPolicy",
+            "SoftmaxPolicy",
+            "SoftmaxPolicy",
+            "EpsGreedyQPolicy",
+            "GreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+        ],
     }
 
     env_config = {
@@ -565,9 +657,11 @@ def objective(trial):
         trial=trial,
     )
 
-    score = ai.train(env_config=env_config, nb_steps=50_000)
-
-    return score
+    try:
+        score = ai.train(env_config=env_config, nb_steps=50_000)
+        return score
+    except:
+        return 0
 
 
 def optuna_func():
