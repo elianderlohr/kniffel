@@ -1,7 +1,12 @@
-# from click import option
-from classes.kniffel import Kniffel
-from classes.dice_set import DiceSet
-from classes.options import KniffelOptions
+from pathlib import Path
+import sys
+
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
+
+from src.kniffel.classes.kniffel import Kniffel
+from src.kniffel.classes.dice_set import DiceSet
+from src.kniffel.classes.options import KniffelOptions
 
 import numpy as np
 

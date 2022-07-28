@@ -150,7 +150,7 @@ class KniffelAI:
             target_model_update=self._return_trial("target_model_update"),
             batch_size=self._return_trial("batch_size"),
             dueling_type=self._return_trial("dueling_option"),
-            enable_double_dqn=True,
+            enable_double_dqn=self._return_trial("enable_double_dqn"),
         )
 
         return agent
@@ -502,6 +502,8 @@ def objective(trial):
     base_hp = {
         "windows_length": range(1, 3),
         "adam_learning_rate": [
+            0.00001,
+            0.0005,
             0.0001,
             0.0005,
             0.001,
@@ -510,9 +512,11 @@ def objective(trial):
             0.05,
             0.1,
         ],
-        "adam_epsilon": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+        "adam_epsilon": [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         "batch_size": [128],
         "target_model_update": [
+            0.00001,
+            0.0005,
             0.0001,
             0.0005,
             0.001,
@@ -535,12 +539,13 @@ def objective(trial):
             15_000,
         ],
         "dueling_option": ["avg"],
-        "activation": ["linear"],
+        "activation": ["linear", "softmax", "sigmoid"],
         "layers": [4, 3, 2, 1],
         "n_units_l1": [256, 128, 96, 64, 32, 16],
         "n_units_l2": [256, 128, 96, 64, 32, 16],
         "n_units_l3": [256, 128, 96, 64, 32, 16],
         "n_units_l4": [256, 128, 96, 64, 32, 16],
+        "enable_double_dqn": [True, False],
     }
 
     env_config = {
