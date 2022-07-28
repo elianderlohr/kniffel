@@ -303,6 +303,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.ONES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 1)
 
                 finished_turn = True
             if EnumAction.FINISH_TWOS_SLASH is enum_action:
@@ -310,6 +312,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.TWOS_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 2)
 
                 finished_turn = True
             if EnumAction.FINISH_THREES_SLASH is enum_action:
@@ -317,6 +321,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.THREES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 3)
 
                 finished_turn = True
             if EnumAction.FINISH_FOURS_SLASH is enum_action:
@@ -324,6 +330,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.FOURS_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 4)
 
                 finished_turn = True
             if EnumAction.FINISH_FIVES_SLASH is enum_action:
@@ -331,6 +339,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.FIVES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 5)
 
                 finished_turn = True
             if EnumAction.FINISH_SIXES_SLASH is enum_action:
@@ -338,6 +348,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.SIXES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += self.rewards_single(points / 6)
 
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
@@ -345,6 +357,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.THREE_TIMES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Dreier Pasch"]["3"])
 
                 finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
@@ -352,6 +366,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.FOUR_TIMES_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Vierer Pasch"]["4"])
 
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
@@ -359,6 +375,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.FULL_HOUSE_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Full House"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
@@ -366,6 +384,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.SMALL_STREET_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Kleine Strasse"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
@@ -373,6 +393,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.LARGE_STREET_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Grosse Strasse"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
@@ -380,6 +402,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.KNIFFEL_SLASH:
                     reward += self._reward_slash
+                else:
+                    reward += float(self.config["Kniffel"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_CHANCE_SLASH is enum_action:
@@ -387,8 +411,8 @@ class KniffelEnv(Env):
 
                 if self.kniffel.get_last().option == KniffelOptions.CHANCE_SLASH:
                     reward += self._reward_slash
-
-                finished_turn = True
+                else:
+                    reward += self.reward_chance(points)
 
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:

@@ -14,8 +14,9 @@ from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
-from keras.layers import Dense, Flatten
+from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 
 from pathlib import Path
 import sys
@@ -29,8 +30,6 @@ from src.ai.hyperparameter import Hyperparameter
 from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
-
-from tensorflow.keras.callbacks import EarlyStopping
 
 
 class KniffelAI:
