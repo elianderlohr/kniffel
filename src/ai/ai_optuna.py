@@ -157,18 +157,23 @@ class KniffelAI:
 
         elif key == "BoltzmannQPolicy":
 
-            policy = BoltzmannQPolicy()
+            policy = BoltzmannQPolicy(
+                tau=self._trial.suggest_float("tau", 0.05, 1, step=0.05)
+            )
 
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
                 eps=self._return_trial(
                     "adam_epsilon",
-                )
+                ),
+                tau=self._trial.suggest_float("tau", 0.05, 1, step=0.05),
             )
         elif key == "BoltzmannGumbelQPolicy":
 
-            policy = BoltzmannGumbelQPolicy()
+            policy = BoltzmannGumbelQPolicy(
+                C=self._trial.suggest_float("C", 0.05, 1, step=0.05)
+            )
 
         return policy
 
@@ -661,7 +666,7 @@ def objective(trial):
         score = ai.train(env_config=env_config, nb_steps=50_000)
         return score
     except:
-        return 0
+        return -1
 
 
 def optuna_func():
