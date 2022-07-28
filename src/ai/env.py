@@ -530,7 +530,7 @@ class KniffelEnv(Env):
         except Exception as e:
             if e.args[0] == "Game finished!":
                 done = True
-                reward += self.kniffel.get_points()
+                reward += self.kniffel.get_points() * self._reward_finish
 
                 info = {
                     "finished": True,
@@ -563,11 +563,11 @@ class KniffelEnv(Env):
         """
         # Die ergebnisse sahen mit dem nachfolgenden code ganz gut aus.
         Jedoch kann das q wohl nicht convergen wenn der reward steigt
+        """
         kniffel_rounds = self.kniffel.get_played_rounds() / 39 * 10
         kniffel_points = self.kniffel.get_points() / 375 * 10
 
         reward += kniffel_points + kniffel_rounds
-        """
 
         if self.logging:
             action_type = "roll_dice" if action >= 13 and action <= 44 else "finish"

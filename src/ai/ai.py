@@ -90,7 +90,7 @@ class KniffelAI:
         model.add(Flatten(input_shape=(hyperparameter["windows_length"], 1, 41)))
 
         for i in range(1, hyperparameter["layers"] + 1):
-            model.add(Dense(hyperparameter["unit_" + str(i)], activation="relu"))
+            model.add(Dense(hyperparameter["n_units_l" + str(i)], activation="relu"))
 
         model.add(Dense(actions, activation=hyperparameter["activation"]))
         model.summary()
@@ -636,7 +636,7 @@ if __name__ == "__main__":
     env_config = {
         "reward_step": 0,
         "reward_roll_dice": 0.5,
-        "reward_game_over": -100,
+        "reward_game_over": -200,
         "reward_slash": -10,
         "reward_bonus": 20,
         "reward_finish": 50,
@@ -655,17 +655,20 @@ if __name__ == "__main__":
         "windows_length": 1,
         "adam_learning_rate": 0.0005,
         "batch_size": 128,
-        "target_model_update": 200,
-        "adam_epsilon": 0.0001,
+        "target_model_update": 500,
+        "adam_epsilon": 0.001,
         "dueling_option": "avg",
         "activation": "linear",
-        "layers": 1,
-        "unit_1": 96,
+        "layers": 3,
+        "n_units_l1": 256,
+        "n_units_l2": 128,
+        "n_units_l3": 64,
+        "enable_double_dqn": False,
     }
 
     ai._train(
         hyperparameter=hyperparameter,
-        nb_steps=2_000,
+        nb_steps=500_000,
         env_config=env_config,
         # load_path="weights/one_week_training",
     )
