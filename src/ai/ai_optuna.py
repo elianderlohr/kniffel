@@ -513,7 +513,7 @@ def objective(trial):
             0.1,
         ],
         "adam_epsilon": [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        "batch_size": [128],
+        "batch_size": [32, 64, 128, 512, 1028, 1512, 2056],
         "target_model_update": [
             0.00001,
             0.0005,
