@@ -26,7 +26,7 @@ from rl.policy import (
     BoltzmannGumbelQPolicy,
 )
 
-from rl.memory import SequentialMemory
+from rl.memory import SequentialMemory, EpisodeParameterMemory
 
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
@@ -190,12 +190,12 @@ class KniffelAI:
         """
         agent = None
 
-        memory = SequentialMemory(
-            limit=500_000,
-            window_length=self._return_trial("windows_length"),
-        )
-
         if self._agent_value == "DQN":
+            memory = SequentialMemory(
+                limit=self._trial.suggest_int("memory_limit", 1_000, 1_000_000),
+                window_length=self._return_trial("windows_length"),
+            )
+
             agent = DQNAgent(
                 model=model,
                 memory=memory,
@@ -209,6 +209,11 @@ class KniffelAI:
             )
 
         elif self._agent_value == "CEM":
+            memory = EpisodeParameterMemory(
+                limit=self._trial.suggest_int("memory_limit", 1_000, 1_000_000),
+                window_length=1,
+            )
+
             agent = CEMAgent(
                 model=model,
                 memory=memory,
