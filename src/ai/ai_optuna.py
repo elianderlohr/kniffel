@@ -211,7 +211,7 @@ class KniffelAI:
         elif self._agent_value == "CEM":
             memory = EpisodeParameterMemory(
                 limit=self._trial.suggest_int("memory_limit", 1_000, 1_000_000),
-                window_length=1,
+                window_length=self._return_trial("windows_length"),
             )
 
             agent = CEMAgent(
