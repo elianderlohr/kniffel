@@ -14,6 +14,8 @@ import sys
 
 # Keras imports
 
+import tensorflow as tf
+
 from rl.agents import DQNAgent, CEMAgent, SARSAAgent
 from rl.policy import (
     BoltzmannQPolicy,
@@ -23,11 +25,14 @@ from rl.policy import (
     MaxBoltzmannQPolicy,
     BoltzmannGumbelQPolicy,
 )
-from keras.memory import SequentialMemory
-from keras.callbacks import FileLogger, ModelIntervalCheckpoint
-from keras.layers import Dense, Flatten
-from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping
+
+from rl.memory import SequentialMemory
+from rl.callbacks import FileLogger, ModelIntervalCheckpoint
+
+
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 # Kniffel
@@ -259,7 +264,9 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            optuna.integration.KerasPruningCallback(self._trial, "nb_steps", interval=10_000)
+            optuna.integration.KerasPruningCallback(
+                self._trial, "episode_reward", interval=10_000
+            )
         ]
 
         history = agent.fit(
@@ -282,7 +289,7 @@ class KniffelAI:
         print(f"episode_reward: {episode_reward}")
         print(f"nb_steps: {nb_steps}")
 
-        return nb_steps
+        return episode_reward
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
         return self._train(

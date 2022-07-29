@@ -1,18 +1,34 @@
 # Standard imports
+from gc import callbacks
 from statistics import mean
 from datetime import datetime as dt
-import numpy as np
-import os
+from tokenize import Triple
+from unittest.mock import call
 import warnings
+import numpy as np
 import json
+import optuna
+import os
+from pathlib import Path
+import sys
 
-# Keras / Tensorflow imports
+# Keras imports
+
 import tensorflow as tf
 
-from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy, EpsGreedyQPolicy, LinearAnnealedPolicy
+from rl.agents import DQNAgent, CEMAgent, SARSAAgent
+from rl.policy import (
+    BoltzmannQPolicy,
+    EpsGreedyQPolicy,
+    LinearAnnealedPolicy,
+    GreedyQPolicy,
+    MaxBoltzmannQPolicy,
+    BoltzmannGumbelQPolicy,
+)
+
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
+
 
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
