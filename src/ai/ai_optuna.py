@@ -284,7 +284,7 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=50_000,
+            log_interval=10_000,
         )
 
         return agent, history
@@ -563,11 +563,8 @@ def objective(trial):
         trial=trial,
     )
 
-    try:
-        score = ai.train(env_config=env_config, nb_steps=50_000)
-        return score
-    except:
-        return -1
+    score = ai.train(env_config=env_config, nb_steps=50_000)
+    return score
 
 
 def optuna_func():
