@@ -544,7 +544,7 @@ def optuna_func():
         storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    study.optimize(objective, n_trials=100)
+    study.optimize(objective, n_trials=100, catch=(ValueError,))
 
 
 import concurrent.futures
