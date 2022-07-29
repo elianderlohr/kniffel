@@ -120,7 +120,7 @@ class KniffelAI:
         for i in range(1, self._trial.suggest_int("layers", 1, 4)):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l" + str(i), 16, 256),
+                    self._trial.suggest_int("n_units_l" + str(i), 16, 256, step=16),
                     activation="relu",
                 )
             )
@@ -192,7 +192,9 @@ class KniffelAI:
 
         if self._agent_value == "DQN":
             memory = SequentialMemory(
-                limit=self._trial.suggest_int("memory_limit", 1_000, 1_000_000),
+                limit=self._trial.suggest_int(
+                    "memory_limit", 1_000, 1_000_000, step=50_000
+                ),
                 window_length=self._return_trial("windows_length"),
             )
 
@@ -210,7 +212,9 @@ class KniffelAI:
 
         elif self._agent_value == "CEM":
             memory = EpisodeParameterMemory(
-                limit=self._trial.suggest_int("memory_limit", 1_000, 1_000_000),
+                limit=self._trial.suggest_int(
+                    "memory_limit", 1_000, 1_000_000, step=50_000
+                ),
                 window_length=self._return_trial("windows_length"),
             )
 
