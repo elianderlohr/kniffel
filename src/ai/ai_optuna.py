@@ -27,9 +27,8 @@ from rl.policy import (
 )
 
 from rl.memory import SequentialMemory
-from keras.layers import Dense, Flatten
-from keras.callbacks import EarlyStopping
 
+from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
 # Kniffel
