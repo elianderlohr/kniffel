@@ -28,11 +28,10 @@ from rl.policy import (
 
 from rl.memory import SequentialMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
+from keras.layers import Dense, Flatten
+from keras.callbacks import EarlyStopping
 
-
-from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
 
 from pathlib import Path
 import sys
