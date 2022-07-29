@@ -211,10 +211,12 @@ class KniffelAI:
             )
 
         elif self._agent_value == "CEM":
+            memory_interval = self._trial.suggest_int(
+                "memory_limit", 1_000, 1_000_000, step=50_000
+            )
+
             memory = EpisodeParameterMemory(
-                limit=self._trial.suggest_int(
-                    "memory_limit", 1_000, 1_000_000, step=50_000
-                ),
+                limit=memory_interval,
                 window_length=self._return_trial("windows_length"),
             )
 
@@ -224,6 +226,7 @@ class KniffelAI:
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
                 batch_size=self._return_trial("batch_size"),
+                memory_interval=memory_interval,
             )
 
         elif self._agent_value == "SARSA":
@@ -560,12 +563,12 @@ if __name__ == "__main__":
         storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    #study = optuna.load_study(
+    # study = optuna.load_study(
     #    study_name=_study_name,
     #    storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
-    #)
+    # )
 
-    study.optimize(objective, n_trials=100, catch=(ValueError,), n_jobs=4)
+    study.optimize(objective, n_trials=100, catch=(ValueError,), n_jobs=4, gc_after_trial=True, show_progress_bar=True)
 
     # print("Number of finished trials: {}".format(len(study.trials)))
 
