@@ -542,17 +542,6 @@ def objective(trial):
     return score
 
 
-def optuna_func():
-    study = optuna.load_study(
-        study_name=_study_name,
-        storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
-    )
-
-    study.optimize(objective, n_trials=100, catch=(ValueError,))
-
-
-import concurrent.futures
-
 _pw = ""
 _study_name = ""
 
@@ -571,11 +560,12 @@ if __name__ == "__main__":
         storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     )
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        process1 = executor.submit(optuna_func)
-        process2 = executor.submit(optuna_func)
-        process3 = executor.submit(optuna_func)
-        process4 = executor.submit(optuna_func)
+    #study = optuna.load_study(
+    #    study_name=_study_name,
+    #    storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+    #)
+
+    study.optimize(objective, n_trials=100, catch=(ValueError,), n_jobs=4)
 
     # print("Number of finished trials: {}".format(len(study.trials)))
 
