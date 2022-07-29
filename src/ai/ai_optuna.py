@@ -62,6 +62,9 @@ class KniffelAI:
 
     # Optuna trial
     _trial: optuna.trial.Trial = None
+    _trial_tracker: dict = {}
+    # Agent
+    _agent_value = ""
 
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
@@ -91,8 +94,15 @@ class KniffelAI:
         else:
             self._path_prefix = path_prefix
 
+        self._agent_value = self._return_trial("agent")
+
     def _return_trial(self, key):
-        return self._trial.suggest_categorical(key, self._hyperparater_base[key])
+        if key not in self._trial_tracker.keys():
+            self._trial_tracker[key] = self._trial.suggest_categorical(
+                key, self._hyperparater_base[key]
+            )
+
+        return self._trial_tracker[key]
 
     # Model
     def build_model(self, actions):
@@ -195,9 +205,7 @@ class KniffelAI:
             window_length=self._return_trial("windows_length"),
         )
 
-        agent_value = self._return_trial("agent")
-
-        if agent_value == "DQN":
+        if self._agent_value == "DQN":
             agent = DQNAgent(
                 model=model,
                 memory=memory,
@@ -210,7 +218,7 @@ class KniffelAI:
                 enable_double_dqn=self._return_trial("enable_double_dqn"),
             )
 
-        elif agent_value == "CEM":
+        elif self._agent_value == "CEM":
             agent = CEMAgent(
                 model=model,
                 memory=memory,
@@ -219,7 +227,7 @@ class KniffelAI:
                 batch_size=self._return_trial("batch_size"),
             )
 
-        elif agent_value == "SARSA":
+        elif self._agent_value == "SARSA":
             agent = SARSAAgent(
                 model=model,
                 policy=self.get_policy(self._return_trial("train_policy")),
@@ -243,18 +251,29 @@ class KniffelAI:
         )
         agent = self.build_agent(model, actions, nb_steps=nb_steps)
 
-        agent.compile(
-            Adam(
-                learning_rate=self._return_trial(
-                    "adam_learning_rate",
+        if self._agent_value == "DQN" or self._agent_value == "SARSA":
+            agent.compile(
+                Adam(
+                    learning_rate=self._return_trial(
+                        "adam_learning_rate",
+                    ),
+                    epsilon=self._return_trial(
+                        "adam_epsilon",
+                    ),
                 ),
-                epsilon=self._return_trial(
-                    "adam_epsilon",
+                metrics=["mae", "accuracy"],
+            )
+        elif self._agent_value == "CEM":
+            agent.compile(
+                Adam(
+                    learning_rate=self._return_trial(
+                        "adam_learning_rate",
+                    ),
+                    epsilon=self._return_trial(
+                        "adam_epsilon",
+                    ),
                 ),
-            ),
-            metrics=["mae", "accuracy"],
-        )
-
+            )
         if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
             agent.load_weights(f"{load_path}/weights.h5f")
@@ -265,7 +284,7 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=10_000,
+            log_interval=50_000,
         )
 
         return agent, history
@@ -454,124 +473,6 @@ class KniffelAI:
                 points.append(kniffel.get_points())
 
         return break_counter, mean(points), max(points), min(points)
-
-    # Use Model
-    def play(self, path, episodes, env_config, random=False, logging=False):
-        if random:
-            self.play_random(episodes, env_config)
-        else:
-            self.use_model(path, episodes, env_config, logging=logging)
-
-    def play_random(self, episodes, env_config):
-        env = KniffelEnv(env_config, logging=True, config_file_path=self._config_path)
-
-        round = 1
-        for episode in range(1, episodes + 1):
-            state = env.reset()
-            done = False
-            score = 0
-
-            print("####")
-            print(round)
-
-            try_out = 1
-            while not done:
-                action = env.action_space.sample()
-                n_state, reward, done, info = env.step(action)
-                score += reward
-                print(f"Try: {try_out}")
-                print(f"Action: {action}")
-                print(f"Score: {score}")
-                print(n_state)
-                try_out += 1
-
-            print("Episode:{} Score:{}".format(episode, score))
-
-            round += 1
-
-    def use_model(self, path, episodes, env_config, logging=False):
-
-        env = KniffelEnv(
-            env_config, logging=logging, config_file_path=self._config_path
-        )
-
-        f = open(f"{path}/configuration.json")
-        hyperparameter = dict(json.load(f))
-
-        actions = env.action_space.n
-
-        model = self.build_model(
-            actions, hyperparameter, hyperparameter["window_length"]
-        )
-
-        agent = self.build_agent(
-            model, actions, nb_steps=episodes, hyperparameter=hyperparameter
-        )
-
-        agent.compile(
-            optimizer=Adam(
-                learning_rate=self._trial.suggest_categorical(
-                    "adam_learning_rate", hyperparameter["adam_learning_rate"]
-                )
-            ),
-            metrics=["mae"],
-        )
-
-        agent.load_weights(f"{path}/weights.h5f")
-
-        points = []
-        rounds = []
-        break_counter = 0
-        for e in range(episodes):
-            if logging:
-                print(f"Game: {e}")
-
-            kniffel = Kniffel()
-            rounds_counter = 1
-            while True:
-                state = kniffel.get_state()
-                if logging:
-                    print(f"    Round: {rounds_counter}")
-
-                try:
-                    self.predict_and_apply(agent, kniffel, state, logging)
-                    rounds_counter += 1
-                    if logging:
-                        print(f"    State: {state}")
-                        print(f"       Points: {kniffel.get_points()}")
-                        print(f"       Prediction Allowed: True")
-                except BaseException as e:
-                    if e == ex.GameFinishedException:
-                        points.append(kniffel.get_points())
-                        rounds.append(rounds_counter)
-                        rounds_counter = 1
-
-                        if logging:
-                            print("       Prediction Allowed: False")
-                            print("       Game Finished: True")
-
-                        break
-                    else:
-                        points.append(kniffel.get_points())
-                        rounds.append(rounds_counter)
-                        break_counter += 1
-                        rounds_counter = 1
-
-                        if logging:
-                            print("       Prediction Allowed: False")
-
-                        break
-
-        print()
-        print(f"Finished games: {episodes - break_counter}")
-        print(f"Average points: {mean(points)}")
-        print(f"Max points: {max(points)}")
-        print(f"Min points: {min(points)}")
-        print(f"Average rounds: {mean(rounds)}")
-        print(f"Max rounds: {max(rounds)}")
-        print(f"Min rounds: {min(rounds)}")
-
-        return break_counter, sum(points) / len(points), max(points), min(points)
 
 
 def objective(trial):
