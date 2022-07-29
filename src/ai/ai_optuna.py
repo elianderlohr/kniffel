@@ -1,7 +1,9 @@
 # Standard imports
+from gc import callbacks
 from statistics import mean
 from datetime import datetime as dt
 from tokenize import Triple
+from unittest.mock import call
 import warnings
 import numpy as np
 import json
@@ -18,7 +20,6 @@ from rl.policy import (
     BoltzmannQPolicy,
     EpsGreedyQPolicy,
     LinearAnnealedPolicy,
-    SoftmaxPolicy,
     GreedyQPolicy,
     MaxBoltzmannQPolicy,
     BoltzmannGumbelQPolicy,
@@ -117,10 +118,10 @@ class KniffelAI:
             )
         )
 
-        for i in range(1, self._return_trial("layers") + 1):
+        for i in range(1, self._trial.suggest_int("layers", 1, 4)):
             model.add(
                 Dense(
-                    self._return_trial("n_units_l" + str(i)),
+                    self._trial.suggest_int("n_units_l" + str(i), 16, 256),
                     activation="relu",
                 )
             )
@@ -149,16 +150,10 @@ class KniffelAI:
                 nb_steps=1_000_000,
             )
 
-        elif key == "SoftmaxPolicy":
-
-            policy = SoftmaxPolicy()
-
         elif key == "EpsGreedyQPolicy":
 
             policy = EpsGreedyQPolicy(
-                eps=self._return_trial(
-                    "adam_epsilon",
-                )
+                eps=self._trial.suggest_float("greedy_eps", 1e-9, 1e-1)
             )
 
         elif key == "GreedyQPolicy":
@@ -174,9 +169,7 @@ class KniffelAI:
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
-                eps=self._return_trial(
-                    "adam_epsilon",
-                ),
+                eps=self._trial.suggest_float("boltzmann_eps", 1e-9, 1e-1),
                 tau=self._trial.suggest_float("tau", 0.05, 1, step=0.05),
             )
         elif key == "BoltzmannGumbelQPolicy":
@@ -197,8 +190,6 @@ class KniffelAI:
         :return: agent
         """
         agent = None
-        train_policy = None
-        policy = None
 
         memory = SequentialMemory(
             limit=500_000,
@@ -234,7 +225,7 @@ class KniffelAI:
                 test_policy=self.get_policy(self._return_trial("test_policy")),
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
-                gamma=self._return_trial("gamma"),
+                gamma=self._trial.suggest_float("gamma", 0.01, 0.99),
             )
 
         return agent
@@ -254,29 +245,24 @@ class KniffelAI:
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
             agent.compile(
                 Adam(
-                    learning_rate=self._return_trial(
-                        "adam_learning_rate",
+                    learning_rate=self._trial.suggest_float(
+                        "adam_learning_rate", 0.00001, 0.1
                     ),
-                    epsilon=self._return_trial(
-                        "adam_epsilon",
-                    ),
+                    epsilon=self._trial.suggest_float("adam_epsilon", 1e-9, 1e-1),
                 ),
                 metrics=["mae", "accuracy"],
             )
         elif self._agent_value == "CEM":
-            agent.compile(
-                Adam(
-                    learning_rate=self._return_trial(
-                        "adam_learning_rate",
-                    ),
-                    epsilon=self._return_trial(
-                        "adam_epsilon",
-                    ),
-                ),
-            )
+            agent.compile()
+
         if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
             agent.load_weights(f"{load_path}/weights.h5f")
+
+        callbacks = []
+        callbacks += [
+            optuna.integration.KerasPruningCallback(self._trial, "episode_reward")
+        ]
 
         history = agent.fit(
             env,
@@ -284,7 +270,8 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=10_000,
+            log_interval=50_000,
+            callbacks=callbacks,
         )
 
         return agent, history
@@ -477,20 +464,8 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": range(1, 3),
-        "adam_learning_rate": [
-            0.00001,
-            0.0005,
-            0.0001,
-            0.0005,
-            0.001,
-            0.005,
-            0.01,
-            0.05,
-            0.1,
-        ],
-        "adam_epsilon": [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        "batch_size": [32, 64, 128, 512, 1028, 1512, 2056],
+        "windows_length": [1],  # range(1, 3),
+        "batch_size": [32],
         "target_model_update": [
             0.00001,
             0.0005,
@@ -517,18 +492,10 @@ def objective(trial):
         ],
         "dueling_option": ["avg"],
         "activation": ["linear", "softmax", "sigmoid"],
-        "layers": [4, 3, 2, 1],
-        "n_units_l1": [256, 128, 96, 64, 32, 16],
-        "n_units_l2": [256, 128, 96, 64, 32, 16],
-        "n_units_l3": [256, 128, 96, 64, 32, 16],
-        "n_units_l4": [256, 128, 96, 64, 32, 16],
         "enable_double_dqn": [True, False],
         "agent": ["DQN", "CEM", "SARSA"],
-        "gamma": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0, 9],
         "train_policy": [
             "LinearAnnealedPolicy",
-            "SoftmaxPolicy",
-            "SoftmaxPolicy",
             "EpsGreedyQPolicy",
             "GreedyQPolicy",
             "BoltzmannQPolicy",
@@ -537,8 +504,6 @@ def objective(trial):
         ],
         "test_policy": [
             "LinearAnnealedPolicy",
-            "SoftmaxPolicy",
-            "SoftmaxPolicy",
             "EpsGreedyQPolicy",
             "GreedyQPolicy",
             "BoltzmannQPolicy",
@@ -574,18 +539,6 @@ def optuna_func():
     )
 
     study.optimize(objective, n_trials=100)
-
-
-def runInParallel(*fns):
-    proc = []
-
-    for fn in fns:
-        p = Process(target=fn)
-        p.start()
-        proc.append(p)
-
-    for p in proc:
-        p.join()
 
 
 import concurrent.futures
