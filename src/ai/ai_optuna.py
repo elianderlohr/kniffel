@@ -279,7 +279,7 @@ class KniffelAI:
         callbacks = []
         callbacks += [
             optuna.integration.KerasPruningCallback(
-                self._trial, "nb_steps", interval=10_000
+                self._trial, "nb_steps", interval=50_000
             )
         ]
 
@@ -290,7 +290,7 @@ class KniffelAI:
             visualize=False,
             # action_repetition=2,
             log_interval=50_000,
-            callbacks=callbacks,
+            # callbacks=callbacks,
         )
 
         return agent, history
@@ -551,7 +551,7 @@ def objective(trial):
         trial=trial,
     )
 
-    score = ai.train(env_config=env_config, nb_steps=100_000)
+    score = ai.train(env_config=env_config, nb_steps=50_000)
     return score
 
 
