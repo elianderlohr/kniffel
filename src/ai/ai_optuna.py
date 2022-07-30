@@ -206,7 +206,7 @@ class KniffelAI:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
-                target_model_update=self._return_trial("dqn_target_model_update"),
+                target_model_update=self._return_trial("target_model_update"),
                 batch_size=self._return_trial("batch_size"),
                 dueling_type=self._return_trial("dqn_dueling_option"),
                 enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
