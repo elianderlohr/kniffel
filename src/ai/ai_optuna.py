@@ -154,7 +154,7 @@ class KniffelAI:
         elif key == "EpsGreedyQPolicy":
 
             policy = EpsGreedyQPolicy(
-                eps=self._trial.suggest_float("epsgreedy_eps", 1e-9, 1e-1)
+                eps=self._trial.suggest_float("eps_greedy_eps", 1e-9, 1e-1)
             )
 
         elif key == "GreedyQPolicy":
@@ -170,13 +170,13 @@ class KniffelAI:
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
-                eps=self._trial.suggest_float("maxboltzmann_eps", 1e-9, 1e-1),
-                tau=self._trial.suggest_float("maxbpltzmann_tau", 0.05, 1, step=0.05),
+                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-9, 1e-1),
+                tau=self._trial.suggest_float("max_boltzmann_tau", 0.05, 1, step=0.05),
             )
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
-                C=self._trial.suggest_float("boltzmanngumbel_C", 0.05, 1, step=0.05)
+                C=self._trial.suggest_float("boltzmann_gumbel_C", 0.05, 1, step=0.05)
             )
 
         return policy
