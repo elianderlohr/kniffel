@@ -259,10 +259,12 @@ class KniffelAI:
             agent.compile(
                 Adam(
                     learning_rate=self._trial.suggest_float(
-                        "{}_adam_learning_rate".format(self._agent_value), 0.00001, 0.1
+                        "{}_adam_learning_rate".format(self._agent_value.lower()),
+                        0.00001,
+                        0.1,
                     ),
                     epsilon=self._trial.suggest_float(
-                        "{}_adam_epsilon".format(self._agent_value), 1e-9, 1e-1
+                        "{}_adam_epsilon".format(self._agent_value.lower()), 1e-9, 1e-1
                     ),
                 ),
                 metrics=["mae", "accuracy"],
@@ -586,7 +588,6 @@ if __name__ == "__main__":
         catch=(ValueError,),
         n_jobs=4,
         gc_after_trial=True,
-        show_progress_bar=True,
     )
 
     # print("Number of finished trials: {}".format(len(study.trials)))
