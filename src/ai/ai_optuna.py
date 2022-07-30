@@ -206,7 +206,7 @@ class KniffelAI:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
-                target_model_update=self._return_trial("target_model_update"),
+                target_model_update=self._return_trial("dqn_target_model_update"),
                 batch_size=self._return_trial("batch_size"),
                 dueling_type=self._return_trial("dqn_dueling_option"),
                 enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
@@ -485,7 +485,7 @@ def objective(trial):
     base_hp = {
         "windows_length": [1],  # range(1, 3),
         "batch_size": [32],
-        "target_model_update": [
+        "dqn_target_model_update": [
             0.00001,
             0.0005,
             0.0001,
@@ -509,9 +509,9 @@ def objective(trial):
             10_000,
             15_000,
         ],
-        "dueling_option": ["avg"],
+        "dqn_dueling_option": ["avg"],
         "activation": ["linear", "softmax", "sigmoid"],
-        "enable_double_dqn": [True, False],
+        "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN", "CEM", "SARSA"],
         "linear_inner_policy": [
             "LinearAnnealedPolicy",
