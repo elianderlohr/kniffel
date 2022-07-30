@@ -514,12 +514,8 @@ def objective(trial):
         "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN", "CEM", "SARSA"],
         "linear_inner_policy": [
-            "LinearAnnealedPolicy",
             "EpsGreedyQPolicy",
-            "GreedyQPolicy",
-            "BoltzmannQPolicy",
             "MaxBoltzmannQPolicy",
-            "BoltzmannGumbelQPolicy",
         ],
         "train_policy": [
             "LinearAnnealedPolicy",
