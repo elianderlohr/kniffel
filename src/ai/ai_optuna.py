@@ -3,6 +3,7 @@ from gc import callbacks
 from statistics import mean
 from datetime import datetime as dt
 from tokenize import Triple
+from turtle import get_poly
 from unittest.mock import call
 import warnings
 import numpy as np
@@ -117,10 +118,11 @@ class KniffelAI:
             )
         )
 
-        for i in range(1, self._trial.suggest_int("layers", 1, 4)):
+        layers = self._trial.suggest_int("layers", 1, 4)
+        for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l" + str(i), 16, 256, step=16),
+                    self._trial.suggest_int("n_units_l{}".format(i), 16, 256, step=16),
                     activation="relu",
                 )
             )
@@ -141,7 +143,7 @@ class KniffelAI:
         if key == "LinearAnnealedPolicy":
 
             policy = LinearAnnealedPolicy(
-                EpsGreedyQPolicy(),
+                self.get_policy("linear_inner_policy"),
                 attr="eps",
                 value_max=1,
                 value_min=0.1,
@@ -152,7 +154,7 @@ class KniffelAI:
         elif key == "EpsGreedyQPolicy":
 
             policy = EpsGreedyQPolicy(
-                eps=self._trial.suggest_float("greedy_eps", 1e-9, 1e-1)
+                eps=self._trial.suggest_float("epsgreedy_eps", 1e-9, 1e-1)
             )
 
         elif key == "GreedyQPolicy":
@@ -162,19 +164,19 @@ class KniffelAI:
         elif key == "BoltzmannQPolicy":
 
             policy = BoltzmannQPolicy(
-                tau=self._trial.suggest_float("tau", 0.05, 1, step=0.05)
+                tau=self._trial.suggest_float("boltzmann_tau", 0.05, 1, step=0.05)
             )
 
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
-                eps=self._trial.suggest_float("boltzmann_eps", 1e-9, 1e-1),
-                tau=self._trial.suggest_float("tau", 0.05, 1, step=0.05),
+                eps=self._trial.suggest_float("maxboltzmann_eps", 1e-9, 1e-1),
+                tau=self._trial.suggest_float("maxbpltzmann_tau", 0.05, 1, step=0.05),
             )
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
-                C=self._trial.suggest_float("C", 0.05, 1, step=0.05)
+                C=self._trial.suggest_float("boltzmanngumbel_C", 0.05, 1, step=0.05)
             )
 
         return policy
@@ -193,7 +195,7 @@ class KniffelAI:
         if self._agent_value == "DQN":
             memory = SequentialMemory(
                 limit=self._trial.suggest_int(
-                    "memory_limit", 1_000, 1_000_000, step=50_000
+                    "dqn_memory_limit", 1_000, 1_000_000, step=50_000
                 ),
                 window_length=self._return_trial("windows_length"),
             )
@@ -204,15 +206,15 @@ class KniffelAI:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
-                target_model_update=self._return_trial("target_model_update"),
+                target_model_update=self._return_trial("dqn_target_model_update"),
                 batch_size=self._return_trial("batch_size"),
-                dueling_type=self._return_trial("dueling_option"),
-                enable_double_dqn=self._return_trial("enable_double_dqn"),
+                dueling_type=self._return_trial("dqn_dueling_option"),
+                enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
             )
 
         elif self._agent_value == "CEM":
             memory_interval = self._trial.suggest_int(
-                "memory_limit", 1_000, 1_000_000, step=50_000
+                "cem_memory_limit", 1_000, 1_000_000, step=50_000
             )
 
             memory = EpisodeParameterMemory(
@@ -236,7 +238,7 @@ class KniffelAI:
                 test_policy=self.get_policy(self._return_trial("test_policy")),
                 nb_actions=actions,
                 nb_steps_warmup=1_000,
-                gamma=self._trial.suggest_float("gamma", 0.01, 0.99),
+                gamma=self._trial.suggest_float("sarsa_gamma", 0.01, 0.99),
             )
 
         return agent
@@ -257,9 +259,11 @@ class KniffelAI:
             agent.compile(
                 Adam(
                     learning_rate=self._trial.suggest_float(
-                        "adam_learning_rate", 0.00001, 0.1
+                        "{}_adam_learning_rate".format(self._agent_value), 0.00001, 0.1
                     ),
-                    epsilon=self._trial.suggest_float("adam_epsilon", 1e-9, 1e-1),
+                    epsilon=self._trial.suggest_float(
+                        "{}_adam_epsilon".format(self._agent_value), 1e-9, 1e-1
+                    ),
                 ),
                 metrics=["mae", "accuracy"],
             )
@@ -273,7 +277,7 @@ class KniffelAI:
         callbacks = []
         callbacks += [
             optuna.integration.KerasPruningCallback(
-                self._trial, "episode_reward", interval=10_000
+                self._trial, "nb_steps", interval=10_000
             )
         ]
 
@@ -297,7 +301,7 @@ class KniffelAI:
         print(f"episode_reward: {episode_reward}")
         print(f"nb_steps: {nb_steps}")
 
-        return episode_reward
+        return nb_steps
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
         return self._train(
@@ -507,6 +511,14 @@ def objective(trial):
         "activation": ["linear", "softmax", "sigmoid"],
         "enable_double_dqn": [True, False],
         "agent": ["DQN", "CEM", "SARSA"],
+        "linear_inner_policy": [
+            "LinearAnnealedPolicy",
+            "EpsGreedyQPolicy",
+            "GreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+            "BoltzmannGumbelQPolicy",
+        ],
         "train_policy": [
             "LinearAnnealedPolicy",
             "EpsGreedyQPolicy",
@@ -568,7 +580,14 @@ if __name__ == "__main__":
     #    storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
     # )
 
-    study.optimize(objective, n_trials=100, catch=(ValueError,), n_jobs=4, gc_after_trial=True, show_progress_bar=True)
+    study.optimize(
+        objective,
+        n_trials=100,
+        catch=(ValueError,),
+        n_jobs=4,
+        gc_after_trial=True,
+        show_progress_bar=True,
+    )
 
     # print("Number of finished trials: {}".format(len(study.trials)))
 
