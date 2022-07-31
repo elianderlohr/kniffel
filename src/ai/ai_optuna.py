@@ -550,7 +550,7 @@ def objective(trial):
         trial=trial,
     )
 
-    score = ai.train(env_config=env_config, nb_steps=10_000)
+    score = ai.train(env_config=env_config, nb_steps=100_000)
     return score
 
 
