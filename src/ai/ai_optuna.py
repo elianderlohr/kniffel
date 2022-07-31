@@ -515,7 +515,6 @@ def objective(trial):
         "agent": ["DQN", "CEM", "SARSA"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
-            "MaxBoltzmannQPolicy",
         ],
         "train_policy": [
             "LinearAnnealedPolicy",
