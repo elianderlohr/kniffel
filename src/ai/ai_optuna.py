@@ -63,7 +63,7 @@ class KniffelAI:
 
     # Optuna trial
     _trial: optuna.trial.Trial = None
-    _trial_tracker: dict = {}
+
     # Agent
     _agent_value = ""
 
@@ -77,13 +77,14 @@ class KniffelAI:
         path_prefix="",
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
-        trial=None,
+        trial: optuna.trial.Trial = None,
     ):
         self._load = load
         self._hyperparater_base = hyperparater_base
         self._test_episodes = test_episodes
         self._config_path = config_path
         self._trial = trial
+        self._agent_value = self._return_trial("agent")
 
         if path_prefix == "":
             try:
@@ -95,15 +96,12 @@ class KniffelAI:
         else:
             self._path_prefix = path_prefix
 
-        self._agent_value = self._return_trial("agent")
+        
 
     def _return_trial(self, key):
-        if key not in self._trial_tracker.keys():
-            self._trial_tracker[key] = self._trial.suggest_categorical(
-                key, self._hyperparater_base[key]
-            )
-
-        return self._trial_tracker[key]
+        return self._trial.suggest_categorical(
+            key, self._hyperparater_base[key]
+        )
 
     # Model
     def build_model(self, actions):
