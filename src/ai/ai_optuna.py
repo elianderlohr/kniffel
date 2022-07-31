@@ -279,7 +279,7 @@ class KniffelAI:
         callbacks = []
         callbacks += [
             optuna.integration.KerasPruningCallback(
-                self._trial, "nb_steps", interval=50_000
+                self._trial, "nb_steps", interval=10_000
             )
         ]
 
@@ -290,7 +290,7 @@ class KniffelAI:
             visualize=False,
             # action_repetition=2,
             log_interval=50_000,
-            # callbacks=callbacks,
+            callbacks=callbacks,
         )
 
         return agent, history
@@ -551,7 +551,7 @@ def objective(trial):
         trial=trial,
     )
 
-    score = ai.train(env_config=env_config, nb_steps=50_000)
+    score = ai.train(env_config=env_config, nb_steps=10_000)
     return score
 
 
@@ -563,20 +563,22 @@ if __name__ == "__main__":
 
     pw = [s for s in sys.argv if s.startswith("p=")][0].split("=")[1]
     study_name = [s for s in sys.argv if s.startswith("name=")][0].split("=")[1]
+    create_new = [s for s in sys.argv if s.startswith("new=")][0].split("=")[1]
 
     _pw = pw
     _study_name = study_name
 
-    study = optuna.create_study(
-        study_name=study_name,
-        direction="maximize",
-        storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
-    )
-
-    # study = optuna.load_study(
-    #    study_name=_study_name,
-    #    storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
-    # )
+    if create_new == "true":
+        study = optuna.create_study(
+            study_name=study_name,
+            direction="maximize",
+            storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+        )
+    else:
+        study = optuna.load_study(
+            study_name=_study_name,
+            storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+        )
 
     study.optimize(
         objective,
