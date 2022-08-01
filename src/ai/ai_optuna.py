@@ -39,9 +39,9 @@ sys.path.append(str(path_root))
 
 from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
-from src.ai.hyperparameter import Hyperparameter
 from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
+from src.ai.callback.custom_keras_pruning_callback import CustomKerasPruningCallback
 import src.kniffel.classes.custom_exceptions as ex
 
 
@@ -96,12 +96,8 @@ class KniffelAI:
         else:
             self._path_prefix = path_prefix
 
-        
-
     def _return_trial(self, key):
-        return self._trial.suggest_categorical(
-            key, self._hyperparater_base[key]
-        )
+        return self._trial.suggest_categorical(key, self._hyperparater_base[key])
 
     # Model
     def build_model(self, actions):
@@ -135,13 +131,22 @@ class KniffelAI:
         model.summary()
         return model
 
+    def get_inner_policy(self):
+        key = self._return_trial("linear_inner_policy")
+
+        if key == "EpsGreedyQPolicy":
+
+            policy = EpsGreedyQPolicy()
+
+        return policy
+
     def get_policy(self, key):
 
         policy = None
         if key == "LinearAnnealedPolicy":
 
             policy = LinearAnnealedPolicy(
-                self.get_policy("linear_inner_policy"),
+                self.get_inner_policy(),
                 attr="eps",
                 value_max=1,
                 value_min=0.1,
@@ -276,10 +281,10 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            optuna.integration.KerasPruningCallback(
-                self._trial, "nb_steps", interval=10_000
-            )
+            CustomKerasPruningCallback(self._trial, "nb_episode_steps", interval=10_000)
         ]
+
+        # WRITE OWN PRUNER AND CHECK THE WRITE VALUE
 
         history = agent.fit(
             env,
@@ -569,7 +574,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=study_name,
             direction="maximize",
-            storage=f"mysql://kniffel:{pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+            storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
         study = optuna.load_study(
