@@ -217,7 +217,7 @@ class KniffelAI:
 
         elif self._agent_value == "CEM":
             memory_interval = self._trial.suggest_int(
-                "cem_memory_limit", 1_000, 1_000_000, step=50_000
+                "cem_memory_limit", 1_000, 750_000, step=50_000
             )
 
             memory = EpisodeParameterMemory(
