@@ -112,7 +112,7 @@ class KniffelEnv(Env):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
         # Actions we can take
-        self.action_space = spaces.Discrete(57)
+        self.action_space = spaces.Discrete(58)
 
         self.observation_space = spaces.Box(
             low=0, high=30, shape=(1, 41), dtype=np.int32

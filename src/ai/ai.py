@@ -625,7 +625,7 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-       path="output/weights/p_date=2022-08-02-11_19_27",
+       path="output/weights/p_date=2022-08-02-12_07_02",
        episodes=1_000,
        env_config=env_config,
        logging=False,
@@ -676,7 +676,7 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    train(ai, env_config)
+    play(ai, env_config)
 
    
 
