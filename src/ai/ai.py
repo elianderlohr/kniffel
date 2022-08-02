@@ -541,9 +541,7 @@ class KniffelAI:
         actions = env.action_space.n
 
         model = self.build_model(actions)
-        agent = self.build_agent(
-            model, actions, nb_steps=episodes
-        )
+        agent = self.build_agent(model, actions, nb_steps=episodes)
         if (
             self.get_hyperparameter("agent") == "DQN"
             or self.get_hyperparameter("agent") == "SARSA"
@@ -590,7 +588,7 @@ class KniffelAI:
                         print(f"       Points: {kniffel.get_points()}")
                         print(f"       Prediction Allowed: True")
                 except BaseException as e:
-                    if e == ex.GameFinishedException:
+                    if e.args[0] == "Game finished!":
                         points.append(kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
@@ -625,18 +623,20 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-       path="output/weights/p_date=2022-08-02-12_07_02",
-       episodes=1_000,
-       env_config=env_config,
-       logging=False,
+        path="output/weights/p_date=2022-08-02-18_13_52",
+        episodes=10_000,
+        env_config=env_config,
+        logging=False,
     )
+
 
 def train(ai: KniffelAI, env_config: dict):
     ai._train(
-        nb_steps=1_000_000,
+        nb_steps=5_000_000,
         env_config=env_config,
-        # load_path="weights/one_week_training",
+        load_path="output/weights/p_date=2022-08-02-16_17_23",
     )
+
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -661,7 +661,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        load=False,
+        load=True,
         config_path="src/ai/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
@@ -677,7 +677,3 @@ if __name__ == "__main__":
     }
 
     play(ai, env_config)
-
-   
-
-    
