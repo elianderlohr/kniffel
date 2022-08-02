@@ -1,13 +1,9 @@
 # Standard imports
-from gc import callbacks
 from statistics import mean
 from datetime import datetime as dt
-from tokenize import Triple
-from unittest.mock import call
 import warnings
 import numpy as np
 import json
-import optuna
 import os
 from pathlib import Path
 import sys
@@ -26,7 +22,7 @@ from rl.policy import (
     BoltzmannGumbelQPolicy,
 )
 
-from rl.memory import SequentialMemory
+from rl.memory import SequentialMemory, EpisodeParameterMemory
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 from tensorflow.keras.layers import Dense, Flatten
@@ -41,7 +37,6 @@ sys.path.append(str(path_root))
 
 from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
-from src.ai.hyperparameter import Hyperparameter
 from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
 import src.kniffel.classes.custom_exceptions as ex
@@ -52,10 +47,7 @@ class KniffelAI:
     _load = False
 
     # Hyperparameter object
-    _hp = None
-
-    # Grid Search
-    _is_grid_search = False
+    _hyperparater_base = {}
 
     # Test episodes
     _test_episodes = 100
@@ -71,23 +63,17 @@ class KniffelAI:
 
     def __init__(
         self,
-        is_grid_search=False,
         load=False,
-        predefined_layers=False,
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
-        randomize_hyperparam=True,
     ):
         self._load = load
-        self._hp = Hyperparameter(
-            randomize=randomize_hyperparam,
-            predefined_layers=predefined_layers,
-            base_hp=hyperparater_base,
-        )
+
         self._test_episodes = test_episodes
         self._config_path = config_path
+        self._hyperparater_base = hyperparater_base
 
         if path_prefix == "":
             try:
@@ -100,18 +86,73 @@ class KniffelAI:
             self._path_prefix = path_prefix
 
     # Model
-    def build_model(self, actions, hyperparameter):
+    def build_model(self, actions):
         model = tf.keras.Sequential()
-        model.add(Flatten(input_shape=(hyperparameter["windows_length"], 1, 41)))
+        model.add(
+            Flatten(input_shape=(self.get_hyperparameter("windows_length"), 1, 41))
+        )
 
-        for i in range(1, hyperparameter["layers"] + 1):
-            model.add(Dense(hyperparameter["n_units_l" + str(i)], activation="relu"))
+        for i in range(1, self.get_hyperparameter("layers") + 1):
+            model.add(
+                Dense(self.get_hyperparameter("n_units_l" + str(i)), activation="relu")
+            )
 
-        model.add(Dense(actions, activation=hyperparameter["activation"]))
+        model.add(Dense(actions, activation=self.get_hyperparameter("activation")))
         model.summary()
         return model
 
-    def build_agent(self, model, actions, nb_steps, hyperparameter):
+    def get_inner_policy(self):
+        key = self.get_hyperparameter("linear_inner_policy")
+
+        if key == "EpsGreedyQPolicy":
+
+            policy = EpsGreedyQPolicy()
+
+        return policy
+
+    def get_policy(self, _key):
+
+        key = self.get_hyperparameter(_key)
+
+        policy = None
+        if key == "LinearAnnealedPolicy":
+
+            policy = LinearAnnealedPolicy(
+                self.get_inner_policy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+
+        elif key == "EpsGreedyQPolicy":
+
+            policy = EpsGreedyQPolicy(eps=self.get_hyperparameter("eps_greedy_eps"))
+
+        elif key == "GreedyQPolicy":
+
+            policy = GreedyQPolicy()
+
+        elif key == "BoltzmannQPolicy":
+
+            policy = BoltzmannQPolicy(tau=self.get_hyperparameter("boltzmann_tau"))
+
+        elif key == "MaxBoltzmannQPolicy":
+
+            policy = MaxBoltzmannQPolicy(
+                eps=self.get_hyperparameter("max_boltzmann_eps"),
+                tau=self.get_hyperparameter("max_boltzmann_tau"),
+            )
+        elif key == "BoltzmannGumbelQPolicy":
+
+            policy = BoltzmannGumbelQPolicy(
+                C=self.get_hyperparameter("boltzmann_gumbel_C")
+            )
+
+        return policy
+
+    def build_agent(self, model, actions, nb_steps):
         """Build dqn agent
 
         :param model: deep neural network model (keras)
@@ -121,69 +162,53 @@ class KniffelAI:
         :return: agent
         """
         agent = None
-        memory = SequentialMemory(
-            limit=500_000,
-            window_length=hyperparameter["windows_length"],
-        )
 
-        train_policy = LinearAnnealedPolicy(
-            EpsGreedyQPolicy(),
-            attr="eps",
-            value_max=1,
-            value_min=0.1,
-            value_test=0.05,
-            nb_steps=1_000_000,
-        )
-
-        agent = DQNAgent(
-            model=model,
-            memory=memory,
-            policy=train_policy,
-            nb_actions=actions,
-            nb_steps_warmup=1_000,
-            target_model_update=hyperparameter["target_model_update"],
-            batch_size=hyperparameter["batch_size"],
-            dueling_type=hyperparameter["dueling_option"],
-            enable_double_dqn=True,
-        )
-
-        return agent
-
-    # Train models by applying config
-    def grid_search_test(self, nb_steps=20_000, env_config={}):
-        self._is_grid_search = True
-
-        path = f"{self._path_prefix}output/configuration/p_date={self.datetime}"
-
-        hyperparameter_csv = ";".join(
-            str(e) for e in list(dict(self._hp.get()[0]).keys())
-        )
-        print(hyperparameter_csv)
-        self._append_file(
-            f"{path}/csv_configuration.csv",
-            content=f"id;duration;nb_steps;mean_train;max_train;min_train;mean_test_agent;max_test_agent;min_test_agent;mean_test_own;max_test_own;min_test_own;break_counter;n;{hyperparameter_csv}\n",
-        )
-
-        i = 1
-        for hyperparameter in self._hp.get():
-            print()
-            print("#################")
-            print(f"Test {i} from {len(self._hp.get())}")
-            print()
-            print(hyperparameter)
-            print()
-
-            csv = self._train(
-                hyperparameter=hyperparameter,
-                nb_steps=nb_steps,
-                env_config=env_config,
-                name=str(i),
+        if self.get_hyperparameter("agent") == "DQN":
+            memory = SequentialMemory(
+                limit=self.get_hyperparameter("dqn_memory_limit"),
+                window_length=self.get_hyperparameter("windows_length"),
             )
 
-            csv = str(i) + ";" + csv
-            self._append_file(f"{path}/csv_configuration.csv", content=csv)
+            agent = DQNAgent(
+                model=model,
+                memory=memory,
+                policy=self.get_policy("train_policy"),
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                target_model_update=self.get_hyperparameter("dqn_target_model_update"),
+                batch_size=self.get_hyperparameter("batch_size"),
+                dueling_type=self.get_hyperparameter("dqn_dueling_option"),
+                enable_double_dqn=self.get_hyperparameter("dqn_enable_double_dqn"),
+            )
 
-            i = i + 1
+        elif self.get_hyperparameter("agent") == "CEM":
+            memory_interval = self.get_hyperparameter("cem_memory_limit")
+
+            memory = EpisodeParameterMemory(
+                limit=memory_interval,
+                window_length=self.get_hyperparameter("windows_length"),
+            )
+
+            agent = CEMAgent(
+                model=model,
+                memory=memory,
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                batch_size=self.get_hyperparameter("batch_size"),
+                memory_interval=memory_interval,
+            )
+
+        elif self.get_hyperparameter("agent") == "SARSA":
+            agent = SARSAAgent(
+                model=model,
+                policy=self.get_policy("train_policy"),
+                test_policy=self.get_policy("test_policy"),
+                nb_actions=actions,
+                nb_steps_warmup=1_000,
+                gamma=self.get_hyperparameter("sarsa_gamma"),
+            )
+
+        return agent
 
     def _append_file(self, path, content, retry=0):
         try:
@@ -199,30 +224,45 @@ class KniffelAI:
                 print(path)
                 print(e)
 
+    def get_hyperparameter(self, key):
+        return self._hyperparater_base[key]
+
     def train_agent(
         self,
         actions,
-        hyperparameter,
         env,
         nb_steps,
         callbacks,
         load_path="",
     ):
-        model = self.build_model(actions, hyperparameter)
+        model = self.build_model(actions)
         agent = self.build_agent(
             model,
             actions,
             nb_steps=nb_steps,
-            hyperparameter=hyperparameter,
         )
 
-        agent.compile(
-            Adam(
-                learning_rate=hyperparameter["adam_learning_rate"],
-                epsilon=hyperparameter["adam_epsilon"],
-            ),
-            metrics=["mae", "accuracy"],
-        )
+        if (
+            self.get_hyperparameter("agent") == "DQN"
+            or self.get_hyperparameter("agent") == "SARSA"
+        ):
+            agent.compile(
+                Adam(
+                    learning_rate=self.get_hyperparameter(
+                        "{}_adam_learning_rate".format(
+                            self.get_hyperparameter("agent").lower()
+                        )
+                    ),
+                    epsilon=self.get_hyperparameter(
+                        "{}_adam_epsilon".format(
+                            self.get_hyperparameter("agent").lower()
+                        ),
+                    ),
+                ),
+                metrics=["mae", "accuracy"],
+            )
+        elif self.get_hyperparameter("agent") == "CEM":
+            agent.compile()
 
         if self._load:
             print(f"Load existing model and train: path={load_path}/weights.h5f")
@@ -235,7 +275,7 @@ class KniffelAI:
             visualize=False,
             callbacks=callbacks,
             # action_repetition=2,
-            log_interval=10_000,
+            log_interval=50_000,
         )
 
         return agent, history
@@ -250,44 +290,14 @@ class KniffelAI:
 
         return scores
 
-    def get_configuration(
-        self, agent, train_scores, test_scores, date_start, hyperparameter, nb_steps
-    ):
-        break_counter, mean_own, max_own, min_own = self.test(agent)
-        date_end = dt.today()
-
-        duration = date_end - date_start
-
-        mean_train = str(np.mean(train_scores.history["episode_reward"]))
-        max_train = str(np.max(train_scores.history["episode_reward"]))
-        min_train = str(np.min(train_scores.history["episode_reward"]))
-
-        mean_test = str(np.mean(test_scores.history["episode_reward"]))
-        max_test = str(np.max(test_scores.history["episode_reward"]))
-        min_test = str(np.min(test_scores.history["episode_reward"]))
-
-        hyperparameter_csv = ";".join(
-            str(e) for e in list(dict(hyperparameter).values())
-        )
-
-        csv = f"{duration.total_seconds()};{nb_steps};{mean_train};{max_train};{min_train};{mean_test};{max_test};{min_test};{mean_own};{max_own};{min_own};{break_counter};{self._test_episodes};{hyperparameter_csv}\n"
-
-        return csv
-
-    def train(
-        self, hyperparameter, nb_steps=10_000, load_path="", env_config="", name=""
-    ):
-        self._is_grid_search = False
-        self._train(
-            hyperparameter,
+    def train(self, nb_steps=10_000, load_path="", env_config=""):
+        return self._train(
             nb_steps=nb_steps,
             load_path=load_path,
             env_config=env_config,
         )
 
-    def _train(
-        self, hyperparameter, nb_steps=10_000, load_path="", env_config="", name=""
-    ):
+    def _train(self, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
         env = KniffelEnv(env_config, config_file_path=self._config_path)
 
@@ -295,42 +305,32 @@ class KniffelAI:
 
         callbacks = []
 
-        if self._is_grid_search:
-            path = f"{self._path_prefix}output/configuration/p_date={self.datetime}"
+        path = f"{self._path_prefix}output/weights/p_date={self.datetime}"
 
-            log_file = path + "/log_" + name + ".json"
+        # Create dir
+        os.mkdir(path)
 
-            callbacks = [FileLogger(log_file, interval=1_000)]
-        else:
-            path = f"{self._path_prefix}output/weights/p_date={self.datetime}"
+        # Create Callbacks
+        checkpoint_weights_filename = path + "/weights_{step}.h5f"
 
-            # Create dir
-            os.mkdir(path)
+        callbacks = [
+            ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
+        ]
 
-            # Create Callbacks
-            checkpoint_weights_filename = path + "/weights_{step}.h5f"
+        # Log
+        log_file = path + "/log.json"
 
-            callbacks = [
-                ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
-            ]
+        callbacks += [FileLogger(log_file, interval=1_000)]
 
-            # Log
-            log_file = path + "/log.json"
+        callbacks += [EarlyStopping(patience=10, monitor="episode_reward", mode="max")]
 
-            callbacks += [FileLogger(log_file, interval=1_000)]
+        # Save configuration json
+        json_object = json.dumps(hyperparameter, indent=4)
 
-            callbacks += [
-                EarlyStopping(patience=10, monitor="episode_reward", mode="max")
-            ]
-
-            # Save configuration json
-            json_object = json.dumps(hyperparameter, indent=4)
-
-            self._append_file(f"{path}/configuration.json", json_object)
+        self._append_file(f"{path}/configuration.json", json_object)
 
         agent, train_score = self.train_agent(
             actions=actions,
-            hyperparameter=hyperparameter,
             env=env,
             nb_steps=nb_steps,
             load_path=load_path,
@@ -339,22 +339,10 @@ class KniffelAI:
 
         test_scores = self.validate_model(agent, env=env)
 
-        if self._is_grid_search:
-            csv = self.get_configuration(
-                agent=agent,
-                train_scores=train_score,
-                test_scores=test_scores,
-                date_start=date_start,
-                hyperparameter=hyperparameter,
-                nb_steps=nb_steps,
-            )
-        else:
-            # save weights and configuration as json
-            agent.save_weights(f"{path}/weights.h5f", overwrite=False)
+        # save weights and configuration as json
+        agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
-            self.play(path, 10_000, env_config, logging=False)
-
-        return csv
+        self.play(path, 10_000, env_config, logging=False)
 
     def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
         action = agent.forward(state)
@@ -552,13 +540,31 @@ class KniffelAI:
 
         actions = env.action_space.n
 
-        model = self.build_model(actions, hyperparameter)
+        model = self.build_model(actions)
         agent = self.build_agent(
-            model, actions, nb_steps=episodes, hyperparameter=hyperparameter
+            model, actions, nb_steps=episodes
         )
-        agent.compile(
-            Adam(learning_rate=hyperparameter["adam_learning_rate"]), metrics=["mae"]
-        )
+        if (
+            self.get_hyperparameter("agent") == "DQN"
+            or self.get_hyperparameter("agent") == "SARSA"
+        ):
+            agent.compile(
+                Adam(
+                    learning_rate=self.get_hyperparameter(
+                        "{}_adam_learning_rate".format(
+                            self.get_hyperparameter("agent").lower()
+                        )
+                    ),
+                    epsilon=self.get_hyperparameter(
+                        "{}_adam_epsilon".format(
+                            self.get_hyperparameter("agent").lower()
+                        ),
+                    ),
+                ),
+                metrics=["mae", "accuracy"],
+            )
+        elif self.get_hyperparameter("agent") == "CEM":
+            agent.compile()
 
         agent.load_weights(f"{path}/weights.h5f")
 
@@ -617,35 +623,48 @@ class KniffelAI:
         return break_counter, sum(points) / len(points), max(points), min(points)
 
 
+def play(ai: KniffelAI, env_config: dict):
+    ai.play(
+       path="output/weights/p_date=2022-08-02-11_19_27",
+       episodes=1_000,
+       env_config=env_config,
+       logging=False,
+    )
+
+def train(ai: KniffelAI, env_config: dict):
+    ai._train(
+        nb_steps=1_000_000,
+        env_config=env_config,
+        # load_path="weights/one_week_training",
+    )
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    units = list(range(16, 96, 16))
-
-    base_hp = {
-        "windows_length": [1],
-        "adam_learning_rate": [
-            0.0001,
-        ],  # np.arange(0.0001, 0.1, 0.01),
-        "adam_epsilon": [1e-5],
-        "batch_size": [32, 64, 128, 256, 512, 1024, 1280, 1536, 2056],
-        "target_model_update": [
-            0.0001,
-        ],  # np.arange(1, 1000, 70),
-        "dueling_option": ["avg"],
-        "activation": ["linear"],
-        "layers": [3],
-        "unit_1": [96],
-        "unit_2": [80],
-        "unit_3": [64],
+    hyperparameter = {
+        "agent": "DQN",
+        "windows_length": 1,
+        "layers": 3,
+        "n_units_l1": 16,
+        "n_units_l2": 96,
+        "n_units_l3": 208,
+        "activation": "linear",
+        "dqn_memory_limit": 101000,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 0.5,
+        "dqn_target_model_update": 0.01,
+        "batch_size": 32,
+        "dqn_dueling_option": "avg",
+        "dqn_enable_double_dqn": False,
+        "dqn_adam_learning_rate": 0.000705545,
+        "dqn_adam_epsilon": 0.0313329,
     }
 
     ai = KniffelAI(
         load=False,
-        predefined_layers=True,
-        hyperparater_base=base_hp,
         config_path="src/ai/Kniffel.CSV",
         path_prefix="",
+        hyperparater_base=hyperparameter,
     )
 
     env_config = {
@@ -657,33 +676,8 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    # ai.play(
-    #    path="weights/one_week_training",
-    #    episodes=1_000,
-    #    env_config=env_config,
-    #    logging=False,
-    # )
+    train(ai, env_config)
 
-    # ai.grid_search_test(nb_steps=50_000, env_config=env_config)
+   
 
-    hyperparameter = {
-        "windows_length": 1,
-        "adam_learning_rate": 0.0005,
-        "batch_size": 128,
-        "target_model_update": 500,
-        "adam_epsilon": 0.001,
-        "dueling_option": "avg",
-        "activation": "linear",
-        "layers": 3,
-        "n_units_l1": 256,
-        "n_units_l2": 128,
-        "n_units_l3": 64,
-        "enable_double_dqn": False,
-    }
-
-    ai._train(
-        hyperparameter=hyperparameter,
-        nb_steps=500_000,
-        env_config=env_config,
-        # load_path="weights/one_week_training",
-    )
+    
