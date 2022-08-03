@@ -105,26 +105,44 @@ class KniffelAI:
         key = self.get_hyperparameter("linear_inner_policy")
 
         if key == "EpsGreedyQPolicy":
-
-            policy = EpsGreedyQPolicy()
-
-        return policy
-
-    def get_policy(self, _key):
-
-        key = self.get_hyperparameter(_key)
-
-        policy = None
-        if key == "LinearAnnealedPolicy":
-
             policy = LinearAnnealedPolicy(
-                self.get_inner_policy(),
+                EpsGreedyQPolicy(),
                 attr="eps",
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
                 nb_steps=1_000_000,
             )
+
+        elif key == "BoltzmannQPolicy":
+
+            policy = LinearAnnealedPolicy(
+                BoltzmannQPolicy(),
+                attr="tau",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+
+        if key == "MaxBoltzmannQPolicy":
+            policy = LinearAnnealedPolicy(
+                MaxBoltzmannQPolicy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+
+        return policy
+
+    def get_policy(self, _key):
+        key = self.get_hyperparameter(_key)
+
+        policy = None
+        if key == "LinearAnnealedPolicy":
+            policy = self.get_inner_policy()
 
         elif key == "EpsGreedyQPolicy":
 
@@ -169,13 +187,20 @@ class KniffelAI:
                 window_length=self.get_hyperparameter("windows_length"),
             )
 
+            dqn_target_model_update = self.get_hyperparameter("dqn_target_model_update")
+
+            enable_dueling_network = self.get_hyperparameter("enable_dueling_network")
+
             agent = DQNAgent(
                 model=model,
                 memory=memory,
                 policy=self.get_policy("train_policy"),
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
-                target_model_update=self.get_hyperparameter("dqn_target_model_update"),
+                nb_steps_warmup=self.get_hyperparameter("dqn_nb_steps_warmup"),
+                enable_dueling_network=enable_dueling_network,
+                target_model_update=int(round(dqn_target_model_update))
+                if dqn_target_model_update > 0
+                else float(dqn_target_model_update),
                 batch_size=self.get_hyperparameter("batch_size"),
                 dueling_type=self.get_hyperparameter("dqn_dueling_option"),
                 enable_double_dqn=self.get_hyperparameter("dqn_enable_double_dqn"),
@@ -193,7 +218,7 @@ class KniffelAI:
                 model=model,
                 memory=memory,
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
+                nb_steps_warmup=self.get_hyperparameter("cem_nb_steps_warmup"),
                 batch_size=self.get_hyperparameter("batch_size"),
                 memory_interval=memory_interval,
             )
@@ -204,7 +229,8 @@ class KniffelAI:
                 policy=self.get_policy("train_policy"),
                 test_policy=self.get_policy("test_policy"),
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
+                nb_steps_warmup=self.get_hyperparameter("sarsa_nb_steps_warmup"),
+                delta_clip=self.get_hyperparameter("sarsa_delta_clip"),
                 gamma=self.get_hyperparameter("sarsa_gamma"),
             )
 
@@ -642,26 +668,24 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     hyperparameter = {
-        "agent": "DQN",
+        "agent": "SARSA",
         "windows_length": 1,
         "layers": 3,
-        "n_units_l1": 16,
-        "n_units_l2": 96,
+        "n_units_l1": 160,
+        "n_units_l2": 160,
         "n_units_l3": 208,
         "activation": "linear",
-        "dqn_memory_limit": 101000,
-        "train_policy": "BoltzmannGumbelQPolicy",
-        "boltzmann_gumbel_C": 0.5,
-        "dqn_target_model_update": 0.01,
-        "batch_size": 32,
-        "dqn_dueling_option": "avg",
-        "dqn_enable_double_dqn": False,
-        "dqn_adam_learning_rate": 0.000705545,
-        "dqn_adam_epsilon": 0.0313329,
+        "train_policy": "GreedyQPolicy",
+        "test_policy": "GreedyQPolicy",
+        "sarsa_nb_steps_warmup": 9982,
+        "sarsa_delta_clip": 0.0175506,
+        "sarsa_gamma": 0.387886,
+        "sarsa_adam_learning_rate": 0.00233267,
+        "sarsa_adam_epsilon": 0.0558477,
     }
 
     ai = KniffelAI(
-        load=True,
+        load=False,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
@@ -675,4 +699,4 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)

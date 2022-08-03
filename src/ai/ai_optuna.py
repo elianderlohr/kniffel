@@ -572,7 +572,7 @@ if __name__ == "__main__":
     parser.add_argument("--pw", type=str, default=None)
     parser.add_argument("--study_name", type=str, default="test")
     parser.add_argument("--new", choices=["true", "false"], default="false", type=str)
-    parser.add_argument("--cpu", type=int, default=cpu_count)
+    parser.add_argument("--jobs", type=int, default=cpu_count)
 
     print()
 
@@ -580,7 +580,7 @@ if __name__ == "__main__":
 
     if args.new == "true":
         print(
-            f"Create new study with name {args.study_name} with {args.cpu} parallel jobs."
+            f"Create new study with name {args.study_name} with {args.jobs} parallel jobs."
         )
         study = optuna.create_study(
             study_name=args.study_name,
@@ -588,7 +588,7 @@ if __name__ == "__main__":
             storage=f"mysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
-        print(f"Load study with name {args.study_name} with {args.cpu} parallel jobs.")
+        print(f"Load study with name {args.study_name} with {args.jobs} parallel jobs.")
         study = optuna.load_study(
             study_name=args.study_name,
             storage=f"mysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
@@ -598,6 +598,6 @@ if __name__ == "__main__":
         objective,
         n_trials=250,
         catch=(ValueError,),
-        n_jobs=args.cpu,
+        n_jobs=args.jobs,
         gc_after_trial=True,
     )
