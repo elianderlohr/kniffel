@@ -86,8 +86,6 @@ class KniffelAI:
         self._agent_value = self._return_trial("agent")
         self.window_length = self._return_trial("windows_length")
 
-        print(f"Windows Length: {self.window_length}")
-
         if path_prefix == "":
             try:
                 import google.colab
