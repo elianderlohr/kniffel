@@ -164,15 +164,6 @@ class KniffelAI:
                 value_test=0.05,
                 nb_steps=1_000_000,
             )
-        if key == "BoltzmannGumbelQPolicy":
-            policy = LinearAnnealedPolicy(
-                BoltzmannGumbelQPolicy(),
-                attr="C",
-                value_max=1,
-                value_min=0.1,
-                value_test=0.05,
-                nb_steps=1_000_000,
-            )
 
         return policy
 
@@ -534,7 +525,6 @@ def objective(trial):
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
             "MaxBoltzmannQPolicy",
-            "BoltzmannGumbelQPolicy",
         ],
         "train_policy": [
             "LinearAnnealedPolicy",
