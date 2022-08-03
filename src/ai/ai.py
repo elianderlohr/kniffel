@@ -623,8 +623,8 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-        path="output/weights/p_date=2022-08-02-18_13_52",
-        episodes=10_000,
+        path="output/weights/p_date=2022-08-02-19_02_42",
+        episodes=1_000,
         env_config=env_config,
         logging=False,
     )
@@ -632,9 +632,9 @@ def play(ai: KniffelAI, env_config: dict):
 
 def train(ai: KniffelAI, env_config: dict):
     ai._train(
-        nb_steps=5_000_000,
+        nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-08-02-16_17_23",
+        load_path="output/weights/p_date=2022-08-02-19_02_42",
     )
 
 
@@ -676,4 +676,4 @@ if __name__ == "__main__":
         "reward_finish": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)
