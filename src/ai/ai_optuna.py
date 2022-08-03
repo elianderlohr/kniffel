@@ -281,7 +281,7 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "nb_episode_steps", interval=10_000)
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000)
         ]
 
         # WRITE OWN PRUNER AND CHECK THE WRITE VALUE
@@ -306,7 +306,7 @@ class KniffelAI:
         print(f"episode_reward: {episode_reward}")
         print(f"nb_steps: {nb_steps}")
 
-        return nb_steps
+        return episode_reward
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
         return self._train(
