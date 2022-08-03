@@ -200,7 +200,7 @@ class KniffelAI:
                 limit=self._trial.suggest_int(
                     "dqn_memory_limit", 1_000, 1_000_000, step=50_000
                 ),
-                window_length=self.window_length,
+                # window_length=self.window_length,
             )
 
             dqn_target_model_update = self._trial.suggest_loguniform(
@@ -230,7 +230,7 @@ class KniffelAI:
 
             memory = EpisodeParameterMemory(
                 limit=memory_interval,
-                window_length=self.window_length,
+                # window_length=self.window_length,
             )
 
             agent = CEMAgent(
