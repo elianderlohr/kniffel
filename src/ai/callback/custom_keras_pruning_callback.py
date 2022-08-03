@@ -49,6 +49,7 @@ class CustomKerasPruningCallback(Callback):
         self.log_dict["nb_steps"] = []
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict[str, float]] = None) -> None:
+
         self.log_dict["episode_reward"].append(float(logs["episode_reward"]))
         self.log_dict["nb_episode_steps"].append(int(logs["nb_episode_steps"]))
         self.log_dict["nb_steps"].append(int(logs["nb_steps"]))

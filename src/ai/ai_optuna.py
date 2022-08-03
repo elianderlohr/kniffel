@@ -320,7 +320,7 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=2_500),
         ]
 
         history = agent.fit(
@@ -359,7 +359,7 @@ class KniffelAI:
 
         episode_reward, nb_steps = self.validate_model(agent, env=env)
 
-        return episode_reward  # , nb_steps
+        return episode_reward, nb_steps
 
     def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
         action = agent.forward(state)
@@ -559,8 +559,11 @@ def objective(trial):
         trial=trial,
     )
 
-    score = ai.train(env_config=env_config, nb_steps=100_000)
-    return score
+    episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=100_000)
+
+    trial.set_user_attr("param", trial.params)
+
+    return episode_reward  # , nb_steps
 
 
 if __name__ == "__main__":
