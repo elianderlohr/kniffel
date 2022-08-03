@@ -86,6 +86,8 @@ class KniffelAI:
         self._agent_value = self._return_trial("agent")
         self.window_length = self._return_trial("windows_length")
 
+        print(f"Windows Length: {self.window_length}")
+
         if path_prefix == "":
             try:
                 import google.colab
@@ -112,7 +114,7 @@ class KniffelAI:
             )
         )
 
-        layers = self._trial.suggest_int("layers", 1, 4)
+        layers = self._trial.suggest_int("layers", 1, 5)
         for i in range(1, layers + 1):
             model.add(
                 Dense(
@@ -135,8 +137,44 @@ class KniffelAI:
         key = self._return_trial("linear_inner_policy")
 
         if key == "EpsGreedyQPolicy":
+            policy = LinearAnnealedPolicy(
+                EpsGreedyQPolicy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
 
-            policy = EpsGreedyQPolicy()
+        elif key == "BoltzmannQPolicy":
+
+            policy = LinearAnnealedPolicy(
+                BoltzmannQPolicy(),
+                attr="tau",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+
+        if key == "MaxBoltzmannQPolicy":
+            policy = LinearAnnealedPolicy(
+                MaxBoltzmannQPolicy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
+        if key == "BoltzmannGumbelQPolicy":
+            policy = LinearAnnealedPolicy(
+                BoltzmannGumbelQPolicy(),
+                attr="C",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=1_000_000,
+            )
 
         return policy
 
@@ -144,15 +182,7 @@ class KniffelAI:
 
         policy = None
         if key == "LinearAnnealedPolicy":
-
-            policy = LinearAnnealedPolicy(
-                self.get_inner_policy(),
-                attr="eps",
-                value_max=1,
-                value_min=0.1,
-                value_test=0.05,
-                nb_steps=1_000_000,
-            )
+            policy = self.get_inner_policy()
 
         elif key == "EpsGreedyQPolicy":
 
@@ -200,11 +230,15 @@ class KniffelAI:
                 limit=self._trial.suggest_int(
                     "dqn_memory_limit", 1_000, 1_000_000, step=50_000
                 ),
-                # window_length=self.window_length,
+                window_length=self.window_length,
             )
 
             dqn_target_model_update = self._trial.suggest_loguniform(
                 "dqn_target_model_update", 1e-05, 1e04
+            )
+
+            enable_dueling_network = self._trial.suggest_categorical(
+                "enable_dueling_network", [True, False]
             )
 
             agent = DQNAgent(
@@ -215,13 +249,16 @@ class KniffelAI:
                 nb_steps_warmup=self._trial.suggest_int(
                     "dqn_nb_steps_warmup", 10, 25_000, log=1
                 ),
+                enable_dueling_network=enable_dueling_network,
                 target_model_update=int(round(dqn_target_model_update))
                 if dqn_target_model_update > 0
                 else float(dqn_target_model_update),
                 batch_size=self._return_trial("batch_size"),
-                dueling_type=self._return_trial("dqn_dueling_option"),
                 enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
             )
+
+            if enable_dueling_network:
+                agent.dueling_type = (self._return_trial("dqn_dueling_option"),)
 
         elif self._agent_value == "CEM":
             memory_interval = self._trial.suggest_int(
@@ -230,7 +267,7 @@ class KniffelAI:
 
             memory = EpisodeParameterMemory(
                 limit=memory_interval,
-                # window_length=self.window_length,
+                window_length=self.window_length,
             )
 
             agent = CEMAgent(
@@ -489,14 +526,17 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1, 2, 3],
+        "windows_length": [1],
         "batch_size": [32],
-        "dqn_dueling_option": ["avg"],
+        "dqn_dueling_option": ["avg", "max", "naive"],
         "activation": ["linear", "softmax", "sigmoid"],
         "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN", "CEM", "SARSA"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+            "BoltzmannGumbelQPolicy",
         ],
         "train_policy": [
             "LinearAnnealedPolicy",
