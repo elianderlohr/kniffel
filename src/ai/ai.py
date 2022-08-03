@@ -662,7 +662,7 @@ if __name__ == "__main__":
 
     ai = KniffelAI(
         load=True,
-        config_path="src/ai/Kniffel.CSV",
+        config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
     )
@@ -672,7 +672,6 @@ if __name__ == "__main__":
         "reward_roll_dice": 0.5,
         "reward_game_over": -200,
         "reward_slash": -10,
-        "reward_bonus": 20,
         "reward_finish": 50,
     }
 

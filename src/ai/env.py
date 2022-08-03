@@ -227,7 +227,7 @@ class KniffelEnv(Env):
 
     def step(self, action):
         reward = 0.0
-        has_bonus = self.kniffel.is_bonus()
+        # has_bonus = self.kniffel.is_bonus()
 
         info = {"finished": False, "error": False}
 
@@ -512,6 +512,9 @@ class KniffelEnv(Env):
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
                 reward += self._reward_roll_dice
 
+            """
+            # Remove Bonus
+
             if (
                 self.kniffel.is_bonus()
                 and has_bonus is False
@@ -527,10 +530,12 @@ class KniffelEnv(Env):
             ):
                 reward += self._reward_bonus
 
+            """
+
         except Exception as e:
             if e.args[0] == "Game finished!":
                 done = True
-                reward += self.kniffel.get_points() * self._reward_finish
+                reward += self.kniffel.get_points()
 
                 info = {
                     "finished": True,

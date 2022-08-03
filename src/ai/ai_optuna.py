@@ -1,17 +1,13 @@
 # Standard imports
-from gc import callbacks
 from statistics import mean
 from datetime import datetime as dt
-from tokenize import Triple
-from turtle import get_poly
-from unittest.mock import call
 import warnings
 import numpy as np
-import json
 import optuna
-import os
 from pathlib import Path
 import sys
+import multiprocessing
+import argparse
 
 # Keras imports
 
@@ -70,6 +66,9 @@ class KniffelAI:
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
+    # Window
+    window_length = 1
+
     def __init__(
         self,
         load=False,
@@ -85,6 +84,7 @@ class KniffelAI:
         self._config_path = config_path
         self._trial = trial
         self._agent_value = self._return_trial("agent")
+        self.window_length = self._return_trial("windows_length")
 
         if path_prefix == "":
             try:
@@ -105,7 +105,7 @@ class KniffelAI:
         model.add(
             Flatten(
                 input_shape=(
-                    self._return_trial("windows_length"),
+                    self.window_length,
                     1,
                     41,
                 )
@@ -179,7 +179,7 @@ class KniffelAI:
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
-                C=self._trial.suggest_float("boltzmann_gumbel_C", 0.05, 1, step=0.05)
+                C=self._trial.suggest_loguniform("boltzmann_gumbel_C", 1e-5, 1e2)
             )
 
         return policy
@@ -200,7 +200,11 @@ class KniffelAI:
                 limit=self._trial.suggest_int(
                     "dqn_memory_limit", 1_000, 1_000_000, step=50_000
                 ),
-                window_length=self._return_trial("windows_length"),
+                window_length=self.window_length,
+            )
+
+            dqn_target_model_update = self._trial.suggest_loguniform(
+                "dqn_target_model_update", 1e-05, 1e04
             )
 
             agent = DQNAgent(
@@ -208,8 +212,12 @@ class KniffelAI:
                 memory=memory,
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
-                target_model_update=self._return_trial("dqn_target_model_update"),
+                nb_steps_warmup=self._trial.suggest_int(
+                    "dqn_nb_steps_warmup", 10, 25_000, log=1
+                ),
+                target_model_update=int(round(dqn_target_model_update))
+                if dqn_target_model_update > 0
+                else float(dqn_target_model_update),
                 batch_size=self._return_trial("batch_size"),
                 dueling_type=self._return_trial("dqn_dueling_option"),
                 enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
@@ -222,14 +230,16 @@ class KniffelAI:
 
             memory = EpisodeParameterMemory(
                 limit=memory_interval,
-                window_length=self._return_trial("windows_length"),
+                window_length=self.window_length,
             )
 
             agent = CEMAgent(
                 model=model,
                 memory=memory,
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
+                nb_steps_warmup=self._trial.suggest_int(
+                    "cem_nb_steps_warmup", 10, 25_000, log=1
+                ),
                 batch_size=self._return_trial("batch_size"),
                 memory_interval=memory_interval,
             )
@@ -240,7 +250,10 @@ class KniffelAI:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 test_policy=self.get_policy(self._return_trial("test_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=1_000,
+                nb_steps_warmup=self._trial.suggest_int(
+                    "sarsa_nb_steps_warmup", 10, 25_000, log=1
+                ),
+                delta_clip=self._trial.suggest_float("sarsa_delta_clip", 0.01, 0.99),
                 gamma=self._trial.suggest_float("sarsa_gamma", 0.01, 0.99),
             )
 
@@ -263,8 +276,8 @@ class KniffelAI:
                 Adam(
                     learning_rate=self._trial.suggest_float(
                         "{}_adam_learning_rate".format(self._agent_value.lower()),
-                        0.00001,
-                        0.1,
+                        1e-6,
+                        1e-1,
                     ),
                     epsilon=self._trial.suggest_float(
                         "{}_adam_epsilon".format(self._agent_value.lower()), 1e-9, 1e-1
@@ -281,10 +294,8 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000)
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000),
         ]
-
-        # WRITE OWN PRUNER AND CHECK THE WRITE VALUE
 
         history = agent.fit(
             env,
@@ -306,17 +317,9 @@ class KniffelAI:
         print(f"episode_reward: {episode_reward}")
         print(f"nb_steps: {nb_steps}")
 
-        return episode_reward
+        return episode_reward, nb_steps
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
-        return self._train(
-            nb_steps=nb_steps,
-            load_path=load_path,
-            env_config=env_config,
-        )
-
-    def _train(self, nb_steps=10_000, load_path="", env_config="", name=""):
-        date_start = dt.today()
         env = KniffelEnv(env_config, config_file_path=self._config_path)
 
         actions = env.action_space.n
@@ -328,9 +331,9 @@ class KniffelAI:
             load_path=load_path,
         )
 
-        test_scores = self.validate_model(agent, env=env)
+        episode_reward, nb_steps = self.validate_model(agent, env=env)
 
-        return test_scores
+        return episode_reward, nb_steps
 
     def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
         action = agent.forward(state)
@@ -486,32 +489,8 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1],  # range(1, 3),
+        "windows_length": [1, 2, 3],
         "batch_size": [32],
-        "dqn_target_model_update": [
-            0.00001,
-            0.0005,
-            0.0001,
-            0.0005,
-            0.001,
-            0.005,
-            0.01,
-            0.05,
-            0.1,
-            50,
-            100,
-            200,
-            300,
-            400,
-            500,
-            750,
-            1000,
-            2_500,
-            5_000,
-            7_500,
-            10_000,
-            15_000,
-        ],
         "dqn_dueling_option": ["avg"],
         "activation": ["linear", "softmax", "sigmoid"],
         "dqn_enable_double_dqn": [True, False],
@@ -541,14 +520,13 @@ def objective(trial):
         "reward_roll_dice": 0.5,
         "reward_game_over": -200,
         "reward_slash": -10,
-        "reward_bonus": 20,
         "reward_finish": 50,
     }
 
     ai = KniffelAI(
         load=False,
         hyperparater_base=base_hp,
-        config_path="src/ai/Kniffel.CSV",
+        config_path="src/config/Kniffel.CSV",
         path_prefix="",
         trial=trial,
     )
@@ -557,46 +535,41 @@ def objective(trial):
     return score
 
 
-_pw = ""
-_study_name = ""
-
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    pw = [s for s in sys.argv if s.startswith("p=")][0].split("=")[1]
-    study_name = [s for s in sys.argv if s.startswith("name=")][0].split("=")[1]
-    create_new = [s for s in sys.argv if s.startswith("new=")][0].split("=")[1]
+    cpu_count = multiprocessing.cpu_count()
 
-    _pw = pw
-    _study_name = study_name
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pw", type=str, default=None)
+    parser.add_argument("--study_name", type=str, default="test")
+    parser.add_argument("--new", choices=["true", "false"], default="false", type=str)
+    parser.add_argument("--cpu", type=int, default=cpu_count)
 
-    if create_new == "true":
+    print()
+
+    args = parser.parse_args()
+
+    if args.new == "true":
+        print(
+            f"Create new study with name {args.study_name} with {args.cpu} parallel jobs."
+        )
         study = optuna.create_study(
-            study_name=study_name,
-            direction="maximize",
-            storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+            study_name=args.study_name,
+            directions=["maximize", "maximize"],
+            storage=f"mysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
+        print(f"Load study with name {args.study_name} with {args.cpu} parallel jobs.")
         study = optuna.load_study(
-            study_name=_study_name,
-            storage=f"mysql://kniffel:{_pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+            study_name=args.study_name,
+            storage=f"mysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
 
     study.optimize(
         objective,
         n_trials=250,
         catch=(ValueError,),
-        n_jobs=4,
+        n_jobs=args.cpu,
         gc_after_trial=True,
     )
-
-    # print("Number of finished trials: {}".format(len(study.trials)))
-
-    # print("Best trial:")
-    # trial = study.best_trial
-
-    # print("  Value: {}".format(trial.value))
-
-    # print("  Params: ")
-    # for key, value in trial.params.items():
-    #    print("    {}: {}".format(key, value))

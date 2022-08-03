@@ -3,5 +3,7 @@ keras-rl2
 gym
 sympy
 optuna
-joblib
 mysql-connector-python
+mysql-connector
+mysqlclient
+pymysql
