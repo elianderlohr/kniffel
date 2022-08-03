@@ -10,3 +10,15 @@
 */*/.ipynb.amltmp
 */.ipynb.amltmp
 .ipynb.amltmp
+*/*/.py.amltmp
+*/.py.amltmp
+.py.amltmp
+*/*/.amlignore
+*/.amlignore
+.amlignore
+*/*/.ipynb_aml_checkpoints
+*/.ipynb_aml_checkpoints
+.ipynb_aml_checkpoints
+*/*/.pytest_cache
+*/.pytest_cache
+.pytest_cache
