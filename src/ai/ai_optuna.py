@@ -370,7 +370,7 @@ class KniffelAI:
 
         episode_reward, nb_steps = self.validate_model(agent, env=env)
 
-        return episode_reward, nb_steps
+        return episode_reward  # , nb_steps
 
     def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
         action = agent.forward(state)
@@ -596,7 +596,7 @@ if __name__ == "__main__":
         )
         study = optuna.create_study(
             study_name=args.study_name,
-            directions=["maximize", "maximize"],
+            direction="maximize",
             storage=f"mysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
