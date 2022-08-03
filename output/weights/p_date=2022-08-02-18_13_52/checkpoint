@@ -1,2 +1,0 @@
-model_checkpoint_path: "weights_1500000.h5f"
-all_model_checkpoint_paths: "weights_1500000.h5f"

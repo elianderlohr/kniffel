@@ -7,24 +7,29 @@ The objective of the game is to score points by rolling five dice to make certai
 
 ## The Goal
 
-The goal of this repo is to develop a deep neural network that manages to learn the rules of the game and score high-scores. The agent learns the game by getting rewarded or penaltizes. 
+The goal of this repo is to develop a deep reinforment learning model that manages to learn the rules of the game and score high-scores.
 
 *Reinforcement Learning with deep neural network!*
 
 # The Game
 The game is developed in Python and is located unter */kniffel*. 
 
-A sample usage of the game can be found unter [kniffel/game.py](kniffel/game.py). The game files are listed under [kniffel/classes](kniffel/classes/).
-
-Currently there is **NO** Jupyter notebook support.
+A sample usage of the game can be found unter [src/kniffel/game.py](src/kniffel/game.py). The game files are listed under [src/kniffel/classes](src/kniffel/classes/).
 
 # The AI
 
-The neural network is located under [ai/ai.py](ai/ai.py).
+The reinforcement learning logic is located under [src/ai](src/ai/).
 
 ## Highscores
 
-| Id | Date       | Training Episodes | Duration | AVG Score | AVG Rounds | Weights                            |
+| Name / ID | Date       | Training Episodes | Duration | AVG Score | AVG Rounds | Weights                            |
 |----|------------|-------------------|----------|-------|-|------------------------------------|
-| 1  | 23.04.2022 | 500.000         | 4.5h       | 27.2   | 8.7 | [weights\p_date=2022-04-23-14_24_28](weights\p_date=2022-04-23-14_24_28) |
+| model_1  | 03.08.2022 | 3.000.000-4.000.000         | ~20h       | ~40   | ~32 | [output\weights\model_1](output\weights\model_1) |
 *tbc*
+
+## Hyperparameter optimization
+To optimize the hyperparameter selection the library optuna is used. The file is located under [src/ai/ai_optuna.py](src/ai/ai_optuna.py).
+
+_Optuna is an automatic hyperparameter optimization software framework, particularly designed for machine learning. It features an imperative, define-by-run style user API. Thanks to our define-by-run API, the code written with Optuna enjoys high modularity, and the user of Optuna can dynamically construct the search spaces for the hyperparameters._
+
+[Optuna: A hyperparameter optimization framework](https://github.com/optuna/optuna#optuna-a-hyperparameter-optimization-framework)
