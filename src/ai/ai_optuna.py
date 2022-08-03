@@ -320,7 +320,7 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=2_500),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000),
         ]
 
         history = agent.fit(
@@ -329,7 +329,7 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=50_000,
+            log_interval=100_000,
             callbacks=callbacks,
         )
 
