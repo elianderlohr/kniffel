@@ -329,7 +329,7 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=100_000,
+            log_interval=25_000,
             callbacks=callbacks,
         )
 
@@ -561,6 +561,8 @@ def objective(trial):
 
     episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=100_000)
 
+    trial.set_user_attr("episode_reward", episode_reward)
+    trial.set_user_attr("nb_steps", nb_steps)
     trial.set_user_attr("param", trial.params)
 
     return episode_reward  # , nb_steps
