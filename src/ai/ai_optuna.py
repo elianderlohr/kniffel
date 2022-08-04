@@ -520,7 +520,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max", "naive"],
         "activation": ["linear", "softmax", "sigmoid"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN", "CEM", "SARSA"],
+        "agent": ["DQN", "SARSA"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
