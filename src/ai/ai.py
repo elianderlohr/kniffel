@@ -670,24 +670,22 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 5,
-        "n_units_l1": 192,
-        "n_units_l2": 176,
-        "n_units_l3": 192,
-        "n_units_l4": 144,
-        "n_units_l5": 144,
+        "layers": 3,
+        "n_units_l1": 16,
+        "n_units_l2": 96,
+        "n_units_l3": 208,
         "activation": "linear",
-        "dqn_memory_limit": 501000,
-        "dqn_target_model_update": 154.1403754173806,
-        "enable_dueling_network": True,
-        "train_policy": "LinearAnnealedPolicy",
-        "linear_inner_policy": "MaxBoltzmannQPolicy",
-        "dqn_nb_steps_warmup": 132,
+        "dqn_memory_limit": 101000,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 0.5,
+        "dqn_target_model_update": 0.01,
         "batch_size": 32,
-        "dqn_enable_double_dqn": True,
-        "dqn_dueling_option": "naive",
-        "dqn_adam_learning_rate": 0.00165176384195386,
-        "dqn_adam_epsilon": 0.08658751200760616,
+        "dqn_dueling_option": "avg",
+        "dqn_enable_double_dqn": False,
+        "dqn_adam_learning_rate": 0.000705545,
+        "dqn_adam_epsilon": 0.0313329,
+        "enable_dueling_network": False,
+        "dqn_nb_steps_warmup": 100
     }
 
     ai = KniffelAI(
@@ -699,7 +697,7 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -200,
+        "reward_game_over": -100,
         "reward_finish": 10,
         "reward_bonus": 5,
     }

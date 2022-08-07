@@ -545,7 +545,7 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -200,
+        "reward_game_over": -100,
         "reward_finish": 10,
         "reward_bonus": 5,
     }
