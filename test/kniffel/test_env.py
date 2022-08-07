@@ -9,7 +9,7 @@ from src.ai.env import KniffelEnv
 
 env_config = {
     "reward_roll_dice": 0,
-    "reward_game_over": -200,
+    "reward_game_over": -50,
     "reward_finish": 10,
     "reward_bonus": 5,
 }
@@ -159,4 +159,4 @@ def test_broken_game():
     score = send_step([], env, 13, score)
     score = send_step([1, 1, 1, 1, 1], env, 2, score)
 
-    assert score == -200
+    assert score == -50

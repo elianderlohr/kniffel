@@ -649,7 +649,7 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-        path="output/weights/model_1",
+        path="output/weights/p_date=2022-08-07-15_37_49",
         episodes=1_000,
         env_config=env_config,
         logging=False,
@@ -697,9 +697,9 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -100,
-        "reward_finish": 10,
-        "reward_bonus": 5,
+        "reward_game_over": -250,
+        "reward_finish": 150,
+        "reward_bonus": 50,
     }
 
-    train(ai, env_config)
+    play(ai, env_config)
