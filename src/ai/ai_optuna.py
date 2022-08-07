@@ -302,7 +302,7 @@ class KniffelAI:
                 Adam(
                     learning_rate=self._trial.suggest_float(
                         "{}_adam_learning_rate".format(self._agent_value.lower()),
-                        1e-6,
+                        1e-9,
                         1e-1,
                     ),
                     epsilon=self._trial.suggest_float(
@@ -517,7 +517,7 @@ def objective(trial):
     base_hp = {
         "windows_length": [1],
         "batch_size": [32],
-        "dqn_dueling_option": ["avg", "max", "naive"],
+        "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN", "SARSA"],
@@ -548,7 +548,8 @@ def objective(trial):
         "reward_roll_dice": 0.5,
         "reward_game_over": -200,
         "reward_slash": -10,
-        "reward_finish": 50,
+        "reward_finish": 100,
+        "reward_bonus": 20,
     }
 
     ai = KniffelAI(
