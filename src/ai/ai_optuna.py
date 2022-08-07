@@ -544,12 +544,10 @@ def objective(trial):
     }
 
     env_config = {
-        "reward_step": 0,
-        "reward_roll_dice": 0.5,
+        "reward_roll_dice": 0,
         "reward_game_over": -200,
-        "reward_slash": -10,
-        "reward_finish": 100,
-        "reward_bonus": 20,
+        "reward_finish": 10,
+        "reward_bonus": 5,
     }
 
     ai = KniffelAI(

@@ -136,6 +136,7 @@ class Attempt:
                     self.selected_option = possibility
             elif option.value == KniffelOptions.THREES_SLASH.value:
                 possibility = KniffelCheck().check_3(self.attempts[-1])
+
                 if possibility.points == 0:
                     self.selected_option = KniffelOptionClass(
                         "threes_slash",
@@ -267,7 +268,7 @@ class Attempt:
                     )
                 else:
                     self.selected_option = possibility
-
+                    
         return self.selected_option
 
     def get_latest(self) -> DiceSet:

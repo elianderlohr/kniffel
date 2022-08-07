@@ -3,6 +3,7 @@ import sys
 import inspect
 import tensorflow as tf
 
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
@@ -13,6 +14,7 @@ from src.kniffel.classes.dice_set import DiceSet
 from src.kniffel.classes.attempt import Attempt
 from src.kniffel.classes.kniffel_check import KniffelCheck
 import src.kniffel.classes.custom_exceptions as ex
+from src.kniffel.classes.kniffel_option import KniffelOptionClass
 
 import numpy as np
 import itertools
@@ -191,13 +193,12 @@ class Kniffel:
         else:
             raise ex.GameFinishedException()
 
-    def finish_turn(self, option: KniffelOptions) -> int:
+    def finish_turn(self, option: KniffelOptions) -> KniffelOptionClass:
         """
         Finish turn
 
         :param KniffelOptions option: selected option how to finish the turn
         """
-
         if self.is_option_possible(option):
             if self.is_new_game() is False and self.is_turn_finished() is False:
 
@@ -208,7 +209,7 @@ class Kniffel:
                 elif self.turns_left() > 1:
                     self.add_turn()
 
-                return kniffel_option.points
+                return kniffel_option
 
             elif self.is_new_game():
                 raise ex.NewGameException()
