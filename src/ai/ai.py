@@ -668,20 +668,26 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     hyperparameter = {
-        "agent": "SARSA",
+        "agent": "DQN",
         "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 160,
-        "n_units_l2": 160,
-        "n_units_l3": 208,
+        "layers": 5,
+        "n_units_l1": 192,
+        "n_units_l2": 176,
+        "n_units_l3": 192,
+        "n_units_l4": 144,
+        "n_units_l5": 144,
         "activation": "linear",
-        "train_policy": "GreedyQPolicy",
-        "test_policy": "GreedyQPolicy",
-        "sarsa_nb_steps_warmup": 9982,
-        "sarsa_delta_clip": 0.0175506,
-        "sarsa_gamma": 0.387886,
-        "sarsa_adam_learning_rate": 0.00233267,
-        "sarsa_adam_epsilon": 0.0558477,
+        "dqn_memory_limit": 501000,
+        "dqn_target_model_update": 154.1403754173806,
+        "enable_dueling_network": True,
+        "train_policy": "LinearAnnealedPolicy",
+        "linear_inner_policy": "MaxBoltzmannQPolicy",
+        "dqn_nb_steps_warmup": 132,
+        "batch_size": 32,
+        "dqn_enable_double_dqn": True,
+        "dqn_dueling_option": "naive",
+        "dqn_adam_learning_rate": 0.00165176384195386,
+        "dqn_adam_epsilon": 0.08658751200760616,
     }
 
     ai = KniffelAI(
@@ -696,7 +702,8 @@ if __name__ == "__main__":
         "reward_roll_dice": 0.5,
         "reward_game_over": -200,
         "reward_slash": -10,
-        "reward_finish": 50,
+        "reward_finish": 100,
+        "reward_bonus": 20,
     }
 
     train(ai, env_config)

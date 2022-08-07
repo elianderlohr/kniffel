@@ -107,7 +107,7 @@ class KniffelEnv(Env):
         reward_game_over=-20,
         reward_slash=-5,
         reward_bonus=2,
-        reward_finish=10,
+        reward_finish=200,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
@@ -512,30 +512,15 @@ class KniffelEnv(Env):
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
                 reward += self._reward_roll_dice
 
-            """
-            # Remove Bonus
-
-            if (
-                self.kniffel.is_bonus()
-                and has_bonus is False
-                and (
-                    EnumAction.FINISH_ONES is enum_action
-                    or EnumAction.FINISH_ONES is enum_action
-                    or EnumAction.FINISH_TWOS is enum_action
-                    or EnumAction.FINISH_THREES is enum_action
-                    or EnumAction.FINISH_FOURS is enum_action
-                    or EnumAction.FINISH_FIVES is enum_action
-                    or EnumAction.FINISH_SIXES is enum_action
-                )
-            ):
-                reward += self._reward_bonus
-
-            """
-
         except Exception as e:
             if e.args[0] == "Game finished!":
+                if (
+                    self.kniffel.is_bonus()
+                ):
+                    reward += self._reward_bonus
+
                 done = True
-                reward += self.kniffel.get_points()
+                reward += self._reward_finish
 
                 info = {
                     "finished": True,
@@ -564,15 +549,6 @@ class KniffelEnv(Env):
                     print("   " + str(info))
 
         self.state = self.kniffel.get_state()
-
-        """
-        # Die ergebnisse sahen mit dem nachfolgenden code ganz gut aus.
-        Jedoch kann das q wohl nicht convergen wenn der reward steigt
-        """
-        kniffel_rounds = self.kniffel.get_played_rounds() / 39 * 10
-        kniffel_points = self.kniffel.get_points() / 375 * 10
-
-        reward += kniffel_points + kniffel_rounds
 
         if self.logging:
             action_type = "roll_dice" if action >= 13 and action <= 44 else "finish"
