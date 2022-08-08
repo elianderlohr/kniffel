@@ -202,9 +202,11 @@ class KniffelAI:
                 if dqn_target_model_update > 0
                 else float(dqn_target_model_update),
                 batch_size=self.get_hyperparameter("batch_size"),
-                dueling_type=self.get_hyperparameter("dqn_dueling_option"),
                 enable_double_dqn=self.get_hyperparameter("dqn_enable_double_dqn"),
             )
+
+            if enable_dueling_network:
+                agent.dueling_type = (self._return_trial("dqn_dueling_option"),)
 
         elif self.get_hyperparameter("agent") == "CEM":
             memory_interval = self.get_hyperparameter("cem_memory_limit")
@@ -254,19 +256,10 @@ class KniffelAI:
         return self._hyperparater_base[key]
 
     def train_agent(
-        self,
-        actions,
-        env,
-        nb_steps,
-        callbacks,
-        load_path="",
+        self, actions, env, nb_steps, callbacks, load_path="",
     ):
         model = self.build_model(actions)
-        agent = self.build_agent(
-            model,
-            actions,
-            nb_steps=nb_steps,
-        )
+        agent = self.build_agent(model, actions, nb_steps=nb_steps,)
 
         if (
             self.get_hyperparameter("agent") == "DQN"
@@ -318,9 +311,7 @@ class KniffelAI:
 
     def train(self, nb_steps=10_000, load_path="", env_config=""):
         return self._train(
-            nb_steps=nb_steps,
-            load_path=load_path,
-            env_config=env_config,
+            nb_steps=nb_steps, load_path=load_path, env_config=env_config,
         )
 
     def _train(self, nb_steps=10_000, load_path="", env_config=""):
@@ -610,9 +601,12 @@ class KniffelAI:
                     self.predict_and_apply(agent, kniffel, state, logging)
                     rounds_counter += 1
                     if logging:
-                        print(f"    State: {state}")
+                        print()
+                        print("    State:")
+                        print(f"       Dice: {state[0][0:15]}")
+                        print(f"       State: {state[0][15:41]}")
                         print(f"       Points: {kniffel.get_points()}")
-                        print(f"       Prediction Allowed: True")
+                        print("       Prediction Allowed: True")
                 except BaseException as e:
                     if e.args[0] == "Game finished!":
                         points.append(kniffel.get_points())
@@ -649,10 +643,10 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-        path="output/weights/p_date=2022-08-07-15_37_49",
-        episodes=1_000,
+        path="output/weights/p_date=2022-08-08-10_23_46",
+        episodes=1,
         env_config=env_config,
-        logging=False,
+        logging=True,
     )
 
 
@@ -660,7 +654,7 @@ def train(ai: KniffelAI, env_config: dict):
     ai._train(
         nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-08-02-19_02_42",
+        load_path="output/weights/p_date=2022-08-08-10_23_46",
     )
 
 
@@ -685,7 +679,7 @@ if __name__ == "__main__":
         "dqn_adam_learning_rate": 0.000705545,
         "dqn_adam_epsilon": 0.0313329,
         "enable_dueling_network": False,
-        "dqn_nb_steps_warmup": 100
+        "dqn_nb_steps_warmup": 100,
     }
 
     ai = KniffelAI(
