@@ -108,7 +108,7 @@ class KniffelEnv(Env):
         self.kniffel = Kniffel(logging=logging)
         # Actions we can take
         self.action_space = spaces.Discrete(58)
-        
+
         """ Example observation state
         [[ 3  1  6  5  2  0  0  0  0  0  0  0  0  0  0  1  5  2 10  3 15  4 20  5 25  6 30  7 30  8 30  9 25 10 30 11 40 12 50 13  5]]
         """
@@ -315,8 +315,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.ONES_SLASH.value:
                     reward += float(self.config["Einser"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 1)
 
                 finished_turn = True
             if EnumAction.FINISH_TWOS_SLASH is enum_action:
@@ -324,8 +322,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.TWOS_SLASH.value:
                     reward += float(self.config["Zweier"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 2)
 
                 finished_turn = True
             if EnumAction.FINISH_THREES_SLASH is enum_action:
@@ -333,8 +329,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.THREES_SLASH.value:
                     reward += float(self.config["Dreier"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 3)
 
                 finished_turn = True
             if EnumAction.FINISH_FOURS_SLASH is enum_action:
@@ -342,8 +336,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.FOURS_SLASH.value:
                     reward += float(self.config["Vierer"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 4)
 
                 finished_turn = True
             if EnumAction.FINISH_FIVES_SLASH is enum_action:
@@ -351,8 +343,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.FIVES_SLASH.value:
                     reward += float(self.config["Fuenfer"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 5)
 
                 finished_turn = True
             if EnumAction.FINISH_SIXES_SLASH is enum_action:
@@ -360,53 +350,51 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.SIXES_SLASH.value:
                     reward += float(self.config["Sechser"]["0"])
-                else:
-                    reward += self.rewards_single(selected_option.points / 6)
 
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
-                selected_option = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES_SLASH)
+                selected_option = self.kniffel.finish_turn(
+                    KniffelOptions.THREE_TIMES_SLASH
+                )
 
                 if selected_option.id == KniffelOptions.THREE_TIMES_SLASH.value:
                     reward += float(self.config["Dreier Pasch"]["0"])
-                else:
-                    reward += float(self.config["Dreier Pasch"]["3"])
 
                 finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
-                selected_option = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES_SLASH)
+                selected_option = self.kniffel.finish_turn(
+                    KniffelOptions.FOUR_TIMES_SLASH
+                )
 
                 if selected_option.id == KniffelOptions.FOUR_TIMES_SLASH.value:
                     reward += float(self.config["Vierer Pasch"]["0"])
-                else:
-                    reward += float(self.config["Vierer Pasch"]["4"])
 
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
-                selected_option = self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE_SLASH)
+                selected_option = self.kniffel.finish_turn(
+                    KniffelOptions.FULL_HOUSE_SLASH
+                )
 
                 if selected_option.id == KniffelOptions.FULL_HOUSE_SLASH.value:
                     reward += float(self.config["Full House"]["0"])
-                else:
-                    reward += float(self.config["Full House"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
-                selected_option = self.kniffel.finish_turn(KniffelOptions.SMALL_STREET_SLASH)
+                selected_option = self.kniffel.finish_turn(
+                    KniffelOptions.SMALL_STREET_SLASH
+                )
 
                 if selected_option.id == KniffelOptions.SMALL_STREET_SLASH.value:
                     reward += float(self.config["Kleine Strasse"]["0"])
-                else:
-                    reward += float(self.config["Kleine Strasse"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
-                selected_option = self.kniffel.finish_turn(KniffelOptions.LARGE_STREET_SLASH)
+                selected_option = self.kniffel.finish_turn(
+                    KniffelOptions.LARGE_STREET_SLASH
+                )
 
                 if selected_option.id == KniffelOptions.LARGE_STREET_SLASH.value:
                     reward += float(self.config["Grosse Strasse"]["0"])
-                else:
-                    reward += float(self.config["Grosse Strasse"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
@@ -414,8 +402,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.KNIFFEL_SLASH.value:
                     reward += float(self.config["Kniffel"]["0"])
-                else:
-                    reward += float(self.config["Kniffel"]["perfect"])
 
                 finished_turn = True
             if EnumAction.FINISH_CHANCE_SLASH is enum_action:
@@ -423,8 +409,6 @@ class KniffelEnv(Env):
 
                 if selected_option.id == KniffelOptions.CHANCE_SLASH.value:
                     reward += float(self.config["Chance"]["0"])
-                else:
-                    reward += self.reward_chance(selected_option.points)
 
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:
@@ -526,9 +510,7 @@ class KniffelEnv(Env):
 
         except Exception as e:
             if e.args[0] == "Game finished!":
-                if (
-                    self.kniffel.is_bonus()
-                ):
+                if self.kniffel.is_bonus():
                     reward += self._reward_bonus
 
                 done = True

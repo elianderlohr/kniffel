@@ -9,11 +9,10 @@ from src.ai.env import KniffelEnv
 
 env_config = {
     "reward_roll_dice": 0,
-    "reward_game_over": -50,
-    "reward_finish": 10,
-    "reward_bonus": 5,
+    "reward_game_over": -250,
+    "reward_finish": 150,
+    "reward_bonus": 50,
 }
-
 
 
 def send_step(dice, env, action, score):
@@ -31,7 +30,9 @@ def send_step(dice, env, action, score):
 def test_env():
     score = 0
 
-    env = KniffelEnv(env_config, logging=False, config_file_path="src/config/Kniffel.CSV")
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
 
     # try 1
     score = send_step([], env, 13, score)
@@ -74,13 +75,15 @@ def test_env():
     # try 13
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
 
-    assert score == 63.933333333
+    assert score == 688
 
 
 def test_perfect_game():
     score = 0
 
-    env = KniffelEnv(env_config, logging=False, config_file_path="src/config/Kniffel.CSV")
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
 
     # try 1
     score = send_step([], env, 13, score)
@@ -123,40 +126,44 @@ def test_perfect_game():
     # try 13
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
 
-    assert score == 63.933333333
+    assert score == 688
 
 
 def test_slash_game():
 
     score = 0
 
-    env = KniffelEnv(env_config, logging=False, config_file_path="src/config/Kniffel.CSV")
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
 
     # try 1
     score = send_step([2, 2, 2, 2, 2], env, 45, score)
 
-    assert score == -0.5
+    assert score == -5.0
 
     score = send_step([2, 2, 2, 2, 2], env, 46, score)
 
-    assert score == 3.5
+    assert score == -15.0
 
     score = send_step([2, 2, 2, 2, 2], env, 47, score)
 
-    assert score == 2
+    assert score == -30.0
 
     score = send_step([4, 4, 4, 4, 4], env, 48, score)
 
-    assert score == 6
+    assert score == -50.0
 
 
 def test_broken_game():
     score = 0
 
-    env = KniffelEnv(env_config, logging=False, config_file_path="src/config/Kniffel.CSV")
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
 
     # try 1
     score = send_step([], env, 13, score)
     score = send_step([1, 1, 1, 1, 1], env, 2, score)
 
-    assert score == -50
+    assert score == -250
