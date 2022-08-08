@@ -1,3 +1,4 @@
+import re
 from gym import Env
 import gym.spaces as spaces
 import numpy as np
@@ -211,6 +212,28 @@ class KniffelEnv(Env):
 
         return reward
 
+    def reward_three_times(self, score) -> float:
+        reward = 0
+
+        if score >= 1:
+            reward = float(self.config["Dreier Pasch"]["3"])
+        if score >= 20:
+            reward = float(self.config["Dreier Pasch"]["4"])
+        if score >= 25:
+            reward = float(self.config["Dreier Pasch"]["perfect"])  
+
+        return reward
+
+    def reward_four_times(self, score) -> float:
+        reward = 0
+
+        if score >= 1:
+            reward = float(self.config["Vierer Pasch"]["4"])
+        if score >= 25:
+            reward = float(self.config["Vierer Pasch"]["perfect"])
+
+        return reward
+
     def mock(self, dices: list):
         # print(f"Mock dice: {dices}")
         self.kniffel.mock(DiceSet(dices))
@@ -275,12 +298,12 @@ class KniffelEnv(Env):
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-                reward += float(self.config["Dreier Pasch"]["3"])
+                reward += self.reward_three_times(selected_option.points)
 
                 finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-                reward += float(self.config["Vierer Pasch"]["4"])
+                reward += self.reward_four_times(selected_option.points)
 
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
@@ -515,6 +538,8 @@ class KniffelEnv(Env):
 
                 done = True
                 reward += self._reward_finish
+
+                reward += self.kniffel.get_last().selected_option.points
 
                 info = {
                     "finished": True,

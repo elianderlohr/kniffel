@@ -1,14 +1,14 @@
 Kategorie;perfect;4;3;2;1;0
-Einser;40;25;14;6.4;1.6;-5
-Zweier;40;25;14;6.4;1.6;-10
-Dreier;40;25;14;6.4;1.6;-15
-Vierer;40;25;14;6.4;1.6;-20
-Fuenfer;40;25;14;6.4;1.6;-25
-Sechser;40;25;14;6.4;1.6;-30
-Dreier Pasch;40;32;24;0;0;-30
-Vierer Pasch;40;32;0;0;0;-30
-Full House;33;0;0;0;0;-25
-Kleine Strasse;40;32;0;0;0;-30
-Grosse Strasse;53;0;0;0;0;-40
-Kniffel;66;0;0;0;0;-50
-Chance;40;26;16;8;2.6;-30
+Einser;40;25;14;6.4;1.6;-50
+Zweier;40;25;14;6.4;1.6;-100
+Dreier;40;25;14;6.4;1.6;-150
+Vierer;40;25;14;6.4;1.6;-200
+Fuenfer;40;25;14;6.4;1.6;-250
+Sechser;40;25;14;6.4;1.6;-300
+Dreier Pasch;40;32;24;0;0;-300
+Vierer Pasch;40;32;0;0;0;-300
+Full House;33;0;0;0;0;-250
+Kleine Strasse;40;32;0;0;0;-300
+Grosse Strasse;53;0;0;0;0;-400
+Kniffel;66;0;0;0;0;-500
+Chance;40;26;16;8;2.6;-300
