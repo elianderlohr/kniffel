@@ -21,6 +21,7 @@ def send_step(dice, env, action, score):
 
     n_state, reward, done, info = env.step(action)
 
+    print(f"Reward {action}: {reward}")
     score += reward
     # print(f"Score: {score}")
 
@@ -130,29 +131,51 @@ def test_perfect_game():
 
 
 def test_slash_game():
-
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
     )
 
     # try 1
     score = send_step([2, 2, 2, 2, 2], env, 45, score)
-
     assert score == -5.0
 
     score = send_step([2, 2, 2, 2, 2], env, 46, score)
-
     assert score == -15.0
 
     score = send_step([2, 2, 2, 2, 2], env, 47, score)
-
     assert score == -30.0
 
     score = send_step([4, 4, 4, 4, 4], env, 48, score)
-
     assert score == -50.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 49, score)
+    assert score == -75.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 50, score)
+    assert score == -105.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 51, score)
+    assert score == -135.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 52, score)
+    assert score == -165.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 53, score)
+    assert score == -190.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 54, score)
+    assert score == -220.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 55, score)
+    assert score == -260.0
+
+    score = send_step([4, 4, 4, 4, 4], env, 56, score)
+    assert score == -310.0
+
+    score = send_step([6, 6, 6, 6, 6], env, 12, score)
+    assert score == -270.0
 
 
 def test_broken_game():
