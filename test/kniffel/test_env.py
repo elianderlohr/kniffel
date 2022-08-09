@@ -19,10 +19,9 @@ def send_step(dice, env, action, score):
     if len(dice) == 5:
         env.mock(dice)
 
-    n_state, reward, done, info = env.step(action)
+    _, reward, _, _ = env.step(action)
 
     score += reward
-    # print(f"Score: {score}")
 
     return score
 
@@ -82,7 +81,7 @@ def test_perfect_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
     )
 
     # try 1
@@ -137,6 +136,79 @@ def test_perfect_game():
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
 
     assert score == 512 + 150 + 50 + 30
+
+
+def test_normal_game():
+    score = 0
+
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
+
+    # try 1
+    score = send_step([1, 2, 2, 2, 2], env, 0, score)
+    assert score == 1.6
+    assert env.kniffel.get_points() == 1
+
+    # try 2
+    score = send_step([2, 2, 1, 1, 1], env, 1, score)
+    assert score == 8
+    assert env.kniffel.get_points() == 5
+
+    # try 3
+    score = send_step([3, 3, 3, 4, 4], env, 2, score)
+    assert score == 22
+    assert env.kniffel.get_points() == 14
+
+    # try 4
+    score = send_step([4, 4, 5, 5, 5], env, 3, score)
+    assert score == 28.4
+    assert env.kniffel.get_points() == 22
+
+    # try 5
+    score = send_step([5, 5, 5, 5, 5], env, 4, score)
+    assert score == 68.4
+    assert env.kniffel.get_points() == 47
+
+    # try 6
+    score = send_step([6, 6, 6, 5, 5], env, 5, score)
+    assert score == 82.4
+    assert env.kniffel.get_points() == 65
+
+    # try 7
+    score = send_step([6, 5, 4, 3, 1], env, 51, score)
+    assert score == -217.6
+    assert env.kniffel.get_points() == 65
+
+    # try 8
+    score = send_step([6, 6, 6, 6, 6], env, 52, score)
+    assert score == -517.6
+    assert env.kniffel.get_points() == 65
+
+    # try 9
+    score = send_step([6, 6, 6, 5, 5], env, 8, score)
+    assert score == -484.6
+    assert env.kniffel.get_points() == 90
+
+    # try 10
+    score = send_step([1, 2, 3, 4, 5], env, 9, score)
+    assert score == -444.6
+    assert env.kniffel.get_points() == 120
+
+    # try 11
+    score = send_step([1, 2, 3, 4, 5], env, 10, score)
+    assert score == -391.6
+    assert env.kniffel.get_points() == 160
+
+    # try 12
+    score = send_step([6, 6, 6, 6, 6], env, 11, score)
+    assert score == -325.6
+    assert env.kniffel.get_points() == 210
+
+    # try 13
+    score = send_step([6, 6, 6, 2, 2], env, 12, score)
+    assert score == -103.60000000000002
+    assert env.kniffel.get_points() == 267
 
 
 def test_slash_game():

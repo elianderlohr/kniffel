@@ -574,6 +574,7 @@ class KniffelEnv(Env):
             print(f"    Action ({action_type}): {action}")
             print(f"    State NEW: {self.state}")
             print(f"    Reward: {reward}")
+            print(f"    Points: {self.kniffel.get_points()}")
 
         # Return step information
         return self.state, reward, done, {}  # info

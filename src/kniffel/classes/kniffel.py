@@ -226,12 +226,12 @@ class Kniffel:
         if self.turns is not [] and self.turns is not None:
             for turn in self.turns:
                 if (
-                    turn.status.value == KniffelStatus.FINISHED.value
+                    turn.status is KniffelStatus.FINISHED
                     and turn.selected_option is not None
                 ):
                     total += turn.selected_option.points
 
-            if self.is_bonus():
+            if self.is_bonus() and self.is_finished():
                 total += 35
 
         return total
@@ -317,7 +317,7 @@ class Kniffel:
             return True
 
     def is_finished(self):
-        if self.turns_left() == 1:
+        if self.turns_left() == 1 and self.get_last().status is KniffelStatus.FINISHED:
             return True
         else:
             return False

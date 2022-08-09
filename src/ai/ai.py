@@ -595,13 +595,13 @@ class KniffelAI:
             while True:
                 state = kniffel.get_state()
                 if logging:
+                    print()
                     print(f"    Round: {rounds_counter}")
 
                 try:
                     self.predict_and_apply(agent, kniffel, state, logging)
                     rounds_counter += 1
                     if logging:
-                        print()
                         print("    State:")
                         print(f"       Dice: {state[0][0:15]}")
                         print(f"       State: {state[0][15:41]}")
@@ -643,10 +643,10 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-        path="output/weights/p_date=2022-08-08-10_23_46",
-        episodes=1,
+        path="output/weights/p_date=2022-08-08-21_03_39",
+        episodes=1_000,
         env_config=env_config,
-        logging=True,
+        logging=False,
     )
 
 
@@ -662,24 +662,19 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     hyperparameter = {
-        "agent": "DQN",
+        "agent": "SARSA",
         "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 16,
-        "n_units_l2": 96,
-        "n_units_l3": 208,
+        "layers": 1,
+        "n_units_l1": 128,
         "activation": "linear",
-        "dqn_memory_limit": 101000,
-        "train_policy": "BoltzmannGumbelQPolicy",
-        "boltzmann_gumbel_C": 0.5,
-        "dqn_target_model_update": 0.01,
-        "batch_size": 32,
-        "dqn_dueling_option": "avg",
-        "dqn_enable_double_dqn": False,
-        "dqn_adam_learning_rate": 0.000705545,
-        "dqn_adam_epsilon": 0.0313329,
-        "enable_dueling_network": False,
-        "dqn_nb_steps_warmup": 100,
+        "train_policy": "GreedyQPolicy",
+        "test_policy": "LinearAnnealedPolicy",
+        "linear_inner_policy": "EpsGreedyQPolicy",
+        "sarsa_nb_steps_warmup": 17130,
+        "sarsa_delta_clip": 0.3271234001678083,
+        "sarsa_gamma": 0.2600637507307298,
+        "sarsa_adam_learning_rate": 0.06816119402294972,
+        "sarsa_adam_epsilon": 0.043597581897850395,
     }
 
     ai = KniffelAI(
@@ -691,9 +686,9 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -250,
+        "reward_game_over": -1000,
         "reward_finish": 150,
         "reward_bonus": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)
