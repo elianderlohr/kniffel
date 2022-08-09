@@ -102,15 +102,7 @@ class KniffelAI:
     # Model
     def build_model(self, actions):
         model = tf.keras.Sequential()
-        model.add(
-            Flatten(
-                input_shape=(
-                    self.window_length,
-                    1,
-                    41,
-                )
-            )
-        )
+        model.add(Flatten(input_shape=(self.window_length, 1, 41,)))
 
         layers = self._trial.suggest_int("layers", 1, 5)
         for i in range(1, layers + 1):
@@ -121,12 +113,7 @@ class KniffelAI:
                 )
             )
 
-        model.add(
-            Dense(
-                actions,
-                activation=self._return_trial("activation"),
-            )
-        )
+        model.add(Dense(actions, activation=self._return_trial("activation"),))
 
         model.summary()
         return model
@@ -255,8 +242,7 @@ class KniffelAI:
             )
 
             memory = EpisodeParameterMemory(
-                limit=memory_interval,
-                window_length=self.window_length,
+                limit=memory_interval, window_length=self.window_length,
             )
 
             agent = CEMAgent(
@@ -286,15 +272,9 @@ class KniffelAI:
         return agent
 
     def train_agent(
-        self,
-        actions,
-        env,
-        nb_steps,
-        load_path="",
+        self, actions, env, nb_steps, load_path="",
     ):
-        model = self.build_model(
-            actions,
-        )
+        model = self.build_model(actions,)
         agent = self.build_agent(model, actions, nb_steps=nb_steps)
 
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
@@ -351,10 +331,7 @@ class KniffelAI:
         actions = env.action_space.n
 
         agent, train_score = self.train_agent(
-            actions=actions,
-            env=env,
-            nb_steps=nb_steps,
-            load_path=load_path,
+            actions=actions, env=env, nb_steps=nb_steps, load_path=load_path,
         )
 
         episode_reward, nb_steps = self.validate_model(agent, env=env)
@@ -545,7 +522,7 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -250,
+        "reward_game_over": -1000,
         "reward_finish": 150,
         "reward_bonus": 50,
     }
