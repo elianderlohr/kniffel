@@ -31,16 +31,10 @@ def play():
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.SIXES)
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-
-    print(kniffel.is_finished())
 
     kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
     kniffel.finish_turn(KniffelOptions.FULL_HOUSE)

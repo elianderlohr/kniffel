@@ -2,7 +2,8 @@ import os
 import sys
 import inspect
 import tensorflow as tf
-
+import numpy as np
+import itertools
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -16,11 +17,18 @@ from src.kniffel.classes.kniffel_check import KniffelCheck
 import src.kniffel.classes.custom_exceptions as ex
 from src.kniffel.classes.kniffel_option import KniffelOptionClass
 
-import numpy as np
-import itertools
-
 
 class Kniffel:
+    """Kniffel game class
+
+    Raises:
+        e: error
+        ex.GameFinishedException: Exception when the game is properly finished
+        ex.NewGameException: Exception when the game is not started
+        ex.TurnFinishedException: Exception with the turns  
+        ex.SelectedOptionException: Exception when wrong option is selected
+    """
+
     turns = []
     logging = False
 
@@ -148,11 +156,10 @@ class Kniffel:
 
         :return: state of game as list of integer
         """
-        latest_turn_id = self.get_last_id()
+        turn = self.get_last()
+        status = turn.get_latest().get_as_array()
 
-        status = self.get_turn_as_array(
-            latest_turn_id, with_option=False, only_last_two=False
-        )
+        status.append(self.get_last().attempts_left())
 
         self.get_selected_option(status, 0)
         self.get_selected_option(status, 1)

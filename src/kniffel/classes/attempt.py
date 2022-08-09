@@ -36,6 +36,9 @@ class Attempt:
         """
         return len(self.attempts)
 
+    def attempts_left(self):
+        return 3 - self.count()
+
     def add_attempt(self, keep: list = None, dice_set: DiceSet = None):
         """
         Add new attempt.

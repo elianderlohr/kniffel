@@ -77,6 +77,8 @@ class KniffelAI:
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
         trial: optuna.trial.Trial = None,
+        env_action_space=58,
+        env_observation_space=32,
     ):
         self._load = load
         self._hyperparater_base = hyperparater_base
@@ -85,6 +87,9 @@ class KniffelAI:
         self._trial = trial
         self._agent_value = self._return_trial("agent")
         self.window_length = self._return_trial("windows_length")
+
+        self._env_action_space = env_action_space
+        self._env_observation_space = env_observation_space
 
         if path_prefix == "":
             try:
@@ -102,7 +107,9 @@ class KniffelAI:
     # Model
     def build_model(self, actions):
         model = tf.keras.Sequential()
-        model.add(Flatten(input_shape=(self.window_length, 1, 41,)))
+        model.add(
+            Flatten(input_shape=(self.window_length, 1, self._env_observation_space,))
+        )
 
         layers = self._trial.suggest_int("layers", 1, 5)
         for i in range(1, layers + 1):
@@ -274,7 +281,7 @@ class KniffelAI:
     def train_agent(
         self, actions, env, nb_steps, load_path="",
     ):
-        model = self.build_model(actions,)
+        model = self.build_model(actions)
         agent = self.build_agent(model, actions, nb_steps=nb_steps)
 
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
@@ -326,12 +333,18 @@ class KniffelAI:
         return episode_reward, nb_steps
 
     def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
-        env = KniffelEnv(env_config, config_file_path=self._config_path)
-
-        actions = env.action_space.n
+        env = KniffelEnv(
+            env_config,
+            config_file_path=self._config_path,
+            env_action_space=self._env_action_space,
+            env_observation_space=self._env_observation_space,
+        )
 
         agent, train_score = self.train_agent(
-            actions=actions, env=env, nb_steps=nb_steps, load_path=load_path,
+            actions=self._env_action_space,
+            env=env,
+            nb_steps=nb_steps,
+            load_path=load_path,
         )
 
         episode_reward, nb_steps = self.validate_model(agent, env=env)
@@ -492,12 +505,12 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1],
+        "windows_length": [1, 2, 3],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN", "SARSA"],
+        "agent": ["DQN"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
@@ -533,6 +546,8 @@ def objective(trial):
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         trial=trial,
+        env_observation_space=32,
+        env_action_space=58,
     )
 
     episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=100_000)

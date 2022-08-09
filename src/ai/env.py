@@ -104,18 +104,20 @@ class KniffelEnv(Env):
         reward_game_over=-200,
         reward_bonus=5,
         reward_finish=10,
+        env_action_space=58,
+        env_observation_space=32,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
         # Actions we can take
-        self.action_space = spaces.Discrete(58)
+        self.action_space = spaces.Discrete(env_action_space)
 
         """ Example observation state
-        [[ 3  1  6  5  2  0  0  0  0  0  0  0  0  0  0  1  5  2 10  3 15  4 20  5 25  6 30  7 30  8 30  9 25 10 30 11 40 12 50 13  5]]
+        [[ 6  6  6  6  6  1  1  5  2 10  3 15  4 20  5 25  7 30  6 30  8 30  9 25 10 30 11 40 25  0  0  0]]
         """
 
         self.observation_space = spaces.Box(
-            low=0, high=50, shape=(1, 41), dtype=np.int32
+            low=0, high=50, shape=(1, env_observation_space), dtype=np.int32
         )
 
         self.logging = logging
@@ -220,7 +222,7 @@ class KniffelEnv(Env):
         if score >= 20:
             reward = float(self.config["Dreier Pasch"]["4"])
         if score >= 25:
-            reward = float(self.config["Dreier Pasch"]["perfect"])  
+            reward = float(self.config["Dreier Pasch"]["perfect"])
 
         return reward
 

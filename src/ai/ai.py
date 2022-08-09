@@ -68,12 +68,17 @@ class KniffelAI:
         path_prefix="",
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
+        env_action_space=58,
+        env_observation_space=32,
     ):
         self._load = load
 
         self._test_episodes = test_episodes
         self._config_path = config_path
         self._hyperparater_base = hyperparater_base
+
+        self._env_action_space = env_action_space
+        self._env_observation_space = env_observation_space
 
         if path_prefix == "":
             try:
@@ -89,7 +94,13 @@ class KniffelAI:
     def build_model(self, actions):
         model = tf.keras.Sequential()
         model.add(
-            Flatten(input_shape=(self.get_hyperparameter("windows_length"), 1, 41))
+            Flatten(
+                input_shape=(
+                    self.get_hyperparameter("windows_length"),
+                    1,
+                    self._env_observation_space,
+                )
+            )
         )
 
         for i in range(1, self.get_hyperparameter("layers") + 1):
@@ -316,7 +327,12 @@ class KniffelAI:
 
     def _train(self, nb_steps=10_000, load_path="", env_config=""):
         date_start = dt.today()
-        env = KniffelEnv(env_config, config_file_path=self._config_path)
+        env = KniffelEnv(
+            env_config,
+            config_file_path=self._config_path,
+            env_observation_space=self._env_observation_space,
+            env_action_space=self._env_action_space,
+        )
 
         actions = env.action_space.n
 
@@ -520,7 +536,13 @@ class KniffelAI:
             self.use_model(path, episodes, env_config, logging=logging)
 
     def play_random(self, episodes, env_config):
-        env = KniffelEnv(env_config, logging=True, config_file_path=self._config_path)
+        env = KniffelEnv(
+            env_config,
+            logging=True,
+            config_file_path=self._config_path,
+            env_observation_space=self._env_observation_space,
+            env_action_space=self._env_action_space,
+        )
 
         round = 1
         for episode in range(1, episodes + 1):
@@ -549,7 +571,11 @@ class KniffelAI:
     def use_model(self, path, episodes, env_config, logging=False):
 
         env = KniffelEnv(
-            env_config, logging=logging, config_file_path=self._config_path
+            env_config,
+            logging=logging,
+            config_file_path=self._config_path,
+            env_observation_space=self._env_observation_space,
+            env_action_space=self._env_action_space,
         )
 
         f = open(f"{path}/configuration.json")
@@ -643,7 +669,7 @@ class KniffelAI:
 
 def play(ai: KniffelAI, env_config: dict):
     ai.play(
-        path="output/weights/p_date=2022-08-08-21_03_39",
+        path="output/weights/p_date=2022-08-09-14_05_23",
         episodes=1_000,
         env_config=env_config,
         logging=False,
@@ -662,19 +688,24 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     hyperparameter = {
-        "agent": "SARSA",
-        "windows_length": 1,
-        "layers": 1,
-        "n_units_l1": 128,
+        "agent": "DQN",
+        "windows_length": 3,
+        "layers": 3,
+        "n_units_l1": 16,
+        "n_units_l2": 96,
+        "n_units_l3": 208,
         "activation": "linear",
-        "train_policy": "GreedyQPolicy",
-        "test_policy": "LinearAnnealedPolicy",
-        "linear_inner_policy": "EpsGreedyQPolicy",
-        "sarsa_nb_steps_warmup": 17130,
-        "sarsa_delta_clip": 0.3271234001678083,
-        "sarsa_gamma": 0.2600637507307298,
-        "sarsa_adam_learning_rate": 0.06816119402294972,
-        "sarsa_adam_epsilon": 0.043597581897850395,
+        "dqn_memory_limit": 101000,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 0.5,
+        "dqn_target_model_update": 0.01,
+        "batch_size": 32,
+        "dqn_dueling_option": "avg",
+        "dqn_enable_double_dqn": False,
+        "dqn_adam_learning_rate": 0.000705545,
+        "dqn_adam_epsilon": 0.0313329,
+        "enable_dueling_network": False,
+        "dqn_nb_steps_warmup": 100,
     }
 
     ai = KniffelAI(
@@ -682,6 +713,8 @@ if __name__ == "__main__":
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
+        env_observation_space=32,
+        env_action_space=58,
     )
 
     env_config = {
