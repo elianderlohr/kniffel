@@ -39,6 +39,7 @@ from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
 from src.ai.env import EnumAction
 from src.ai.env import KniffelEnv
+from src.ai.play import KniffelDraw
 import src.kniffel.classes.custom_exceptions as ex
 
 
@@ -505,6 +506,8 @@ class KniffelAI:
         if EnumAction.FINISH_CHANCE_SLASH is enum_action:
             kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
 
+        return enum_action
+
     def test(self, agent):
         points = []
         break_counter = 0
@@ -529,11 +532,13 @@ class KniffelAI:
         return break_counter, mean(points), max(points), min(points)
 
     # Use Model
-    def play(self, path, episodes, env_config, random=False, logging=False):
+    def play(
+        self, path, episodes, env_config, random=False, logging=False, write=False
+    ):
         if random:
             self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes, env_config, logging=logging)
+            self.use_model(path, episodes, env_config, logging=logging, write=write)
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(
@@ -568,7 +573,7 @@ class KniffelAI:
 
             round += 1
 
-    def use_model(self, path, episodes, env_config, logging=False):
+    def use_model(self, path, episodes, env_config, logging=False, write=False):
 
         env = KniffelEnv(
             env_config,
@@ -612,25 +617,37 @@ class KniffelAI:
         points = []
         rounds = []
         break_counter = 0
-        for e in range(episodes):
+        for e in range(1, episodes + 1):
             if logging:
                 print(f"Game: {e}")
+
+            if write:
+                self._append_file(path=f"{path}/game_log/log.txt", content=f"Game: {e}")
 
             kniffel = Kniffel()
             rounds_counter = 1
             while True:
+                log_csv = []
+
                 state = kniffel.get_state()
                 if logging:
                     print()
                     print(f"    Round: {rounds_counter}")
 
                 try:
-                    self.predict_and_apply(agent, kniffel, state, logging)
+                    enum_action = self.predict_and_apply(agent, kniffel, state, logging)
                     rounds_counter += 1
+
+                    log_csv.append(f"\n Round: {rounds_counter}")
+                    log_csv.append(f"\n     Action: {enum_action}")
+                    log_csv.append("\n" + KniffelDraw().draw_dices(state[0][0:5]))
+                    log_csv.append(f"\n     State: {state[0][5:22]}")
+                    log_csv.append(f"\n     Points: {kniffel.get_points()}")
+
                     if logging:
                         print("    State:")
-                        print(f"       Dice: {state[0][0:6]}")
-                        print(f"       State: {state[0][6:32]}")
+                        print(f"       Dice: {KniffelDraw().draw_dices(state[0][0:6])}")
+                        print(f"       State: {state[0][6:22]}")
                         print(f"       Points: {kniffel.get_points()}")
                         print("       Prediction Allowed: True")
 
@@ -640,9 +657,20 @@ class KniffelAI:
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
+                        log_csv.append(f"\n     Finished/Error:")
+                        log_csv.append(f"\n         Prediction Allowed: False")
+                        log_csv.append(f"\n         Error: False")
+                        log_csv.append(f"\n         Game Finished: True")
+
                         if logging:
                             print("       Prediction Allowed: False")
                             print("       Game Finished: True")
+
+                        if write:
+                            self._append_file(
+                                path=f"{path}/game_log/log.txt",
+                                content="\n" + ", ".join(log_csv),
+                            )
 
                         break
                     else:
@@ -651,10 +679,31 @@ class KniffelAI:
                         break_counter += 1
                         rounds_counter = 1
 
+                        log_csv.append(f"\n     Finished/Error:")
+                        log_csv.append(f"\n         Prediction Allowed: False")
+                        log_csv.append(f"\n         Error: True")
+
                         if logging:
                             print("       Prediction Allowed: False")
 
+                        if write:
+                            self._append_file(
+                                path=f"{path}/game_log/log.txt",
+                                content="\n" + ", ".join(log_csv),
+                            )
+
                         break
+
+                if write:
+                    self._append_file(
+                        path=f"{path}/game_log/log.txt",
+                        content="\n" + ", ".join(log_csv),
+                    )
+
+                log_csv = []
+
+            if write:
+                self._append_file(path=f"{path}/game_log/log.txt", content="\n\n")
 
         print()
         print(f"Finished games: {episodes - break_counter}")
@@ -676,10 +725,11 @@ def play(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai.play(
-        path="output/weights/p_date=2022-08-09-22_06_08",
-        episodes=1_000,
+        path="output/weights/p_date=2022-08-10-10_03_57",
+        episodes=1,
         env_config=env_config,
         logging=False,
+        write=True,
     )
 
 
@@ -693,7 +743,7 @@ def train(ai: KniffelAI, env_config: dict):
     ai._train(
         nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-08-09-22_06_08",
+        load_path="output/weights/p_date=2022-08-10-10_03_57",
     )
 
 
@@ -722,7 +772,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        load=False,
+        load=True,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,

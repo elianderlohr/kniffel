@@ -636,7 +636,8 @@ class KniffelEnv(Env):
                     reward += self._reward_bonus
 
                 done = True
-                reward += self._reward_finish
+                reward += self.kniffel.get_points()
+                # reward += self._reward_finish
 
                 reward += self.kniffel.get_last().selected_option.points
 
@@ -653,7 +654,7 @@ class KniffelEnv(Env):
 
             else:
                 done = True
-                reward += self._reward_game_over
+                reward += -(375 - self.kniffel.get_points())
 
                 info = {
                     "finished": True,
