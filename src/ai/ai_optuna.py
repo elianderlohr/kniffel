@@ -2,12 +2,12 @@
 from statistics import mean
 from datetime import datetime as dt
 import warnings
-import numpy as np
-import optuna
 from pathlib import Path
 import sys
 import multiprocessing
 import argparse
+import numpy as np
+import optuna
 
 # Keras imports
 
@@ -42,6 +42,9 @@ import src.kniffel.classes.custom_exceptions as ex
 
 
 class KniffelAI:
+    """Optuna AI Kniffel Class
+    """
+
     # Load model from path
     _load = False
 

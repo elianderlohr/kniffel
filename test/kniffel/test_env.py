@@ -4,8 +4,7 @@ import sys
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.ai.env import KniffelEnv
-
+from src.ai.env import KniffelEnv, KniffelConfig
 
 env_config = {
     "reward_roll_dice": 0,
@@ -26,11 +25,21 @@ def send_step(dice, env, action, score):
     return score
 
 
+def test_get_config():
+    env = KniffelEnv(
+        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
+    )
+
+    print(env.config)
+
+    assert env.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_5) == 40
+
+
 def test_env():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
     )
 
     # try 1

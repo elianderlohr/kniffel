@@ -208,7 +208,7 @@ class KniffelEnv(Env):
         Returns:
             float: Reward float
         """
-        return self.config[option][dice_count]
+        return self.config[option.value][dice_count.value]
 
     def put_parameter(self, parameters: dict, key: str, alternative: str):
         """Take passed parameter or take alternative
