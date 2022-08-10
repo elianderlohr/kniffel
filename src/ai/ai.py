@@ -726,7 +726,7 @@ if __name__ == "__main__":
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
-        env_observation_space=19,
+        env_observation_space=22,
         env_action_space=58,
     )
 

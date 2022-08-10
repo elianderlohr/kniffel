@@ -39,7 +39,17 @@ def play():
     print(kniffel.get_state())
 
     kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
+    print()
+    print(kniffel.get_state())
+
+    kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
+    print()
+    print(kniffel.get_state())
+
     kniffel.finish_turn(KniffelOptions.ONES)
+
+    print()
+    print(kniffel.get_state())
 
     kniffel.mock(DiceSet([2, 2, 2, 2, 2]))
     kniffel.finish_turn(KniffelOptions.TWOS)

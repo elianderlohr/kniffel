@@ -155,14 +155,14 @@ class Kniffel:
         return self.turns[id]
 
     def get_option_point(
-        self, option: KniffelOptions, option_alternative: KniffelOptions
+        self, option: KniffelOptions, option_alternative: KniffelOptions, scaler: int
     ):
         for id in range(self.get_length()):
             turn = self.get_turn(id)
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    return turn.selected_option.points
+                    return turn.selected_option.points / scaler
                 elif turn.selected_option.id is option_alternative.value:
                     return 0
 
@@ -174,26 +174,28 @@ class Kniffel:
         :return: state of game as list of integer
         """
         turn = self.get_last()
-        status = turn.get_latest().get_as_array()
+        status = [dice / 6 for dice in turn.get_latest().get_as_array()]
 
-        status.append(self.get_last().attempts_left())
+        status.append(self.get_last().count() / 3)
 
-        status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14)))
-        status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15)))
-        status.append(self.get_option_point(KniffelOptions(3), KniffelOptions(16)))
-        status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17)))
-        status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18)))
-        status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19)))
-        status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20)))
-        status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21)))
-        status.append(self.get_option_point(KniffelOptions(9), KniffelOptions(22)))
-        status.append(self.get_option_point(KniffelOptions(10), KniffelOptions(23)))
-        status.append(self.get_option_point(KniffelOptions(11), KniffelOptions(24)))
-        status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25)))
-        status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26)))
+        status.append(self.get_length() / 13)
 
-        # status.append(1 if self.is_bonus() else 0)
-        # status.append(self.get_points())
+        status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5))
+        status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10))
+        status.append(self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15))
+        status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20))
+        status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25))
+        status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30))
+        status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30))
+        status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30))
+        status.append(self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25))
+        status.append(self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30))
+        status.append(self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40))
+        status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50))
+        status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30))
+
+        status.append(1 if self.is_bonus() else 0)
+        status.append(self.get_points() / 375)
 
         return np.array([np.array(status)])
 
