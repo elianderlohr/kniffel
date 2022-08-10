@@ -332,7 +332,7 @@ class KniffelAI:
 
         return episode_reward, nb_steps
 
-    def train(self, nb_steps=10_000, load_path="", env_config="", name=""):
+    def train(self, nb_steps=10_000, load_path="", env_config=""):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
@@ -546,7 +546,7 @@ def objective(trial):
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         trial=trial,
-        env_observation_space=32,
+        env_observation_space=19,
         env_action_space=58,
     )
 

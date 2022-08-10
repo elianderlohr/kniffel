@@ -30,13 +30,18 @@ class Attempt:
         else:
             return True
 
-    def count(self):
+    def count(self) -> int:
         """
         Get attempts count
         """
         return len(self.attempts)
 
-    def attempts_left(self):
+    def attempts_left(self) -> int:
+        """Return attempts left
+
+        Returns:
+            int: amount of turns left in int
+        """
         return 3 - self.count()
 
     def add_attempt(self, keep: list = None, dice_set: DiceSet = None):

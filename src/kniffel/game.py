@@ -14,6 +14,30 @@ import numpy as np
 def play():
     kniffel = Kniffel(True)
 
+    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+    kniffel.finish_turn(KniffelOptions.THREE_TIMES)
+
+    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+    kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
+
+    kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
+    kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
+
+    kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
+    kniffel.finish_turn(KniffelOptions.SMALL_STREET)
+
+    kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
+    kniffel.finish_turn(KniffelOptions.LARGE_STREET)
+
+    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+    kniffel.finish_turn(KniffelOptions.KNIFFEL)
+
+    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+    kniffel.finish_turn(KniffelOptions.CHANCE)
+
+    print()
+    print(kniffel.get_state())
+
     kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
     kniffel.finish_turn(KniffelOptions.ONES)
 
@@ -31,30 +55,9 @@ def play():
 
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
     kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.SIXES)
-
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-
-    kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
-    kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
-
-    kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
-    kniffel.finish_turn(KniffelOptions.SMALL_STREET)
-
-    kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
-    kniffel.finish_turn(KniffelOptions.LARGE_STREET)
-
-    kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
-    kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
-
-    kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-    # kniffel.finish_turn(KniffelOptions.CHANCE)
+    # kniffel.finish_turn(KniffelOptions.SIXES)
 
     print()
-    kniffel.print()
-
-    print(kniffel.is_finished())
     print(kniffel.get_state())
     print()
     print(np.shape(kniffel.get_state()))

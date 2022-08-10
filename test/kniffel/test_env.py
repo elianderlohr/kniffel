@@ -19,7 +19,7 @@ def send_step(dice, env, action, score):
     if len(dice) == 5:
         env.mock(dice)
 
-    _, reward, _, _ = env.step(action)
+    state, reward, done, info = env.step(action)
 
     score += reward
 
@@ -210,6 +210,8 @@ def test_normal_game():
     assert score == -103.60000000000002
     assert env.kniffel.get_points() == 267
 
+    print(env.kniffel.get_state())
+
 
 def test_slash_game():
     score = 0
@@ -271,3 +273,71 @@ def test_broken_game():
     score = send_step([1, 1, 1, 1, 1], env, 2, score)
 
     assert score == -500
+
+
+def test_finish_game():
+    score = 0
+
+    env = KniffelEnv(
+        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+    )
+
+    # try 1
+    score = send_step([1, 1, 1, 1, 1], env, 0, score)
+    assert score == 40
+
+    # try 2
+    score = send_step([2, 2, 2, 2, 2], env, 1, score)
+    assert score == 80
+
+    # try 3
+    score = send_step([3, 3, 3, 3, 3], env, 2, score)
+    assert score == 120
+
+    # try 4
+    score = send_step([4, 4, 4, 4, 4], env, 3, score)
+    assert score == 160
+
+    # try 5
+    score = send_step([5, 5, 5, 5, 5], env, 4, score)
+    assert score == 200
+
+    # try 6
+    score = send_step([6, 6, 6, 6, 6], env, 5, score)
+    assert score == 240
+
+    # try 7
+    score = send_step([6, 6, 6, 6, 6], env, 6, score)
+    assert score == 280
+
+    # try 8
+    score = send_step([6, 6, 6, 6, 6], env, 7, score)
+    assert score == 320
+
+    # try 9
+    score = send_step([6, 6, 6, 5, 5], env, 8, score)
+    assert score == 353
+
+    # try 10
+    score = send_step([1, 2, 3, 4, 5], env, 9, score)
+    assert score == 393
+
+    # try 11
+    score = send_step([1, 2, 3, 4, 5], env, 10, score)
+    assert score == 446
+
+    # try 12
+    score = send_step([6, 6, 6, 6, 6], env, 11, score)
+    assert score == 512
+
+    # try 13
+    score = send_step([6, 6, 6, 6, 6], env, 12, score)
+    assert score == 742
+
+    # Reset Env
+    env.reset()
+
+    score = 0
+    score = send_step([1, 1, 1, 1, 1], env, 0, score)
+    assert score == 40
+    assert env.kniffel.get_length() == 2

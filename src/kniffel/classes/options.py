@@ -29,4 +29,5 @@ class KniffelOptions(Enum):
     LARGE_STREET_SLASH: int = 24
     KNIFFEL_SLASH: int = 25
     CHANCE_SLASH: int = 26
+
     DEFAULT: int = 27

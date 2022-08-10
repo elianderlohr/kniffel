@@ -183,6 +183,6 @@ def test_slashing_possible():
 
     option = attempt.finish_attempt(KniffelOptions.KNIFFEL_SLASH)
 
-    assert option.is_possible == True
-    assert option.points == 50
-    assert option.id == KniffelOptions.KNIFFEL.value
+    assert option.is_possible is True
+    assert option.points == 0
+    assert option.id == KniffelOptions.KNIFFEL_SLASH.value

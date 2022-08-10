@@ -109,6 +109,7 @@ class KniffelEnv(Env):
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
+
         # Actions we can take
         self.action_space = spaces.Discrete(env_action_space)
 
@@ -117,7 +118,7 @@ class KniffelEnv(Env):
         """
 
         self.observation_space = spaces.Box(
-            low=0, high=50, shape=(1, env_observation_space), dtype=np.int32
+            low=-1, high=50, shape=(1, env_observation_space), dtype=np.int32
         )
 
         self.logging = logging
@@ -243,6 +244,14 @@ class KniffelEnv(Env):
         self.state = self.kniffel.get_state()
 
     def step(self, action):
+        """Apply a step to the Kniffel environment
+
+        Args:
+            action (int): Action id
+
+        Returns:
+            _type_: state, reward, done, info
+        """
         reward = 0.0
         # has_bonus = self.kniffel.is_bonus()
 
@@ -582,14 +591,15 @@ class KniffelEnv(Env):
         return self.state, reward, done, {}  # info
 
     def render(self):
-        # Implement viz
+        """
+        Render
+        """
         pass
 
     def reset(self):
-        # Reset
-        del self.state
-        del self.kniffel
-
+        """
+        Reset state
+        """
         self.kniffel = Kniffel()
         self.state = self.kniffel.get_state()
 

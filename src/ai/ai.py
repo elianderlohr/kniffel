@@ -629,10 +629,11 @@ class KniffelAI:
                     rounds_counter += 1
                     if logging:
                         print("    State:")
-                        print(f"       Dice: {state[0][0:15]}")
-                        print(f"       State: {state[0][15:41]}")
+                        print(f"       Dice: {state[0][0:6]}")
+                        print(f"       State: {state[0][6:32]}")
                         print(f"       Points: {kniffel.get_points()}")
                         print("       Prediction Allowed: True")
+
                 except BaseException as e:
                     if e.args[0] == "Game finished!":
                         points.append(kniffel.get_points())
@@ -668,8 +669,14 @@ class KniffelAI:
 
 
 def play(ai: KniffelAI, env_config: dict):
+    """Play a model
+
+    Args:
+        ai (KniffelAI): Kniffel AI Class
+        env_config (dict): environment dict
+    """
     ai.play(
-        path="output/weights/p_date=2022-08-09-14_05_23",
+        path="output/weights/p_date=2022-08-09-22_06_08",
         episodes=1_000,
         env_config=env_config,
         logging=False,
@@ -677,10 +684,16 @@ def play(ai: KniffelAI, env_config: dict):
 
 
 def train(ai: KniffelAI, env_config: dict):
+    """Train a model
+
+    Args:
+        ai (KniffelAI): Kniffel AI Class
+        env_config (dict): environment dict
+    """
     ai._train(
         nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-08-08-10_23_46",
+        load_path="output/weights/p_date=2022-08-09-22_06_08",
     )
 
 
@@ -689,7 +702,7 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 3,
+        "windows_length": 1,
         "layers": 3,
         "n_units_l1": 16,
         "n_units_l2": 96,
@@ -709,11 +722,11 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        load=False,
+        load=True,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
-        env_observation_space=32,
+        env_observation_space=19,
         env_action_space=58,
     )
 

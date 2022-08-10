@@ -33,7 +33,7 @@ class Kniffel:
     logging = False
 
     def __init__(self, logging: bool = False):
-        self.turns = []
+        self.turns: Attempt = []
         self.logging = logging
         self.start()
 
@@ -151,6 +151,23 @@ class Kniffel:
     def get_last(self) -> Attempt:
         return self.turns[-1]
 
+    def get_turn(self, id: int) -> Attempt:
+        return self.turns[id]
+
+    def get_option_point(
+        self, option: KniffelOptions, option_alternative: KniffelOptions
+    ):
+        for id in range(self.get_length()):
+            turn = self.get_turn(id)
+
+            if turn.status is KniffelStatus.FINISHED:
+                if turn.selected_option.id is option.value:
+                    return turn.selected_option.points
+                elif turn.selected_option.id is option_alternative.value:
+                    return 0
+
+        return -1
+
     def get_state(self):
         """Get state of game as list of integers
 
@@ -161,19 +178,22 @@ class Kniffel:
 
         status.append(self.get_last().attempts_left())
 
-        self.get_selected_option(status, 0)
-        self.get_selected_option(status, 1)
-        self.get_selected_option(status, 2)
-        self.get_selected_option(status, 3)
-        self.get_selected_option(status, 4)
-        self.get_selected_option(status, 5)
-        self.get_selected_option(status, 6)
-        self.get_selected_option(status, 7)
-        self.get_selected_option(status, 8)
-        self.get_selected_option(status, 9)
-        self.get_selected_option(status, 10)
-        self.get_selected_option(status, 11)
-        self.get_selected_option(status, 12)
+        status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14)))
+        status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15)))
+        status.append(self.get_option_point(KniffelOptions(3), KniffelOptions(16)))
+        status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17)))
+        status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18)))
+        status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19)))
+        status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20)))
+        status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21)))
+        status.append(self.get_option_point(KniffelOptions(9), KniffelOptions(22)))
+        status.append(self.get_option_point(KniffelOptions(10), KniffelOptions(23)))
+        status.append(self.get_option_point(KniffelOptions(11), KniffelOptions(24)))
+        status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25)))
+        status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26)))
+
+        # status.append(1 if self.is_bonus() else 0)
+        # status.append(self.get_points())
 
         return np.array([np.array(status)])
 
