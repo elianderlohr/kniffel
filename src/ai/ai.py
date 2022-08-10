@@ -722,7 +722,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        load=True,
+        load=False,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
