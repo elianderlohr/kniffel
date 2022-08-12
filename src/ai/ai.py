@@ -218,7 +218,7 @@ class KniffelAI:
             )
 
             if enable_dueling_network:
-                agent.dueling_type = (self._return_trial("dqn_dueling_option"),)
+                agent.dueling_type = (self.get_hyperparameter("dqn_dueling_option"),)
 
         elif self.get_hyperparameter("agent") == "CEM":
             memory_interval = self.get_hyperparameter("cem_memory_limit")
@@ -725,11 +725,11 @@ def play(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai.play(
-        path="output/weights/p_date=2022-08-10-10_03_57",
-        episodes=1,
+        path="output/weights/p_date=2022-08-11-18_04_48",
+        episodes=1_000,
         env_config=env_config,
         logging=False,
-        write=True,
+        write=False,
     )
 
 
@@ -768,7 +768,7 @@ if __name__ == "__main__":
         "dqn_adam_learning_rate": 0.000705545,
         "dqn_adam_epsilon": 0.0313329,
         "enable_dueling_network": False,
-        "dqn_nb_steps_warmup": 100,
+        "dqn_nb_steps_warmup": 100
     }
 
     ai = KniffelAI(

@@ -310,7 +310,7 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=10_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=5_000),
         ]
 
         history = agent.fit(
@@ -513,7 +513,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN"],
+        "agent": ["DQN", "SARSA"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
@@ -553,7 +553,7 @@ def objective(trial):
         env_action_space=58,
     )
 
-    episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=100_000)
+    episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=250_000)
 
     trial.set_user_attr("episode_reward", episode_reward)
     trial.set_user_attr("nb_steps", nb_steps)
@@ -594,9 +594,5 @@ if __name__ == "__main__":
         )
 
     study.optimize(
-        objective,
-        n_trials=250,
-        catch=(ValueError,),
-        n_jobs=args.jobs,
-        gc_after_trial=True,
+        objective, n_trials=250, catch=(ValueError,), n_jobs=args.jobs,
     )
