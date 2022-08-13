@@ -89,7 +89,11 @@ class KniffelAI:
         self._config_path = config_path
         self._trial = trial
         self._agent_value = self._return_trial("agent")
-        self.window_length = self._return_trial("windows_length")
+
+        # Hardcode window_length to 1 if agent is not DQN to reduce failed runs
+        self.window_length = (
+            self._return_trial("windows_length") if self._agent_value == "DQN" else 1
+        )
 
         self._env_action_space = env_action_space
         self._env_observation_space = env_observation_space

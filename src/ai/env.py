@@ -632,8 +632,9 @@ class KniffelEnv(Env):
 
         except Exception as e:
             if e.args[0] == "Game finished!":
-                if self.kniffel.is_bonus():
-                    reward += self._reward_bonus
+                # remove because included in get_points()
+                # if self.kniffel.is_bonus():
+                #    reward += self._reward_bonus
 
                 done = True
                 reward += self.kniffel.get_points()

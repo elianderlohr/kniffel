@@ -162,7 +162,7 @@ class Kniffel:
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    return turn.selected_option.points / scaler
+                    return 1
                 elif turn.selected_option.id is option_alternative.value:
                     return 0
 
@@ -176,9 +176,8 @@ class Kniffel:
         turn = self.get_last()
         status = [dice / 6 for dice in turn.get_latest().get_as_array()]
 
+        # Tries played
         status.append(self.get_last().count() / 3)
-
-        status.append(self.get_length() / 13)
 
         status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5))
         status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10))
@@ -186,6 +185,13 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20))
         status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25))
         status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30))
+
+        # Bonus ?
+        status.append(1 if self.is_bonus() else 0)
+
+        # Points top with bonus
+        status.append(self.get_points_top() / 140)
+
         status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30))
         status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30))
         status.append(self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25))
@@ -194,8 +200,14 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50))
         status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30))
 
-        # status.append(1 if self.is_bonus() else 0)
+        # Points bottom
+        status.append(self.get_points_bottom() / 235)
+
+        # Points total
         status.append(self.get_points() / 375)
+
+        # Round played
+        status.append(self.get_length() / 13)
 
         return np.array([np.array(status)])
 
@@ -262,6 +274,44 @@ class Kniffel:
 
             if self.is_bonus() and self.is_finished():
                 total += 35
+
+        return total
+
+    def get_points_top(self) -> int:
+        """Sum for einser, zweier, dreier, vierer, fünfer und sechser
+
+        Returns:
+            int: total points top with bonus
+        """
+        total = 0
+        for turn in self.turns:
+            if turn.status.value == KniffelStatus.FINISHED.value and (
+                turn.option.value == KniffelOptions.ONES.value
+                or turn.option.value == KniffelOptions.TWOS.value
+                or turn.option.value == KniffelOptions.THREES.value
+                or turn.option.value == KniffelOptions.FOURS.value
+                or turn.option.value == KniffelOptions.FIVES.value
+                or turn.option.value == KniffelOptions.SIXES.value
+            ):
+                total += turn.selected_option.points
+
+        total += 35 if self.is_bonus() else 0
+
+        return total
+
+    def get_points_bottom(self):
+        total = 0
+        for turn in self.turns:
+            if turn.status.value == KniffelStatus.FINISHED.value and (
+                turn.option.value == KniffelOptions.THREE_TIMES.value
+                or turn.option.value == KniffelOptions.FOUR_TIMES.value
+                or turn.option.value == KniffelOptions.FULL_HOUSE.value
+                or turn.option.value == KniffelOptions.SMALL_STREET.value
+                or turn.option.value == KniffelOptions.LARGE_STREET.value
+                or turn.option.value == KniffelOptions.KNIFFEL.value
+                or turn.option.value == KniffelOptions.CHANCE.value
+            ):
+                total += turn.selected_option.points
 
         return total
 

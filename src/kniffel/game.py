@@ -31,6 +31,10 @@ def play():
         kniffel.mock(DiceSet([1, 2, 3, 4, 5]))
         kniffel.finish_turn(KniffelOptions.LARGE_STREET)
 
+        print(kniffel.get_state())
+        print()
+        print(np.shape(kniffel.get_state()))
+
         kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
         kniffel.finish_turn(KniffelOptions.KNIFFEL)
 
