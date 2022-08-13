@@ -194,7 +194,7 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50))
         status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30))
 
-        status.append(1 if self.is_bonus() else 0)
+        # status.append(1 if self.is_bonus() else 0)
         status.append(self.get_points() / 375)
 
         return np.array([np.array(status)])

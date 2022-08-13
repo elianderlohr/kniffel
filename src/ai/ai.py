@@ -378,11 +378,9 @@ class KniffelAI:
 
         self.play(path, 10_000, env_config, logging=False)
 
-    def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
-        action = agent.forward(state)
-
-        enum_action = EnumAction(action)
-
+    def apply_prediction(
+        self, kniffel: Kniffel, enum_action: EnumAction, logging=False
+    ):
         if logging:
             print(f"      Action: {enum_action}")
 
@@ -505,6 +503,13 @@ class KniffelAI:
             kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
         if EnumAction.FINISH_CHANCE_SLASH is enum_action:
             kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
+
+    def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
+        action = agent.forward(state)
+
+        enum_action = EnumAction(action)
+
+        self.apply_prediction(kniffel, enum_action, logging)
 
         return enum_action
 
@@ -635,13 +640,18 @@ class KniffelAI:
                     print(f"    Round: {rounds_counter}")
 
                 try:
-                    enum_action = self.predict_and_apply(agent, kniffel, state, logging)
-                    rounds_counter += 1
+                    action = agent.forward(state)
+                    enum_action = EnumAction(action)
 
                     log_csv.append(f"\n Round: {rounds_counter}")
                     log_csv.append(f"\n     Action: {enum_action}")
                     log_csv.append("\n" + KniffelDraw().draw_dices(state[0][0:5]))
                     log_csv.append(f"\n     State: {state[0][5:22]}")
+
+                    self.apply_prediction(kniffel, enum_action, logging)
+
+                    rounds_counter += 1
+
                     log_csv.append(f"\n     Points: {kniffel.get_points()}")
 
                     if logging:
@@ -679,7 +689,9 @@ class KniffelAI:
                         break_counter += 1
                         rounds_counter = 1
 
-                        log_csv.append(f"\n     Finished/Error:")
+                        log_csv.append("\n")
+                        log_csv.append(f"Finished/Error:")
+                        log_csv.append(f"\n         Error: {e}")
                         log_csv.append(f"\n         Prediction Allowed: False")
                         log_csv.append(f"\n         Error: True")
 
@@ -725,11 +737,11 @@ def play(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai.play(
-        path="output/weights/p_date=2022-08-11-18_04_48",
-        episodes=1_000,
+        path="output/weights/p_date=2022-08-12-17_28_23",
+        episodes=1,
         env_config=env_config,
         logging=False,
-        write=False,
+        write=True,
     )
 
 
@@ -753,30 +765,27 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 16,
-        "n_units_l2": 96,
-        "n_units_l3": 208,
+        "layers": 1,
+        "n_units_l1": 192,
         "activation": "linear",
-        "dqn_memory_limit": 101000,
-        "train_policy": "BoltzmannGumbelQPolicy",
-        "boltzmann_gumbel_C": 0.5,
-        "dqn_target_model_update": 0.01,
+        "dqn_memory_limit": 751000,
+        "dqn_target_model_update": 326.4913224587942,
+        "enable_dueling_network": True,
+        "train_policy": "GreedyQPolicy",
+        "dqn_nb_steps_warmup": 14,
         "batch_size": 32,
-        "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": False,
-        "dqn_adam_learning_rate": 0.000705545,
-        "dqn_adam_epsilon": 0.0313329,
-        "enable_dueling_network": False,
-        "dqn_nb_steps_warmup": 100
+        "dqn_dueling_option": "max",
+        "dqn_adam_learning_rate": 0.0028878243382276032,
+        "dqn_adam_epsilon": 0.046851643583491004,
     }
 
     ai = KniffelAI(
-        load=True,
+        load=False,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
-        env_observation_space=22,
+        env_observation_space=21,
         env_action_space=58,
     )
 
