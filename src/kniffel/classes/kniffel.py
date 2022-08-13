@@ -162,7 +162,7 @@ class Kniffel:
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    return 1
+                    return turn.selected_option.points / scaler
                 elif turn.selected_option.id is option_alternative.value:
                     return 0
 
@@ -187,10 +187,10 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30))
 
         # Bonus ?
-        # status.append(1 if self.is_bonus() else 0)
+        status.append(1 if self.is_bonus() else 0)
 
         # Points top with bonus
-        # status.append(self.get_points_top() / 140)
+        status.append(self.get_points_top() / 140)
 
         status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30))
         status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30))
@@ -201,7 +201,7 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30))
 
         # Points bottom
-        # status.append(self.get_points_bottom() / 235)
+        status.append(self.get_points_bottom() / 235)
 
         # Points total
         status.append(self.get_points() / 375)
