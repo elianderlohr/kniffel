@@ -8,6 +8,7 @@ class KniffelOptions(Enum):
     FOURS: int = 4
     FIVES: int = 5
     SIXES: int = 6
+    
     THREE_TIMES: int = 7
     FOUR_TIMES: int = 8
     FULL_HOUSE: int = 9

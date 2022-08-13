@@ -322,7 +322,7 @@ class KniffelAI:
 
     def train(self, nb_steps=10_000, load_path="", env_config=""):
         return self._train(
-            nb_steps=nb_steps, load_path=load_path, env_config=env_config,
+            nb_steps=nb_steps, load_path=load_path, env_config=env_config
         )
 
     def _train(self, nb_steps=10_000, load_path="", env_config=""):
@@ -537,12 +537,12 @@ class KniffelAI:
 
     # Use Model
     def play(
-        self, path, episodes, env_config, random=False, logging=False, write=False
+        self, path, episodes, env_config, random=False, logging=False, write=False, weights_name="weights"
     ):
         if random:
             self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes, env_config, logging=logging, write=write)
+            self.use_model(path, episodes, env_config, weights_name=weights_name, logging=logging, write=write)
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(
@@ -577,7 +577,7 @@ class KniffelAI:
 
             round += 1
 
-    def use_model(self, path, episodes, env_config, logging=False, write=False):
+    def use_model(self, path, episodes, env_config, weights_name="weights", logging=False, write=False):
 
         env = KniffelEnv(
             env_config,
@@ -616,7 +616,7 @@ class KniffelAI:
         elif self.get_hyperparameter("agent") == "CEM":
             agent.compile()
 
-        agent.load_weights(f"{path}/weights.h5f")
+        agent.load_weights(f"{path}/{weights_name}.h5f")
 
         points = []
         rounds = []
@@ -736,11 +736,12 @@ def play(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai.play(
-        path="output/weights/p_date=2022-08-12-17_28_23",
-        episodes=1,
+        path="output/weights/p_date=2022-08-13-11_08_12",
+        episodes=1_000,
         env_config=env_config,
+        weights_name="weights_500000",
         logging=False,
-        write=True,
+        write=False,
     )
 
 
@@ -754,7 +755,7 @@ def train(ai: KniffelAI, env_config: dict):
     ai._train(
         nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-08-10-10_03_57",
+        load_path="output/weights/p_date=2022-08-13-10_50_11",
     )
 
 
@@ -764,19 +765,22 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 1,
-        "n_units_l1": 192,
+        "layers": 3,
+        "n_units_l1": 16,
+        "n_units_l2": 96,
+        "n_units_l3": 208,
         "activation": "linear",
-        "dqn_memory_limit": 751000,
-        "dqn_target_model_update": 326.4913224587942,
-        "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 14,
+        "dqn_memory_limit": 101000,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 0.5,
+        "dqn_target_model_update": 0.01,
         "batch_size": 32,
+        "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": False,
-        "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0028878243382276032,
-        "dqn_adam_epsilon": 0.046851643583491004,
+        "dqn_adam_learning_rate": 0.000705545,
+        "dqn_adam_epsilon": 0.0313329,
+        "enable_dueling_network": False,
+        "dqn_nb_steps_warmup": 100
     }
 
     ai = KniffelAI(

@@ -553,7 +553,7 @@ def objective(trial):
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         trial=trial,
-        env_observation_space=22,
+        env_observation_space=24,
         env_action_space=58,
     )
 
@@ -583,7 +583,7 @@ if __name__ == "__main__":
 
     if args.new == "true":
         print(
-            f"Create new study with name {args.study_name} with {args.jobs} parallel jobs."
+            f"Create new study with name '{args.study_name}' and {args.jobs} parallel jobs."
         )
         study = optuna.create_study(
             study_name=args.study_name,
@@ -591,7 +591,7 @@ if __name__ == "__main__":
             storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
-        print(f"Load study with name {args.study_name} with {args.jobs} parallel jobs.")
+        print(f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs.")
         study = optuna.load_study(
             study_name=args.study_name,
             storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",

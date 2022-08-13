@@ -162,7 +162,10 @@ class Kniffel:
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    return turn.selected_option.points / scaler
+                    #return turn.selected_option.points / scaler
+                    # After trying out different options working with yes/no is better than 
+                    # percentage score 13.08.2022
+                    return 1
                 elif turn.selected_option.id is option_alternative.value:
                     return 0
 
