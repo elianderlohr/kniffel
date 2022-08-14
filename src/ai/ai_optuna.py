@@ -512,12 +512,12 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1, 2, 3],
+        "windows_length": [1,2,3],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN", "SARSA"],
+        "agent": ["DQN"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
