@@ -118,11 +118,11 @@ class KniffelAI:
             Flatten(input_shape=(self.window_length, 1, self._env_observation_space,))
         )
 
-        layers = self._trial.suggest_int("layers", 1, 5)
+        layers = self._trial.suggest_int("layers", 2, 5)
         for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l{}".format(i), 16, 256, step=16),
+                    self._trial.suggest_int("n_units_l{}".format(i), 16, 512, step=16),
                     activation="relu",
                 )
             )
