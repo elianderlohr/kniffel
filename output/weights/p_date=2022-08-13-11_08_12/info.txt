@@ -1,3 +1,0 @@
-Run with this git commit:
-
-https://github.com/elianderlohr/Kniffel/commit/106e94d67775c37f8f3be9b685db514632dcb15e
