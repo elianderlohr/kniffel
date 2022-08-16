@@ -1,0 +1,9 @@
+test on 10k
+
+Finished games: 0
+Average points: 101.4542
+Max points: 196
+Min points: 0
+Average rounds: 24.9225
+Max rounds: 36
+Min rounds: 3
