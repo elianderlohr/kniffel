@@ -537,12 +537,26 @@ class KniffelAI:
 
     # Use Model
     def play(
-        self, path, episodes, env_config, random=False, logging=False, write=False, weights_name="weights"
+        self,
+        path,
+        episodes,
+        env_config,
+        random=False,
+        logging=False,
+        write=False,
+        weights_name="weights",
     ):
         if random:
             self.play_random(episodes, env_config)
         else:
-            self.use_model(path, episodes, env_config, weights_name=weights_name, logging=logging, write=write)
+            self.use_model(
+                path,
+                episodes,
+                env_config,
+                weights_name=weights_name,
+                logging=logging,
+                write=write,
+            )
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(
@@ -577,11 +591,37 @@ class KniffelAI:
 
             round += 1
 
-    def use_model(self, path, episodes, env_config, weights_name="weights", logging=False, write=False):
-        
-        legend = ["TRIES PLAYED", "ONES", "TWOS", "THREES", "FOURS", "FIVES", 
-          "SIXES", "BONUS", "TOP POINTS", "THREE TIMES", "FOUR TIMES", "FULL HOUSE",
-         "SMALL STREET","LARGE STREET", "KNIFFEL", "CHANCE", "BOTTOM POINTS", "TOTAL POINTS", "ROUNDS PLAYED"]
+    def use_model(
+        self,
+        path,
+        episodes,
+        env_config,
+        weights_name="weights",
+        logging=False,
+        write=False,
+    ):
+
+        legend = [
+            "TRIES PLAYED",
+            "ONES",
+            "TWOS",
+            "THREES",
+            "FOURS",
+            "FIVES",
+            "SIXES",
+            "BONUS",
+            "TOP POINTS",
+            "THREE TIMES",
+            "FOUR TIMES",
+            "FULL HOUSE",
+            "SMALL STREET",
+            "LARGE STREET",
+            "KNIFFEL",
+            "CHANCE",
+            "BOTTOM POINTS",
+            "TOTAL POINTS",
+            "ROUNDS PLAYED",
+        ]
 
         env = KniffelEnv(
             env_config,
@@ -658,7 +698,9 @@ class KniffelAI:
 
                     rounds_counter += 1
 
-                    log_csv.append(f"\nNew Points: {(kniffel.get_points() - points_old)}")
+                    log_csv.append(
+                        f"\nNew Points: {(kniffel.get_points() - points_old)}"
+                    )
                     log_csv.append(f"\nTotal Points: {kniffel.get_points()}")
 
                     if logging:
@@ -745,7 +787,7 @@ def play(ai: KniffelAI, env_config: dict):
     """
     ai.play(
         path="output/weights/model_2",
-        episodes=500,
+        episodes=25_000,
         env_config=env_config,
         weights_name="weights",
         logging=False,
@@ -761,9 +803,7 @@ def train(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai._train(
-        nb_steps=10_000_000,
-        env_config=env_config,
-        load_path="output/weights/model_1",
+        nb_steps=10_000_000, env_config=env_config, load_path="output/weights/model_2",
     )
 
 
@@ -804,4 +844,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)
