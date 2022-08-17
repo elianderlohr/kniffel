@@ -34,3 +34,18 @@ To optimize the hyperparameter selection the library optuna is used. The file is
 _Optuna is an automatic hyperparameter optimization software framework, particularly designed for machine learning. It features an imperative, define-by-run style user API. Thanks to our define-by-run API, the code written with Optuna enjoys high modularity, and the user of Optuna can dynamically construct the search spaces for the hyperparameters._
 
 [Optuna: A hyperparameter optimization framework](https://github.com/optuna/optuna#optuna-a-hyperparameter-optimization-framework)
+
+
+### Commands
+
+#### Start Hyperparameter optimization with optuna
+
+```shell
+python src/ai/ai_optuna.py --pw XXX --study_name kniffel_22_08_16_m1 --new true --jobs 6
+```
+
+#### Start Optuna Dashboard
+
+```shell
+optuna-dashboard mysql+pymysql://kniffel:XXX@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel
+```
