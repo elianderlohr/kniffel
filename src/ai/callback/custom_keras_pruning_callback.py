@@ -64,7 +64,7 @@ class CustomKerasPruningCallback(Callback):
         min = np.min(self.log_dict[self._monitor])
         mean = np.mean(self.log_dict[self._monitor])
 
-        current_score = (((max - min) * mean) / 1_000) - abs(mean)
+        current_score = mean - (max - min)
         if self.log_dict[self._monitor] is None:
             message = (
                 "The metric '{}' is not in the evaluation logs for pruning. "

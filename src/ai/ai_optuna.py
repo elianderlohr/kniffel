@@ -350,7 +350,7 @@ class KniffelAI:
         min = np.min(l)
         mean = np.mean(l)
 
-        return (((max - min) * mean) / 1_000) - abs(mean)
+        return mean - (max - min)
 
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
@@ -359,7 +359,9 @@ class KniffelAI:
         episode_reward_min = np.min(scores.history["episode_reward"])
         episode_reward_mean = np.mean(scores.history["episode_reward"])
 
-        episode_reward_custom = self.calculate_custom_metric(scores.history["episode_reward"])
+        episode_reward_custom = self.calculate_custom_metric(
+            scores.history["episode_reward"]
+        )
 
         nb_steps_max = np.max(scores.history["nb_steps"])
         nb_steps_min = np.min(scores.history["nb_steps"])
