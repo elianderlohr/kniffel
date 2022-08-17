@@ -355,19 +355,21 @@ class KniffelAI:
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
 
-        episode_reward_max = np.max(scores.history["episode_reward"])
-        episode_reward_min = np.min(scores.history["episode_reward"])
-        episode_reward_mean = np.mean(scores.history["episode_reward"])
+        episode_reward_max = float(np.max(scores.history["episode_reward"]))
+        episode_reward_min = float(np.min(scores.history["episode_reward"]))
+        episode_reward_mean = float(np.mean(scores.history["episode_reward"]))
 
-        episode_reward_custom = self.calculate_custom_metric(
-            scores.history["episode_reward"]
+        episode_reward_custom = float(
+            self.calculate_custom_metric(scores.history["episode_reward"])
         )
 
-        nb_steps_max = np.max(scores.history["nb_steps"])
-        nb_steps_min = np.min(scores.history["nb_steps"])
-        nb_steps_mean = np.mean(scores.history["nb_steps"])
+        nb_steps_max = float(np.max(scores.history["nb_steps"]))
+        nb_steps_min = float(np.min(scores.history["nb_steps"]))
+        nb_steps_mean = float(np.mean(scores.history["nb_steps"]))
 
-        nb_steps_custom = self.calculate_custom_metric(scores.history["nb_steps"])
+        nb_steps_custom = float(
+            self.calculate_custom_metric(scores.history["nb_steps"])
+        )
 
         print(f"episode_reward_custom: {episode_reward_custom}")
         print(f"nb_steps_custom: {nb_steps_custom}")
@@ -630,19 +632,19 @@ def objective(trial):
         nb_steps_custom,
     ) = ai.train(env_config=env_config, nb_steps=250_000)
 
-    trial.set_user_attr("episode_reward_max", episode_reward_max)
-    trial.set_user_attr("episode_reward_min", episode_reward_min)
-    trial.set_user_attr("episode_reward_mean", episode_reward_mean)
-    trial.set_user_attr("episode_reward_custom", episode_reward_custom)
+    trial.set_user_attr("episode_reward_max", float(episode_reward_max))
+    trial.set_user_attr("episode_reward_min", float(episode_reward_min))
+    trial.set_user_attr("episode_reward_mean", float(episode_reward_mean))
+    trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
 
-    trial.set_user_attr("nb_steps_max", nb_steps_max)
-    trial.set_user_attr("nb_steps_min", nb_steps_min)
-    trial.set_user_attr("nb_steps_mean", nb_steps_mean)
-    trial.set_user_attr("nb_steps_custom", nb_steps_custom)
+    trial.set_user_attr("nb_steps_max", float(nb_steps_max))
+    trial.set_user_attr("nb_steps_min", float(nb_steps_min))
+    trial.set_user_attr("nb_steps_mean", float(nb_steps_mean))
+    trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
 
     trial.set_user_attr("param", trial.params)
 
-    return episode_reward_custom
+    return float(episode_reward_custom)
 
 
 if __name__ == "__main__":
