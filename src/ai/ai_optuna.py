@@ -1,4 +1,5 @@
 # Standard imports
+from re import L
 from statistics import mean
 from datetime import datetime as dt
 import warnings
@@ -42,8 +43,7 @@ import src.kniffel.classes.custom_exceptions as ex
 
 
 class KniffelAI:
-    """Optuna AI Kniffel Class
-    """
+    """Optuna AI Kniffel Class"""
 
     # Load model from path
     _load = False
@@ -115,7 +115,13 @@ class KniffelAI:
     def build_model(self, actions):
         model = tf.keras.Sequential()
         model.add(
-            Flatten(input_shape=(self.window_length, 1, self._env_observation_space,))
+            Flatten(
+                input_shape=(
+                    self.window_length,
+                    1,
+                    self._env_observation_space,
+                )
+            )
         )
 
         layers = self._trial.suggest_int("layers", 2, 5)
@@ -127,7 +133,12 @@ class KniffelAI:
                 )
             )
 
-        model.add(Dense(actions, activation=self._return_trial("activation"),))
+        model.add(
+            Dense(
+                actions,
+                activation=self._return_trial("activation"),
+            )
+        )
 
         model.summary()
         return model
@@ -256,7 +267,8 @@ class KniffelAI:
             )
 
             memory = EpisodeParameterMemory(
-                limit=memory_interval, window_length=self.window_length,
+                limit=memory_interval,
+                window_length=self.window_length,
             )
 
             agent = CEMAgent(
@@ -286,7 +298,11 @@ class KniffelAI:
         return agent
 
     def train_agent(
-        self, actions, env, nb_steps, load_path="",
+        self,
+        actions,
+        env,
+        nb_steps,
+        load_path="",
     ):
         model = self.build_model(actions)
         agent = self.build_agent(model, actions, nb_steps=nb_steps)
@@ -329,15 +345,41 @@ class KniffelAI:
 
         return agent, history
 
+    def calculate_custom_metric(self, l: list) -> float:
+        max = np.max(l)
+        min = np.min(l)
+        mean = np.mean(l)
+
+        return (((max - min) * mean) / 1_000) - abs(mean)
+
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
 
-        episode_reward = np.mean(scores.history["episode_reward"])
-        nb_steps = np.mean(scores.history["nb_steps"])
-        print(f"episode_reward: {episode_reward}")
-        print(f"nb_steps: {nb_steps}")
+        episode_reward_max = np.max(scores.history["episode_reward"])
+        episode_reward_min = np.min(scores.history["episode_reward"])
+        episode_reward_mean = np.mean(scores.history["episode_reward"])
 
-        return episode_reward, nb_steps
+        episode_reward_custom = self.calculate_custom_metric(scores.history["episode_reward"])
+
+        nb_steps_max = np.max(scores.history["nb_steps"])
+        nb_steps_min = np.min(scores.history["nb_steps"])
+        nb_steps_mean = np.mean(scores.history["nb_steps"])
+
+        nb_steps_custom = self.calculate_custom_metric(scores.history["nb_steps"])
+
+        print(f"episode_reward_custom: {episode_reward_custom}")
+        print(f"nb_steps_custom: {nb_steps_custom}")
+
+        return (
+            episode_reward_max,
+            episode_reward_min,
+            episode_reward_mean,
+            episode_reward_custom,
+            nb_steps_max,
+            nb_steps_min,
+            nb_steps_mean,
+            nb_steps_custom,
+        )
 
     def train(self, nb_steps=10_000, load_path="", env_config=""):
         env = KniffelEnv(
@@ -354,9 +396,27 @@ class KniffelAI:
             load_path=load_path,
         )
 
-        episode_reward, nb_steps = self.validate_model(agent, env=env)
+        (
+            episode_reward_max,
+            episode_reward_min,
+            episode_reward_mean,
+            episode_reward_custom,
+            nb_steps_max,
+            nb_steps_min,
+            nb_steps_mean,
+            nb_steps_custom,
+        ) = self.validate_model(agent, env=env)
 
-        return episode_reward, nb_steps
+        return (
+            episode_reward_max,
+            episode_reward_min,
+            episode_reward_mean,
+            episode_reward_custom,
+            nb_steps_max,
+            nb_steps_min,
+            nb_steps_mean,
+            nb_steps_custom,
+        )
 
     def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
         action = agent.forward(state)
@@ -512,7 +572,7 @@ class KniffelAI:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1,2,3],
+        "windows_length": [1, 2, 3],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
@@ -557,13 +617,30 @@ def objective(trial):
         env_action_space=58,
     )
 
-    episode_reward, nb_steps = ai.train(env_config=env_config, nb_steps=250_000)
+    (
+        episode_reward_max,
+        episode_reward_min,
+        episode_reward_mean,
+        episode_reward_custom,
+        nb_steps_max,
+        nb_steps_min,
+        nb_steps_mean,
+        nb_steps_custom,
+    ) = ai.train(env_config=env_config, nb_steps=250_000)
 
-    trial.set_user_attr("episode_reward", episode_reward)
-    trial.set_user_attr("nb_steps", nb_steps)
+    trial.set_user_attr("episode_reward_max", episode_reward_max)
+    trial.set_user_attr("episode_reward_min", episode_reward_min)
+    trial.set_user_attr("episode_reward_mean", episode_reward_mean)
+    trial.set_user_attr("episode_reward_custom", episode_reward_custom)
+
+    trial.set_user_attr("nb_steps_max", nb_steps_max)
+    trial.set_user_attr("nb_steps_min", nb_steps_min)
+    trial.set_user_attr("nb_steps_mean", nb_steps_mean)
+    trial.set_user_attr("nb_steps_custom", nb_steps_custom)
+
     trial.set_user_attr("param", trial.params)
 
-    return episode_reward  # , nb_steps
+    return episode_reward_custom
 
 
 if __name__ == "__main__":
@@ -591,12 +668,17 @@ if __name__ == "__main__":
             storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
-        print(f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs.")
+        print(
+            f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs."
+        )
         study = optuna.load_study(
             study_name=args.study_name,
             storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
 
     study.optimize(
-        objective, n_trials=250, catch=(ValueError,), n_jobs=args.jobs,
+        objective,
+        n_trials=250,
+        catch=(ValueError,),
+        n_jobs=args.jobs,
     )
