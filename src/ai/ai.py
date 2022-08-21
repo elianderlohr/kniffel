@@ -268,10 +268,19 @@ class KniffelAI:
         return self._hyperparater_base[key]
 
     def train_agent(
-        self, actions, env, nb_steps, callbacks, load_path="",
+        self,
+        actions,
+        env,
+        nb_steps,
+        callbacks,
+        load_path="",
     ):
         model = self.build_model(actions)
-        agent = self.build_agent(model, actions, nb_steps=nb_steps,)
+        agent = self.build_agent(
+            model,
+            actions,
+            nb_steps=nb_steps,
+        )
 
         if (
             self.get_hyperparameter("agent") == "DQN"
@@ -786,10 +795,10 @@ def play(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai.play(
-        path="output/weights/p_date=2022-08-16-09_37_06",
-        episodes=10_000,
+        path="output/weights/model_4",
+        episodes=1000,
         env_config=env_config,
-        weights_name="weights_9750000",
+        weights_name="weights",
         logging=False,
         write=False,
     )
@@ -803,7 +812,9 @@ def train(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai._train(
-        nb_steps=10_000_000, env_config=env_config, load_path="output/weights/model_3",
+        nb_steps=10_000_000,
+        env_config=env_config,
+        load_path="output/weights/model_3",
     )
 
 
@@ -825,7 +836,7 @@ if __name__ == "__main__":
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
         "dqn_adam_learning_rate": 0.0028878243382276032,
-        "dqn_adam_epsilon": 0.046851643583491004
+        "dqn_adam_epsilon": 0.046851643583491004,
     }
 
     ai = KniffelAI(

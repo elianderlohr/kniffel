@@ -24,7 +24,7 @@ The reinforcement learning logic is located under [src/ai](src/ai/).
 
 | Name / ID | Date       | Training Episodes | Duration | AVG Score | AVG Rounds | Weights                            |
 |----|------------|-------------------|----------|-------|-|------------------------------------|
-| model_2  | 16.08.2022 | 4.000.000+         | ~3d       | ~105   | ~24 | [output/weights/model_2](output/weights/model_2) |
+| model_4  | 21.08.2022 | 20.000.000+         | ~3d       | ~115   | ~26 | [output/weights/model_4](output/weights/model_4) |
 
 *tbc*
 
