@@ -350,7 +350,7 @@ class KniffelAI:
         min = np.min(l)
         mean = np.mean(l)
 
-        return mean - (max - min)
+        return mean - (max - min) + max
 
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
