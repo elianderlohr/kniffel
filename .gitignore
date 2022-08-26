@@ -22,3 +22,6 @@
 */*/.pytest_cache
 */.pytest_cache
 .pytest_cache
+*/*/*/.py.amltmp
+*/*/.py.amltmp
+*/.py.amltmp
