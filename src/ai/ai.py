@@ -664,7 +664,6 @@ class KniffelAI:
                         ),
                     ),
                 ),
-                metrics=["mae", "accuracy"],
             )
         elif self.get_hyperparameter("agent") == "CEM":
             agent.compile()
@@ -840,7 +839,7 @@ if __name__ == "__main__":
     }
 
     ai = KniffelAI(
-        load=True,
+        load=False,
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
@@ -855,4 +854,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)

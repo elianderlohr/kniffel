@@ -319,7 +319,6 @@ class KniffelAI:
                         "{}_adam_epsilon".format(self._agent_value.lower()), 1e-9, 1e-1
                     ),
                 ),
-                metrics=["mae", "accuracy"],
             )
         elif self._agent_value == "CEM":
             agent.compile()
