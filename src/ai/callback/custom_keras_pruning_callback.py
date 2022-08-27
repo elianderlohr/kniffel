@@ -77,10 +77,10 @@ class CustomKerasPruningCallback(Callback):
 
         self._trial.report(float(current_score), step=epoch)
 
-        if self._trial.should_prune():
-            self.log_dict["episode_reward"] = []
-            self.log_dict["nb_episode_steps"] = []
-            self.log_dict["nb_steps"] = []
+        self.log_dict["episode_reward"] = []
+        self.log_dict["nb_episode_steps"] = []
+        self.log_dict["nb_steps"] = []
 
+        if self._trial.should_prune():
             message = "Trial was pruned at epoch {}.".format(epoch)
             raise optuna.TrialPruned(message)

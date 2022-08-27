@@ -375,10 +375,12 @@ class KniffelAI:
         print(f"nb_steps_custom: {nb_steps_custom}")
 
         return (
+            scores.history["episode_reward"],
             episode_reward_max,
             episode_reward_min,
             episode_reward_mean,
             episode_reward_custom,
+            scores.history["nb_steps"],
             nb_steps_max,
             nb_steps_min,
             nb_steps_mean,
@@ -401,10 +403,12 @@ class KniffelAI:
         )
 
         (
+            episode_reward,
             episode_reward_max,
             episode_reward_min,
             episode_reward_mean,
             episode_reward_custom,
+            nb_steps,
             nb_steps_max,
             nb_steps_min,
             nb_steps_mean,
@@ -412,166 +416,17 @@ class KniffelAI:
         ) = self.validate_model(agent, env=env)
 
         return (
+            episode_reward,
             episode_reward_max,
             episode_reward_min,
             episode_reward_mean,
             episode_reward_custom,
+            nb_steps,
             nb_steps_max,
             nb_steps_min,
             nb_steps_mean,
             nb_steps_custom,
         )
-
-    def predict_and_apply(self, agent, kniffel: Kniffel, state, logging=False):
-        action = agent.forward(state)
-
-        enum_action = EnumAction(action)
-
-        if logging:
-            print(f"      Action: {enum_action}")
-
-        if EnumAction.FINISH_ONES is enum_action:
-            kniffel.finish_turn(KniffelOptions.ONES)
-        if EnumAction.FINISH_TWOS is enum_action:
-            kniffel.finish_turn(KniffelOptions.TWOS)
-        if EnumAction.FINISH_THREES is enum_action:
-            kniffel.finish_turn(KniffelOptions.THREES)
-        if EnumAction.FINISH_FOURS is enum_action:
-            kniffel.finish_turn(KniffelOptions.FOURS)
-        if EnumAction.FINISH_FIVES is enum_action:
-            kniffel.finish_turn(KniffelOptions.FIVES)
-        if EnumAction.FINISH_SIXES is enum_action:
-            kniffel.finish_turn(KniffelOptions.SIXES)
-        if EnumAction.FINISH_THREE_TIMES is enum_action:
-            kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-        if EnumAction.FINISH_FOUR_TIMES is enum_action:
-            kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-        if EnumAction.FINISH_FULL_HOUSE is enum_action:
-            kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
-        if EnumAction.FINISH_SMALL_STREET is enum_action:
-            kniffel.finish_turn(KniffelOptions.SMALL_STREET)
-        if EnumAction.FINISH_LARGE_STREET is enum_action:
-            kniffel.finish_turn(KniffelOptions.LARGE_STREET)
-        if EnumAction.FINISH_KNIFFEL is enum_action:
-            kniffel.finish_turn(KniffelOptions.KNIFFEL)
-        if EnumAction.FINISH_CHANCE is enum_action:
-            kniffel.finish_turn(KniffelOptions.CHANCE)
-
-        # Continue enum_actions
-        if EnumAction.NEXT_0 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 0, 0, 0])
-        if EnumAction.NEXT_1 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 0, 0, 1])
-        if EnumAction.NEXT_2 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 0, 1, 0])
-        if EnumAction.NEXT_3 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 0, 1, 1])
-        if EnumAction.NEXT_4 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 1, 0, 0])
-        if EnumAction.NEXT_5 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 1, 0, 1])
-        if EnumAction.NEXT_6 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 1, 1, 0])
-        if EnumAction.NEXT_7 is enum_action:
-            kniffel.add_turn(keep=[0, 0, 1, 1, 1])
-        if EnumAction.NEXT_8 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 0, 0, 0])
-        if EnumAction.NEXT_9 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 0, 0, 1])
-        if EnumAction.NEXT_10 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 0, 1, 0])
-        if EnumAction.NEXT_11 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 0, 1, 1])
-        if EnumAction.NEXT_12 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 1, 0, 0])
-        if EnumAction.NEXT_13 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 1, 0, 1])
-        if EnumAction.NEXT_14 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 1, 1, 0])
-        if EnumAction.NEXT_15 is enum_action:
-            kniffel.add_turn(keep=[0, 1, 1, 1, 1])
-        if EnumAction.NEXT_16 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 0, 0, 0])
-        if EnumAction.NEXT_17 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 0, 0, 1])
-        if EnumAction.NEXT_18 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 0, 1, 0])
-        if EnumAction.NEXT_19 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 0, 1, 1])
-        if EnumAction.NEXT_20 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 1, 0, 0])
-        if EnumAction.NEXT_21 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 1, 0, 1])
-        if EnumAction.NEXT_22 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 1, 1, 0])
-        if EnumAction.NEXT_23 is enum_action:
-            kniffel.add_turn(keep=[1, 0, 1, 1, 1])
-        if EnumAction.NEXT_24 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 0, 0, 0])
-        if EnumAction.NEXT_25 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 0, 0, 1])
-        if EnumAction.NEXT_26 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 0, 1, 0])
-        if EnumAction.NEXT_27 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 0, 1, 1])
-        if EnumAction.NEXT_28 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 1, 0, 0])
-        if EnumAction.NEXT_29 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 1, 0, 1])
-        if EnumAction.NEXT_30 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 1, 1, 0])
-        if EnumAction.NEXT_31 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 1, 1, 1])
-
-        if EnumAction.FINISH_ONES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.ONES_SLASH)
-        if EnumAction.FINISH_TWOS_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.TWOS_SLASH)
-        if EnumAction.FINISH_THREES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.THREES_SLASH)
-        if EnumAction.FINISH_FOURS_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.FOURS_SLASH)
-        if EnumAction.FINISH_FIVES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.FIVES_SLASH)
-        if EnumAction.FINISH_SIXES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.SIXES_SLASH)
-        if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.THREE_TIMES_SLASH)
-        if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.FOUR_TIMES_SLASH)
-        if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.FULL_HOUSE_SLASH)
-        if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.SMALL_STREET_SLASH)
-        if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.LARGE_STREET_SLASH)
-        if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
-        if EnumAction.FINISH_CHANCE_SLASH is enum_action:
-            kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
-
-    def test(self, agent):
-        points = []
-        break_counter = 0
-
-        for _ in range(self._test_episodes):
-            kniffel = Kniffel()
-            while True:
-                try:
-                    state = kniffel.get_state()
-                    self.predict_and_apply(agent, kniffel, state)
-                except BaseException as e:
-                    if e == ex.GameFinishedException:
-                        points.append(kniffel.get_points())
-                        break
-                    else:
-                        points.append(kniffel.get_points())
-                        break_counter += 1
-                        break
-
-                points.append(kniffel.get_points())
-
-        return break_counter, mean(points), max(points), min(points)
 
 
 def objective(trial):
@@ -622,21 +477,25 @@ def objective(trial):
     )
 
     (
+        episode_reward,
         episode_reward_max,
         episode_reward_min,
         episode_reward_mean,
         episode_reward_custom,
+        nb_steps,
         nb_steps_max,
         nb_steps_min,
         nb_steps_mean,
         nb_steps_custom,
     ) = ai.train(env_config=env_config, nb_steps=250_000)
 
+    trial.set_user_attr("episode_reward", list(episode_reward))
     trial.set_user_attr("episode_reward_max", float(episode_reward_max))
     trial.set_user_attr("episode_reward_min", float(episode_reward_min))
     trial.set_user_attr("episode_reward_mean", float(episode_reward_mean))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
 
+    trial.set_user_attr("nb_steps", list(nb_steps))
     trial.set_user_attr("nb_steps_max", float(nb_steps_max))
     trial.set_user_attr("nb_steps_min", float(nb_steps_min))
     trial.set_user_attr("nb_steps_mean", float(nb_steps_mean))
