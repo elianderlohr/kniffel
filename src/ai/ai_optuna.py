@@ -540,7 +540,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=50,
+        n_trials=250,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
