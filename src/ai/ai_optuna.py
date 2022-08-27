@@ -487,7 +487,7 @@ def objective(trial):
         nb_steps_min,
         nb_steps_mean,
         nb_steps_custom,
-    ) = ai.train(env_config=env_config, nb_steps=250_000)
+    ) = ai.train(env_config=env_config, nb_steps=150_000)
 
     trial.set_user_attr("episode_reward", list(episode_reward))
     trial.set_user_attr("episode_reward_max", float(episode_reward_max))
