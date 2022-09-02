@@ -370,8 +370,11 @@ class KniffelAI:
             self.calculate_custom_metric(scores.history["nb_steps"])
         )
 
+        custom_metric = float(episode_reward_custom / nb_steps_custom)
+
         print(f"episode_reward_custom: {episode_reward_custom}")
         print(f"nb_steps_custom: {nb_steps_custom}")
+        print(f"custon_metric: {custom_metric}")
 
         return (
             scores.history["episode_reward"],
@@ -384,6 +387,7 @@ class KniffelAI:
             nb_steps_min,
             nb_steps_mean,
             nb_steps_custom,
+            custom_metric,
         )
 
     def train(self, nb_steps=10_000, load_path="", env_config=""):
@@ -412,6 +416,7 @@ class KniffelAI:
             nb_steps_min,
             nb_steps_mean,
             nb_steps_custom,
+            custom_metric,
         ) = self.validate_model(agent, env=env)
 
         return (
@@ -425,6 +430,7 @@ class KniffelAI:
             nb_steps_min,
             nb_steps_mean,
             nb_steps_custom,
+            custom_metric,
         )
 
 
@@ -486,23 +492,26 @@ def objective(trial):
         nb_steps_min,
         nb_steps_mean,
         nb_steps_custom,
+        custom_metric,
     ) = ai.train(env_config=env_config, nb_steps=150_000)
 
-    trial.set_user_attr("episode_reward", list(episode_reward))
+    # trial.set_user_attr("episode_reward", list(episode_reward))
     trial.set_user_attr("episode_reward_max", float(episode_reward_max))
     trial.set_user_attr("episode_reward_min", float(episode_reward_min))
     trial.set_user_attr("episode_reward_mean", float(episode_reward_mean))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
 
-    trial.set_user_attr("nb_steps", list(nb_steps))
+    # trial.set_user_attr("nb_steps", list(nb_steps))
     trial.set_user_attr("nb_steps_max", float(nb_steps_max))
     trial.set_user_attr("nb_steps_min", float(nb_steps_min))
     trial.set_user_attr("nb_steps_mean", float(nb_steps_mean))
     trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
 
+    trial.set_user_attr("custom_metric", float(custom_metric))
+
     trial.set_user_attr("param", trial.params)
 
-    return float(episode_reward_custom)
+    return float(custom_metric)
 
 
 if __name__ == "__main__":

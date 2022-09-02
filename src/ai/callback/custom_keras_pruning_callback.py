@@ -48,6 +48,13 @@ class CustomKerasPruningCallback(Callback):
         self.log_dict["nb_episode_steps"] = []
         self.log_dict["nb_steps"] = []
 
+    def _calculate_custom_metric(self, l: list) -> float:
+        max = np.max(l)
+        min = np.min(l)
+        mean = np.mean(l)
+
+        return float(mean - (max - min) + max)
+
     def on_epoch_end(self, epoch: int, logs: Optional[Dict[str, float]] = None) -> None:
 
         self.log_dict["episode_reward"].append(float(logs["episode_reward"]))
@@ -60,11 +67,15 @@ class CustomKerasPruningCallback(Callback):
         logs = logs or {}
         # implement custom metric
 
-        max = float(np.max(self.log_dict[self._monitor]))
-        min = float(np.min(self.log_dict[self._monitor]))
-        mean = float(np.mean(self.log_dict[self._monitor]))
+        episode_reward_custom = float(
+            self.calculate_custom_metric(self.log_dict["episode_reward"])
+        )
+        nb_steps_custom = float(
+            self.calculate_custom_metric(self.log_dict["nb_steps"])
+        )
 
-        current_score = float((mean - (max - min)) + max)
+
+        current_score = float(episode_reward_custom / nb_steps_custom)
         if self.log_dict[self._monitor] is None:
             message = (
                 "The metric '{}' is not in the evaluation logs for pruning. "
