@@ -67,14 +67,15 @@ class CustomKerasPruningCallback(Callback):
         logs = logs or {}
         # implement custom metric
 
-        episode_reward_custom = float(
-            self._calculate_custom_metric(self.log_dict["episode_reward"])
+        episode_reward_custom = self._calculate_custom_metric(
+            self.log_dict["episode_reward"]
         )
-        nb_steps_custom = float(
-            self._calculate_custom_metric(self.log_dict["nb_steps"])
+        nb_episode_steps_custom = self._calculate_custom_metric(
+            self.log_dict["nb_episode_steps"]
         )
 
-        current_score = float(episode_reward_custom / nb_steps_custom)
+        current_score = float(episode_reward_custom / nb_episode_steps_custom)
+
         if self.log_dict[self._monitor] is None:
             message = (
                 "The metric '{}' is not in the evaluation logs for pruning. "
