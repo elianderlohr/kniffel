@@ -68,12 +68,11 @@ class CustomKerasPruningCallback(Callback):
         # implement custom metric
 
         episode_reward_custom = float(
-            self.calculate_custom_metric(self.log_dict["episode_reward"])
+            self._calculate_custom_metric(self.log_dict["episode_reward"])
         )
         nb_steps_custom = float(
-            self.calculate_custom_metric(self.log_dict["nb_steps"])
+            self._calculate_custom_metric(self.log_dict["nb_steps"])
         )
-
 
         current_score = float(episode_reward_custom / nb_steps_custom)
         if self.log_dict[self._monitor] is None:
