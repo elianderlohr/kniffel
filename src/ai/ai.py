@@ -110,7 +110,7 @@ class KniffelAI:
             )
 
         model.add(Dense(actions, activation=self.get_hyperparameter("activation")))
-        model.summary()
+        # model.summary()
         return model
 
     def get_inner_policy(self):
@@ -600,38 +600,14 @@ class KniffelAI:
 
             round += 1
 
-    def use_model(
+    def build_use_agent(
         self,
         path,
         episodes,
         env_config,
         weights_name="weights",
         logging=False,
-        write=False,
     ):
-
-        legend = [
-            "TRIES PLAYED",
-            "ONES",
-            "TWOS",
-            "THREES",
-            "FOURS",
-            "FIVES",
-            "SIXES",
-            "BONUS",
-            "TOP POINTS",
-            "THREE TIMES",
-            "FOUR TIMES",
-            "FULL HOUSE",
-            "SMALL STREET",
-            "LARGE STREET",
-            "KNIFFEL",
-            "CHANCE",
-            "BOTTOM POINTS",
-            "TOTAL POINTS",
-            "ROUNDS PLAYED",
-        ]
-
         env = KniffelEnv(
             env_config,
             logging=logging,
@@ -669,6 +645,42 @@ class KniffelAI:
             agent.compile()
 
         agent.load_weights(f"{path}/{weights_name}.h5f")
+
+        return agent
+
+    def use_model(
+        self,
+        path,
+        episodes,
+        env_config,
+        weights_name="weights",
+        logging=False,
+        write=False,
+    ):
+
+        legend = [
+            "TRIES PLAYED",
+            "ONES",
+            "TWOS",
+            "THREES",
+            "FOURS",
+            "FIVES",
+            "SIXES",
+            "BONUS",
+            "TOP POINTS",
+            "THREE TIMES",
+            "FOUR TIMES",
+            "FULL HOUSE",
+            "SMALL STREET",
+            "LARGE STREET",
+            "KNIFFEL",
+            "CHANCE",
+            "BOTTOM POINTS",
+            "TOTAL POINTS",
+            "ROUNDS PLAYED",
+        ]
+
+        agent = self.build_use_agent(path, episodes, env_config, weights_name, logging)
 
         points = []
         rounds = []
@@ -798,7 +810,7 @@ def train(ai: KniffelAI, env_config: dict):
     ai._train(
         nb_steps=10_000_000,
         env_config=env_config,
-        load_path="output/weights/model_3",
+        load_path="output/weights/model_4",
     )
 
 
@@ -840,4 +852,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    play(ai, env_config)
+    train(ai, env_config)

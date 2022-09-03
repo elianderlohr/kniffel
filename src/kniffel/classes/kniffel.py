@@ -32,10 +32,11 @@ class Kniffel:
     turns = []
     logging = False
 
-    def __init__(self, logging: bool = False):
+    def __init__(self, logging: bool = False, custom=False):
         self.turns: Attempt = []
         self.logging = logging
-        self.start()
+        if custom == False:
+            self.start()
 
     def get_length(self) -> int:
         return len(self.turns)

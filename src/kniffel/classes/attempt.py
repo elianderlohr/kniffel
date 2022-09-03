@@ -51,6 +51,8 @@ class Attempt:
 
         :param list keep: hot encoded array which dices to keep. (1 = keep, 0 = re-roll)
         """
+        self.status = KniffelStatus.ATTEMPTING
+
         if dice_set is None:
             dice_set = DiceSet()
 
