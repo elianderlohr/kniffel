@@ -35,12 +35,51 @@ The reinforcement learning logic is located under [src/ai](src/ai/).
 
 *tbc*
 
+## Example Game
+
+    ####################################################################################
+    ##  Try: 27
+    ##  Action: EnumAction.NEXT_16
+
+    -----     -----     -----     -----     -----     
+    |o o|     |o  |     |o  |     |o o|     |o  |     
+    |o o|     |   |     | o |     |   |     |   |     
+    |o o|     |  o|     |  o|     |o o|     |  o|     
+    -----     -----     -----     -----     -----     
+
+     ____________________________________      ____________________________________
+    | CATEGORY       | STATE  |  POINTS  |    | CATEGORY       | STATE  |  POINTS  |
+    |::::::::::::::::|::::::::|::::::::::|    |::::::::::::::::|::::::::|::::::::::|
+    | ONES           |    1   |     2    |    | THREE TIMES    |    1   |    11    |
+    |================|========|==========|    |================|========|==========|
+    | TWOS           |    1   |     4    |    | FOURS TIMES    |   -1   |     0    |
+    |================|========|==========|    |================|========|==========|
+    | THREES         |    1   |     9    |    | FULL HOUSE     |   -1   |     0    |
+    |================|========|==========|    |================|========|==========|
+    | FOURS          |    1   |     4    |    | SMALL STREET   |   -1   |     0    |
+    |================|========|==========|    |================|========|==========|
+    | FIVES          |    1   |    15    |    | LARGE STREET   |   -1   |     0    |
+    |================|========|==========|    |================|========|==========|
+    | SIXES          |    1   |    12    |    | KNIFFEL        |   -1   |     0    |
+    |################|########|##########|    |================|========|==========|
+    |  BONUS         |    0   |     0    |    | CHANCE         |    1   |    24    |
+    |================|========|==========|    |################|########|##########|
+    |  TOP POINTS    |        |    46    |    |  BOTTOM POINTS |        |    35    |
+    |################|########|##########|    |================|========|==========|
+                                              |  TOTAL POINTS  |        |    81    |
+                                              |################|########|##########|
+
+
+Example Game Log: [Example Game Log](output/weights/model_4/game_log/log.txt)
+
 ## Hyperparameter optimization
 To optimize the hyperparameter selection the library optuna is used. The file is located under [src/ai/ai_optuna.py](src/ai/ai_optuna.py).
 
 _Optuna is an automatic hyperparameter optimization software framework, particularly designed for machine learning. It features an imperative, define-by-run style user API. Thanks to our define-by-run API, the code written with Optuna enjoys high modularity, and the user of Optuna can dynamically construct the search spaces for the hyperparameters._
 
 [Optuna: A hyperparameter optimization framework](https://github.com/optuna/optuna#optuna-a-hyperparameter-optimization-framework)
+
+
 
 
 ### Commands
