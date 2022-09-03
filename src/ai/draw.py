@@ -1,3 +1,7 @@
+from kniffel.classes.kniffel import Kniffel
+from kniffel.classes.options import KniffelOptions
+
+
 class KniffelDraw:
 
     dice_1 = """-----
@@ -50,35 +54,42 @@ class KniffelDraw:
     def get_string(self, content: str) -> str:
         return "".join(self.get_ascii_array(content)) + "\n"
 
-    def draw_sheet(self, state):
+    def draw_sheet(self, kniffel: Kniffel, state: list):
         sheet = f"""     ____________________________________      ____________________________________
     | CATEGORY       | STATE  |  POINTS  |    | CATEGORY       | STATE  |  POINTS  |
     |::::::::::::::::|::::::::|::::::::::|    |::::::::::::::::|::::::::|::::::::::|
-    | ONES           |   {self.get_float(state[1])}   |    20    |    | THREE TIMES    |   {self.get_float(state[9])}   |    20    |
+    | ONES           |   {self.get_float(state[1])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.ONES, KniffelOptions.ONES_SLASH))}    |    | THREE TIMES    |   {self.get_float(state[9])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREE_TIMES, KniffelOptions.THREE_TIMES_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | TWOS           |   {self.get_float(state[2])}   |    20    |    | FOURS TIMES    |   {self.get_float(state[10])}   |    20    |
+    | TWOS           |   {self.get_float(state[2])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.TWOS, KniffelOptions.TWOS_SLASH))}    |    | FOURS TIMES    |   {self.get_float(state[10])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOUR_TIMES, KniffelOptions.FOUR_TIMES_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | THREES         |   {self.get_float(state[3])}   |    20    |    | FULL HOUSE     |   {self.get_float(state[11])}   |    20    |
+    | THREES         |   {self.get_float(state[3])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREES, KniffelOptions.THREES_SLASH))}    |    | FULL HOUSE     |   {self.get_float(state[11])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FULL_HOUSE, KniffelOptions.FULL_HOUSE_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | FOURS          |   {self.get_float(state[4])}   |    20    |    | SMALL STREET   |   {self.get_float(state[12])}   |    20    |
+    | FOURS          |   {self.get_float(state[4])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOURS, KniffelOptions.FOURS_SLASH))}    |    | SMALL STREET   |   {self.get_float(state[12])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SMALL_STREET, KniffelOptions.SMALL_STREET_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | FIVES          |   {self.get_float(state[5])}   |    20    |    | LARGE STREET   |   {self.get_float(state[13])}   |    20    |
+    | FIVES          |   {self.get_float(state[5])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FIVES, KniffelOptions.FIVES_SLASH))}    |    | LARGE STREET   |   {self.get_float(state[13])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.LARGE_STREET, KniffelOptions.LARGE_STREET_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | SIXES          |   {self.get_float(state[6])}   |    20    |    | KNIFFEL        |   {self.get_float(state[14])}   |    20    |
+    | SIXES          |   {self.get_float(state[6])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SIXES, KniffelOptions.SIXES_SLASH))}    |    | KNIFFEL        |   {self.get_float(state[14])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.KNIFFEL, KniffelOptions.KNIFFEL_SLASH))}    |
     |################|########|##########|    |================|========|==========|
-    |  BONUS         |   {self.get_float(state[7])}   |    20    |    | CHANCE         |   {self.get_float(state[15])}   |    20    |
+    |  BONUS         |   {self.get_float(state[7])}   |    {self.get_float(35 if kniffel.is_bonus() else 0)}    |    | CHANCE         |   {self.get_float(state[15])}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.CHANCE, KniffelOptions.CHANCE_SLASH))}    |
     |================|========|==========|    |################|########|##########|
-    |  TOP POINTS    | {self.get_float(state[8], 3)}  |    20    |    |  BOTTOM POINTS | {self.get_float(state[16], 3)}  |    20    |
+    |  TOP POINTS    |        |   {self.get_long_float(kniffel.get_points_top())}    |    |  BOTTOM POINTS |        |   {self.get_long_float(kniffel.get_points_bottom())}    |
     |################|########|##########|    |================|========|==========|
-                                              |  TOTAL POINTS  | {self.get_float(state[17], 3)}  |    20    |
+                                              |  TOTAL POINTS  |        |   {self.get_long_float(kniffel.get_points())}    |
                                               |################|########|##########|"""
 
         return sheet
 
-    def get_float(self, f: float, dec = 0) -> str:
+    def get_long_float(self, f: float) -> str:
+        if f < 10:
+            return "  " + str(f)
+        elif f < 100:
+            return " " + str(f)
+        elif f < 1000:
+            return str(f)
+
+    def get_float(self, f: float, dec=0) -> str:
         s = str(f)
 
-        
         if f == -1:
             return "-1"
         elif f == 0 and dec == 0:
@@ -87,10 +98,12 @@ class KniffelDraw:
             return "   0 "
         elif f == 1:
             return " 1"
+        elif f < 10:
+            return " " + str(f)
         else:
             return str(round(f, dec))
 
-    def draw_dices(self, dice_array: []):
+    def draw_dices(self, dice_array: list):
         lines = {}
         lines[0] = []
         lines[1] = []
@@ -122,28 +135,18 @@ class KniffelDraw:
 
         result = ""
         for c in range(5):
-            lines[c].insert(0, "                        ")
+            lines[c].insert(0, "    ")
             result += "".join(lines[c]) + "\n"
 
         return result
 
     def draw_kniffel_title(self):
-        return """
- _  ___   _ _____ ______ ______ ______ _      
+        return """ _  ___   _ _____ ______ ______ ______ _      
 | |/ / \ | |_   _|  ____|  ____|  ____| |     
 | ' /|  \| | | | | |__  | |__  | |__  | |     
 |  < | . ` | | | |  __| |  __| |  __| | |     
 | . \| |\  |_| |_| |    | |    | |____| |____ 
 |_|\_\_| \_|_____|_|    |_|    |______|______|"""
-
-    def draw_title(self, title: str):
-        s = f"""
-        #######################################
-        #######################################
-        ###### {title} ########################
-        #######################################
-        #######################################
-        """
 
 
 if __name__ == "__main__":

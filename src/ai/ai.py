@@ -641,7 +641,7 @@ class KniffelAI:
         )
 
         f = open(f"{path}/configuration.json")
-        hyperparameter = dict(json.load(f))
+        self._hyperparater_base = dict(json.load(f))
 
         actions = env.action_space.n
 
@@ -674,21 +674,24 @@ class KniffelAI:
         rounds = []
         break_counter = 0
         for e in range(1, episodes + 1):
-            if logging:
-                print(f"KNIFFEL Game: #{e}")
-
             if write:
-                self._append_file(path=f"{path}/game_log/log.txt", content=f"Game: {e}")
+                self._append_file(
+                    path=f"{path}/game_log/log.txt",
+                    content="\n".join(KniffelDraw().draw_kniffel_title().split("\n")),
+                )
 
             kniffel = Kniffel()
+
             rounds_counter = 1
+
             while True:
                 log_csv = []
 
                 state = kniffel.get_state()
-                if logging:
-                    print()
-                    print(f"Try: {rounds_counter}")
+
+                log_csv.append(
+                    f"\n####################################################################################\n"
+                )
 
                 try:
                     points_old = kniffel.get_points()
@@ -696,28 +699,17 @@ class KniffelAI:
                     action = agent.forward(state)
                     enum_action = EnumAction(action)
 
-                    log_csv.append(f"\nTry: {rounds_counter}")
-                    log_csv.append(f"\nAction: {enum_action}")
-                    log_csv.append("\n" + KniffelDraw().draw_dices(state[0][0:5]))
+                    log_csv.append(f"##  Try: {rounds_counter}\n")
+                    log_csv.append(f"##  Action: {enum_action}\n")
+                    log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
-                    log_csv.append("\n" + KniffelDraw().draw_sheet(state[0][5:]))
+                    log_csv.append(
+                        "\n" + KniffelDraw().draw_sheet(kniffel, state[0][5:])
+                    )
 
                     self.apply_prediction(kniffel, enum_action, logging)
 
                     rounds_counter += 1
-
-                    log_csv.append(
-                        f"\nNew Points: {(kniffel.get_points() - points_old)}"
-                    )
-                    log_csv.append(f"\nTotal Points: {kniffel.get_points()}")
-
-                    if logging:
-                        print("    State:")
-                        print(f"       Dice: {KniffelDraw().draw_dices(state[0][0:6])}")
-                        print(f"       State: {state[0][6:22]}")
-                        print(f"       Points: {kniffel.get_points()}")
-                        print("       Prediction Allowed: True")
-
                 except BaseException as e:
                     if e.args[0] == "Game finished!":
                         points.append(kniffel.get_points())
@@ -728,10 +720,6 @@ class KniffelAI:
                         log_csv.append(f"\n  Prediction Allowed: False")
                         log_csv.append(f"\n  Error: False")
                         log_csv.append(f"\n  Game Finished: True")
-
-                        if logging:
-                            print("       Prediction Allowed: False")
-                            print("       Game Finished: True")
 
                         if write:
                             self._append_file(
@@ -752,13 +740,10 @@ class KniffelAI:
                         log_csv.append(f"\n  Prediction Allowed: False")
                         log_csv.append(f"\n  Error: True")
 
-                        if logging:
-                            print("       Prediction Allowed: False")
-
                         if write:
                             self._append_file(
                                 path=f"{path}/game_log/log.txt",
-                                content="\n" + ", ".join(log_csv),
+                                content="\n" + "".join(log_csv),
                             )
 
                         break
@@ -795,11 +780,11 @@ def play(ai: KniffelAI, env_config: dict):
     """
     ai.play(
         path="output/weights/model_4",
-        episodes=1000,
+        episodes=1,
         env_config=env_config,
         weights_name="weights",
         logging=False,
-        write=False,
+        write=True,
     )
 
 
@@ -823,19 +808,20 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 1,
-        "n_units_l1": 192,
+        "layers": 2,
+        "n_units_l1": 480,
+        "n_units_l2": 96,
         "activation": "linear",
-        "dqn_memory_limit": 751000,
-        "dqn_target_model_update": 326.4913224587942,
-        "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 14,
+        "dqn_memory_limit": 201000,
+        "dqn_target_model_update": 1.3775376764699352e-05,
+        "enable_dueling_network": False,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 1.0,
+        "dqn_nb_steps_warmup": 170,
         "batch_size": 32,
-        "dqn_enable_double_dqn": False,
-        "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0028878243382276032,
-        "dqn_adam_epsilon": 0.046851643583491004,
+        "dqn_enable_double_dqn": True,
+        "dqn_adam_learning_rate": 0.004478603818682644,
+        "dqn_adam_epsilon": 0.0008251445485077705,
     }
 
     ai = KniffelAI(
@@ -854,4 +840,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    train(ai, env_config)
+    play(ai, env_config)
