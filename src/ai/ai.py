@@ -808,7 +808,7 @@ def train(ai: KniffelAI, env_config: dict):
         env_config (dict): environment dict
     """
     ai._train(
-        nb_steps=10_000_000,
+        nb_steps=20_000_000,
         env_config=env_config,
         load_path="output/weights/model_4",
     )
