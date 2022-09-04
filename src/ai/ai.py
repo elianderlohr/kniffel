@@ -819,21 +819,22 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 2,
-        "n_units_l1": 480,
-        "n_units_l2": 96,
+        "windows_length": 2,
+        "layers": 3,
+        "n_units_l1": 400,
+        "n_units_l2": 400,
+        "n_units_l3": 288,
         "activation": "linear",
-        "dqn_memory_limit": 201000,
-        "dqn_target_model_update": 1.3775376764699352e-05,
+        "dqn_memory_limit": 51000,
+        "dqn_target_model_update": 0.08491422019534406,
         "enable_dueling_network": False,
         "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 1.0,
-        "dqn_nb_steps_warmup": 170,
+        "boltzmann_tau": 0.7000000000000001,
+        "dqn_nb_steps_warmup": 53,
         "batch_size": 32,
         "dqn_enable_double_dqn": True,
-        "dqn_adam_learning_rate": 0.004478603818682644,
-        "dqn_adam_epsilon": 0.0008251445485077705,
+        "dqn_adam_learning_rate": 0.007305095172760262,
+        "dqn_adam_epsilon": 0.09911749048405574,
     }
 
     ai = KniffelAI(

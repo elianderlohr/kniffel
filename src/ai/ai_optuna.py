@@ -329,7 +329,7 @@ class KniffelAI:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=5_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=50_000),
         ]
 
         history = agent.fit(
@@ -338,7 +338,7 @@ class KniffelAI:
             verbose=1,
             visualize=False,
             # action_repetition=2,
-            log_interval=25_000,
+            log_interval=250_000,
             callbacks=callbacks,
         )
 
@@ -370,7 +370,7 @@ class KniffelAI:
             self.calculate_custom_metric(scores.history["nb_steps"])
         )
 
-        custom_metric = float(episode_reward_custom / nb_steps_custom)
+        custom_metric = float(episode_reward_custom + (nb_steps_custom * 10))
 
         print(f"episode_reward_custom: {episode_reward_custom}")
         print(f"nb_steps_custom: {nb_steps_custom}")
@@ -493,7 +493,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = ai.train(env_config=env_config, nb_steps=150_000)
+    ) = ai.train(env_config=env_config, nb_steps=250_000)
 
     trial.set_user_attr("episode_reward", list(episode_reward))
     trial.set_user_attr("episode_reward_max", float(episode_reward_max))

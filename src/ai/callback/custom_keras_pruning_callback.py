@@ -74,7 +74,7 @@ class CustomKerasPruningCallback(Callback):
             self.log_dict["nb_episode_steps"]
         )
 
-        current_score = float(episode_reward_custom / nb_episode_steps_custom)
+        current_score = float(episode_reward_custom + (nb_episode_steps_custom * 10))
 
         if self.log_dict[self._monitor] is None:
             message = (
