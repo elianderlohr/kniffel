@@ -1,3 +1,12 @@
+import warnings
+
+warnings.filterwarnings("ignore")
+
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+import tensorflow as tf
+
 from pathlib import Path
 import sys
 
@@ -13,15 +22,6 @@ from src.ai.env import EnumAction
 from src.kniffel.classes.status import KniffelStatus
 
 if __name__ == "__main__":
-    import warnings
-
-    warnings.filterwarnings("ignore")
-
-    import os
-
-    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # or any {'0', '1', '2'}
-    import tensorflow as tf
-
     print(
         """ _  ___   _ _____ ______ ______ ______ _      
 | |/ / \ | |_   _|  ____|  ____|  ____| |     

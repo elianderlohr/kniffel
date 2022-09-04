@@ -148,7 +148,7 @@ class KniffelEnv(Env):
         """
 
         self.observation_space = spaces.Box(
-            low=-1, high=1, shape=(1, env_observation_space), dtype=np.float
+            low=-1, high=1, shape=(1, env_observation_space), dtype=np.float64
         )
 
         self.logging = logging

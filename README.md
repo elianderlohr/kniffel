@@ -27,6 +27,12 @@ A sample usage of the game can be found unter [src/kniffel/game.py](src/kniffel/
 
 The reinforcement learning logic is located under [src/ai](src/ai/).
 
+## Use the AI
+
+The AI can be used by running the game.py script in the src/console folder. This starts a simple bash based command prompt wich allows to play a kniffel game.
+
+![Example Game](img/example.gif)
+
 ## Highscores
 
 | Name / ID | Date       | Training Episodes | Duration | AVG Score | AVG Rounds | Weights                            |
@@ -78,9 +84,6 @@ To optimize the hyperparameter selection the library optuna is used. The file is
 _Optuna is an automatic hyperparameter optimization software framework, particularly designed for machine learning. It features an imperative, define-by-run style user API. Thanks to our define-by-run API, the code written with Optuna enjoys high modularity, and the user of Optuna can dynamically construct the search spaces for the hyperparameters._
 
 [Optuna: A hyperparameter optimization framework](https://github.com/optuna/optuna#optuna-a-hyperparameter-optimization-framework)
-
-
-
 
 ### Commands
 

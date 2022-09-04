@@ -495,21 +495,20 @@ def objective(trial):
         custom_metric,
     ) = ai.train(env_config=env_config, nb_steps=250_000)
 
-    trial.set_user_attr("episode_reward", list(episode_reward))
+    trial.set_user_attr("custom_metric", float(custom_metric))
+    trial.set_user_attr("param", trial.params)
+
+    # trial.set_user_attr("episode_reward", list(episode_reward))
     trial.set_user_attr("episode_reward_max", float(episode_reward_max))
     trial.set_user_attr("episode_reward_min", float(episode_reward_min))
     trial.set_user_attr("episode_reward_mean", float(episode_reward_mean))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
 
-    trial.set_user_attr("nb_steps", list(nb_steps))
+    # trial.set_user_attr("nb_steps", list(nb_steps))
     trial.set_user_attr("nb_steps_max", float(nb_steps_max))
     trial.set_user_attr("nb_steps_min", float(nb_steps_min))
     trial.set_user_attr("nb_steps_mean", float(nb_steps_mean))
     trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
-
-    trial.set_user_attr("custom_metric", float(custom_metric))
-
-    trial.set_user_attr("param", trial.params)
 
     return float(custom_metric)
 
