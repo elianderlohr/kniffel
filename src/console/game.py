@@ -273,8 +273,8 @@ def get_action(action: EnumAction) -> str:
         return "Roll the dices (0 = re-roll, 1 = keep): 1, 1, 1, 0, 1"
     if action.value is EnumAction.NEXT_30.value:
         return "Roll the dices (0 = re-roll, 1 = keep): 1, 1, 1, 1, 0"
-    if action.value is EnumAction.NEXT_31.value:
-        return "Roll the dices (0 = re-roll, 1 = keep): 1, 1, 1, 1, 1"
+    # if action.value is EnumAction.NEXT_31.value:
+    #    return "Roll the dices (0 = re-roll, 1 = keep): 1, 1, 1, 1, 1"
 
     # if action.value is EnumAction.FINISH Actions
     if action.value is EnumAction.FINISH_ONES_SLASH.value:

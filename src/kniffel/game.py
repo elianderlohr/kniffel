@@ -42,13 +42,13 @@ def play():
         kniffel.finish_turn(KniffelOptions.CHANCE)
 
         kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
-        kniffel.mock(DiceSet([1, 1, 1, 1, 1]))
+        kniffel.mock(DiceSet([1, 1, 2, 2, 2]))
         kniffel.finish_turn(KniffelOptions.ONES)
 
-        kniffel.mock(DiceSet([2, 2, 2, 2, 2]))
+        kniffel.mock(DiceSet([2, 2, 2, 3, 3]))
         kniffel.finish_turn(KniffelOptions.TWOS)
 
-        kniffel.mock(DiceSet([3, 3, 3, 3, 3]))
+        kniffel.mock(DiceSet([3, 3, 3, 4, 4]))
         kniffel.finish_turn(KniffelOptions.THREES)
 
         kniffel.mock(DiceSet([4, 4, 4, 4, 4]))

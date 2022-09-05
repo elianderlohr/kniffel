@@ -80,8 +80,8 @@ class KniffelAI:
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
         trial: optuna.trial.Trial = None,
-        env_action_space=58,
-        env_observation_space=32,
+        env_action_space=57,
+        env_observation_space=20,
     ):
         self._load = load
         self._hyperparater_base = hyperparater_base
@@ -477,8 +477,8 @@ def objective(trial):
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         trial=trial,
-        env_observation_space=24,
-        env_action_space=58,
+        env_observation_space=20,
+        env_action_space=57,
     )
 
     (

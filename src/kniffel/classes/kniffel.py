@@ -156,17 +156,21 @@ class Kniffel:
         return self.turns[id]
 
     def get_option_point(
-        self, option: KniffelOptions, option_alternative: KniffelOptions, scaler: int
-    ):
+        self,
+        option: KniffelOptions,
+        option_alternative: KniffelOptions,
+        scaler: int,
+        use_points: bool = False,
+    ) -> float:
         for id in range(self.get_length()):
             turn = self.get_turn(id)
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    # return turn.selected_option.points / scaler
-                    # After trying out different options working with yes/no is better than
-                    # percentage score 13.08.2022
-                    return 1
+                    if use_points:
+                        return turn.selected_option.points / scaler
+                    else:
+                        return 1
                 elif turn.selected_option.id is option_alternative.value:
                     return 0
 
@@ -197,18 +201,18 @@ class Kniffel:
         # Tries played
         status.append(self.get_last().count() / 3)
 
-        status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5))
-        status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10))
-        status.append(self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15))
-        status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20))
-        status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25))
-        status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30))
+        status.append(self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5, True))
+        status.append(self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10, True))
+        status.append(self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15, True))
+        status.append(self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20, True))
+        status.append(self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25, True))
+        status.append(self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30, True))
 
         # Bonus ?
         status.append(1 if self.is_bonus() else 0)
 
-        # Points top with bonus
-        status.append(self.get_points_top() / 140)
+        # Points top with bonus > Removed because unneccessary
+        # status.append(self.get_points_top() / 140)
 
         status.append(self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30))
         status.append(self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30))
@@ -218,14 +222,15 @@ class Kniffel:
         status.append(self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50))
         status.append(self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30))
 
-        # Points bottom
-        status.append(self.get_points_bottom() / 235)
+        # Points bottom > Removed because unneccessary
+        # status.append(self.get_points_bottom() / 235)
 
-        # Points total
-        status.append(self.get_points() / 375)
+        # Points total > Removed because unneccessary
+        # status.append(self.get_points() / 375)
 
-        # Round played
-        status.append(self.get_length() / 13)
+        # Round played > Removed because unneccessary
+        # Redundant because it can indetify the rounds played by checking the amounts of unchecked fields
+        # status.append(self.get_length() / 13)
 
         return np.array([np.array(status)])
 

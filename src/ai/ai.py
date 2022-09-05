@@ -482,8 +482,8 @@ class KniffelAI:
             kniffel.add_turn(keep=[1, 1, 1, 0, 1])
         if EnumAction.NEXT_30 is enum_action:
             kniffel.add_turn(keep=[1, 1, 1, 1, 0])
-        if EnumAction.NEXT_31 is enum_action:
-            kniffel.add_turn(keep=[1, 1, 1, 1, 1])
+        # if EnumAction.NEXT_31 is enum_action:
+        #    kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
         if EnumAction.FINISH_ONES_SLASH is enum_action:
             kniffel.finish_turn(KniffelOptions.ONES_SLASH)
@@ -819,22 +819,20 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 2,
-        "layers": 3,
-        "n_units_l1": 432,
-        "n_units_l2": 256,
-        "n_units_l3": 448,
+        "windows_length": 1,
+        "layers": 1,
+        "n_units_l1": 192,
         "activation": "linear",
-        "dqn_memory_limit": 151000,
-        "dqn_target_model_update": 301.42251379116254,
-        "enable_dueling_network": False,
-        "train_policy": "EpsGreedyQPolicy",
-        "eps_greedy_eps": 0.03378897839027529,
-        "dqn_nb_steps_warmup": 32,
+        "dqn_memory_limit": 751000,
+        "dqn_target_model_update": 326.4913224587942,
+        "enable_dueling_network": True,
+        "train_policy": "GreedyQPolicy",
+        "dqn_nb_steps_warmup": 14,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
-        "dqn_adam_learning_rate": 0.0009142499965157629,
-        "dqn_adam_epsilon": 0.09006398485239372,
+        "dqn_dueling_option": "max",
+        "dqn_adam_learning_rate": 0.0028878243382276032,
+        "dqn_adam_epsilon": 0.046851643583491004,
     }
 
     ai = KniffelAI(
@@ -842,8 +840,8 @@ if __name__ == "__main__":
         config_path="src/config/Kniffel.CSV",
         path_prefix="",
         hyperparater_base=hyperparameter,
-        env_observation_space=24,
-        env_action_space=58,
+        env_observation_space=20,
+        env_action_space=57,
     )
 
     env_config = {

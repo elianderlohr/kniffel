@@ -70,22 +70,23 @@ class EnumAction(Enum):
     NEXT_28 = 41  # 28  	1	1	1	0	0
     NEXT_29 = 42  # 29  	1	1	1	0	1
     NEXT_30 = 43  # 30  	1	1	1	1	0
-    NEXT_31 = 44  # 31  	1	1	1	1	1
+    # NEXT_31 = 44  # 31  	1	1	1	1	1
+    # Removed this action because this means to keep all dice and reroll. doesnt make sense
 
     # Finish Actions
-    FINISH_ONES_SLASH = 45
-    FINISH_TWOS_SLASH = 46
-    FINISH_THREES_SLASH = 47
-    FINISH_FOURS_SLASH = 48
-    FINISH_FIVES_SLASH = 49
-    FINISH_SIXES_SLASH = 50
-    FINISH_THREE_TIMES_SLASH = 51
-    FINISH_FOUR_TIMES_SLASH = 52
-    FINISH_FULL_HOUSE_SLASH = 53
-    FINISH_SMALL_STREET_SLASH = 54
-    FINISH_LARGE_STREET_SLASH = 55
-    FINISH_KNIFFEL_SLASH = 56
-    FINISH_CHANCE_SLASH = 57
+    FINISH_ONES_SLASH = 44
+    FINISH_TWOS_SLASH = 45
+    FINISH_THREES_SLASH = 46
+    FINISH_FOURS_SLASH = 47
+    FINISH_FIVES_SLASH = 48
+    FINISH_SIXES_SLASH = 49
+    FINISH_THREE_TIMES_SLASH = 50
+    FINISH_FOUR_TIMES_SLASH = 51
+    FINISH_FULL_HOUSE_SLASH = 52
+    FINISH_SMALL_STREET_SLASH = 53
+    FINISH_LARGE_STREET_SLASH = 54
+    FINISH_KNIFFEL_SLASH = 55
+    FINISH_CHANCE_SLASH = 56
 
     FINISH_GAME = 99
 
@@ -626,9 +627,9 @@ class KniffelEnv(Env):
             if EnumAction.NEXT_30 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 0])
                 reward += self._reward_roll_dice
-            if EnumAction.NEXT_31 is enum_action:
-                self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
-                reward += self._reward_roll_dice
+            # if EnumAction.NEXT_31 is enum_action:
+            #    self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
+            #    reward += self._reward_roll_dice
 
         except Exception as e:
             if e.args[0] == "Game finished!":
