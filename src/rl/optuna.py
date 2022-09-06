@@ -36,14 +36,14 @@ sys.path.append(str(path_root))
 
 from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
-from src.ai.env import EnumAction
-from src.ai.env import KniffelEnv
-from src.ai.callback.custom_keras_pruning_callback import CustomKerasPruningCallback
+from src.rl.env import EnumAction
+from src.rl.env import KniffelEnv
+from src.rl.callback.custom_keras_pruning_callback import CustomKerasPruningCallback
 import src.kniffel.classes.custom_exceptions as ex
 
 
-class KniffelAI:
-    """Optuna AI Kniffel Class"""
+class KniffelRL:
+    """Optuna RL Kniffel Class"""
 
     # Load model from path
     _load = False
@@ -78,7 +78,7 @@ class KniffelAI:
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
-        config_path="src/ai/Kniffel.CSV",
+        config_path="src/config/config.csv",
         trial: optuna.trial.Trial = None,
         env_action_space=57,
         env_observation_space=20,
@@ -471,10 +471,10 @@ def objective(trial):
         "reward_bonus": 50,
     }
 
-    ai = KniffelAI(
+    rl = KniffelRL(
         load=False,
         hyperparater_base=base_hp,
-        config_path="src/config/Kniffel.CSV",
+        config_path="src/config/config.csv",
         path_prefix="",
         trial=trial,
         env_observation_space=20,
@@ -493,7 +493,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = ai.train(env_config=env_config, nb_steps=250_000)
+    ) = rl.train(env_config=env_config, nb_steps=250_000)
 
     trial.set_user_attr("custom_metric", float(custom_metric))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))

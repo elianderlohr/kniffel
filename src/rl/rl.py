@@ -1,49 +1,42 @@
 # Standard imports
-from statistics import mean
-from datetime import datetime as dt
-import warnings
-import numpy as np
 import json
 import os
-from pathlib import Path
 import sys
+import warnings
+from datetime import datetime as dt
+from pathlib import Path
+from statistics import mean
 
-# Keras imports
-
+import numpy as np
 import tensorflow as tf
-
-from rl.agents import DQNAgent, CEMAgent, SARSAAgent
-from rl.policy import (
-    BoltzmannQPolicy,
-    EpsGreedyQPolicy,
-    LinearAnnealedPolicy,
-    GreedyQPolicy,
-    MaxBoltzmannQPolicy,
-    BoltzmannGumbelQPolicy,
-)
-
-from rl.memory import SequentialMemory, EpisodeParameterMemory
-from rl.callbacks import FileLogger, ModelIntervalCheckpoint
-
-from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
-from pathlib import Path
-import sys
+from rl.agents import CEMAgent, DQNAgent, SARSAAgent
+from rl.callbacks import FileLogger, ModelIntervalCheckpoint
+from rl.memory import EpisodeParameterMemory, SequentialMemory
+from rl.policy import (
+    BoltzmannGumbelQPolicy,
+    BoltzmannQPolicy,
+    EpsGreedyQPolicy,
+    GreedyQPolicy,
+    LinearAnnealedPolicy,
+    MaxBoltzmannQPolicy,
+)
 
+# Keras imports
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.kniffel.classes.options import KniffelOptions
-from src.kniffel.classes.kniffel import Kniffel
-from src.ai.env import EnumAction
-from src.ai.env import KniffelEnv
-from src.ai.draw import KniffelDraw
 import src.kniffel.classes.custom_exceptions as ex
+from src.kniffel.classes.kniffel import Kniffel
+from src.kniffel.classes.options import KniffelOptions
+from src.rl.env import EnumAction, KniffelEnv
+from utils.draw import KniffelDraw
 
 
-class KniffelAI:
+class KniffelRL:
     # Load model from path
     _load = False
 
@@ -83,7 +76,6 @@ class KniffelAI:
 
         if path_prefix == "":
             try:
-                import google.colab
 
                 self._path_prefix = "/"
             except:
@@ -716,7 +708,7 @@ class KniffelAI:
                     log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
                     log_csv.append(
-                        "\n" + KniffelDraw().draw_sheet(kniffel, state[0][5:])
+                        "\n" + KniffelDraw().draw_sheet(kniffel)
                     )
 
                     self.apply_prediction(kniffel, enum_action, logging)
@@ -783,14 +775,14 @@ class KniffelAI:
         return break_counter, sum(points) / len(points), max(points), min(points)
 
 
-def play(ai: KniffelAI, env_config: dict):
+def play(rl: KniffelRL, env_config: dict):
     """Play a model
 
     Args:
-        ai (KniffelAI): Kniffel AI Class
+        rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    ai.play(
+    rl.play(
         path="output/weights/model_4",
         episodes=1,
         env_config=env_config,
@@ -800,14 +792,14 @@ def play(ai: KniffelAI, env_config: dict):
     )
 
 
-def train(ai: KniffelAI, env_config: dict):
+def train(rl: KniffelRL, env_config: dict):
     """Train a model
 
     Args:
-        ai (KniffelAI): Kniffel AI Class
+        rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    ai._train(
+    rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
         load_path="output/weights/model_5",
@@ -819,25 +811,27 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 1,
-        "n_units_l1": 192,
+        "windows_length": 2,
+        "layers": 2,
+        "n_units_l1": 96,
+        "n_units_l2": 352,
         "activation": "linear",
-        "dqn_memory_limit": 751000,
-        "dqn_target_model_update": 326.4913224587942,
+        "dqn_memory_limit": 151000,
+        "dqn_target_model_update": 7255.064011741529,
         "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 14,
+        "train_policy": "LinearAnnealedPolicy",
+        "linear_inner_policy": "MaxBoltzmannQPolicy",
+        "dqn_nb_steps_warmup": 33,
         "batch_size": 32,
-        "dqn_enable_double_dqn": False,
-        "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0028878243382276032,
-        "dqn_adam_epsilon": 0.046851643583491004,
+        "dqn_enable_double_dqn": True,
+        "dqn_dueling_option": "avg",
+        "dqn_adam_learning_rate": 0.0025733184629515233,
+        "dqn_adam_epsilon": 0.09955960980019776,
     }
 
-    ai = KniffelAI(
+    rl = KniffelRL(
         load=False,
-        config_path="src/config/Kniffel.CSV",
+        config_path="src/config/config.csv",
         path_prefix="",
         hyperparater_base=hyperparameter,
         env_observation_space=20,
@@ -851,4 +845,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    train(ai, env_config)
+    train(rl, env_config)

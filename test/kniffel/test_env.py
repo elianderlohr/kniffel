@@ -4,7 +4,7 @@ import sys
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.ai.env import KniffelEnv, KniffelConfig
+from src.rl.env import KniffelEnv, KniffelConfig
 
 env_config = {
     "reward_roll_dice": 0,

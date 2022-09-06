@@ -1,36 +1,36 @@
 import warnings
-from xmlrpc.client import boolean
 
 warnings.filterwarnings("ignore")
 
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-import tensorflow as tf
 
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.kniffel.classes.kniffel import Kniffel
-from src.ai.ai import KniffelAI
-from src.ai.draw import KniffelDraw
+from src.rl.rl import KniffelRL
 from src.kniffel.classes.dice_set import DiceSet
-from src.ai.env import EnumAction
+from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.status import KniffelStatus
+from src.rl.env import EnumAction
+from utils.draw import KniffelDraw
 
 
 def print_kniffel():
     print(
-        """ __  ___ .__   __.  __   _______  _______  _______  __          ___       __  
-|  |/  / |  \ |  | |  | |   ____||   ____||   ____||  |        /   \     |  | 
-|  '  /  |   \|  | |  | |  |__   |  |__   |  |__   |  |       /  ^  \    |  | 
-|    <   |  . `  | |  | |   __|  |   __|  |   __|  |  |      /  /_\  \   |  | 
-|  .  \  |  |\   | |  | |  |     |  |     |  |____ |  |____ /  _____  \  |  | 
-|__|\__\ |__| \__| |__| |__|     |__|     |_______||_______/__/     \__\ |__| """
+        """
+     __  ___ .__   __.  __   _______  _______  _______  __                    .______       __      
+    |  |/  / |  \ |  | |  | |   ____||   ____||   ____||  |                   |   _  \     |  |     
+    |  '  /  |   \|  | |  | |  |__   |  |__   |  |__   |  |         ______    |  |_)  |    |  |     
+    |    <   |  . `  | |  | |   __|  |   __|  |   __|  |  |        |______|   |      /     |  |     
+    |  .  \  |  |\   | |  | |  |     |  |     |  |____ |  `----.              |  |\  \----.|  `----.
+    |__|\__\ |__| \__| |__| |__|     |__|     |_______||_______|              | _| `._____||_______|
+                                                                                                
+"""
     )
 
 
@@ -179,7 +179,7 @@ def print_header(kniffel: Kniffel, new: bool = False, show_dice: bool = False):
         if show_dice is False:
             print(KniffelDraw().draw_dices(kniffel.get_state()[0][0:5]))
         print()
-        print(KniffelDraw().draw_sheet(kniffel, state[0][5:]))
+        print(KniffelDraw().draw_sheet(kniffel))
 
 
 def get_action(action: EnumAction) -> str:
@@ -322,13 +322,13 @@ if __name__ == "__main__":
         print()
         print("    Started a new Kniffel Game!")
         print()
-        ai = KniffelAI(
+        rl = KniffelRL(
             load=False,
-            config_path="src/config/Kniffel.CSV",
+            config_path="src/config/config.csv",
             path_prefix="",
             hyperparater_base=None,
-            env_observation_space=24,
-            env_action_space=58,
+            env_observation_space=20,
+            env_action_space=57,
         )
 
         env_config = {
@@ -338,11 +338,11 @@ if __name__ == "__main__":
             "reward_bonus": 50,
         }
 
-        agent = ai.build_use_agent(
-            path="output/weights/model_4",
+        agent = rl.build_use_agent(
+            path="output/weights/p_date=2022-09-06-16_07_19",
             episodes=1,
             env_config=env_config,
-            weights_name="weights",
+            weights_name="weights_500000",
             logging=False,
         )
 
@@ -375,12 +375,12 @@ if __name__ == "__main__":
                 print_action(EnumAction(action))
                 print()
 
-                if action <= 12 or action >= 45:
+                if action <= 12 or action >= 44:
                     if (
                         input("    Do you want to accept this action? (y/n): ")
                         in yes_list
                     ):
-                        ai.apply_prediction(kniffel, EnumAction(action))
+                        rl.apply_prediction(kniffel, EnumAction(action))
                 else:
                     while True:
                         if (
@@ -404,7 +404,7 @@ if __name__ == "__main__":
                 print()
                 print(KniffelDraw().draw_dices(state[0][0:5]))
                 print()
-                print(KniffelDraw().draw_sheet(kniffel, state[0][5:]))
+                print(KniffelDraw().draw_sheet(kniffel))
 
                 action = agent.forward(state)
                 enum_action = EnumAction(action)
@@ -414,9 +414,9 @@ if __name__ == "__main__":
                 )
 
                 if input("    Do you want to accept this action? (y/n): ") in yes_list:
-                    ai.apply_prediction(kniffel, EnumAction(action))
+                    rl.apply_prediction(kniffel, EnumAction(action))
                 else:
                     new_action = input("    Give the id of the Action: ")
                     new_enum_action = EnumAction(int(new_action))
 
-                    ai.apply_prediction(kniffel, EnumAction(new_enum_action))
+                    rl.apply_prediction(kniffel, EnumAction(new_enum_action))
