@@ -1,4 +1,5 @@
 from array import array
+from csv import list_dialects
 from kniffel.classes.kniffel import Kniffel
 from kniffel.classes.options import KniffelOptions
 
@@ -50,7 +51,7 @@ class KniffelDraw:
         """Create new draw helper"""
         pass
 
-    def get_ascii_array(self, ascii: str) -> list[str]:
+    def get_ascii_array(self, ascii: str) -> list:
         """Return ascii string as list of strings
 
         :param ascii: ascii object
