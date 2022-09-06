@@ -13,6 +13,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 
+# Keras imports
+import rl
 from rl.agents import CEMAgent, DQNAgent, SARSAAgent
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 from rl.memory import EpisodeParameterMemory, SequentialMemory
@@ -25,15 +27,16 @@ from rl.policy import (
     MaxBoltzmannQPolicy,
 )
 
-# Keras imports
+# Project imports
 path_root = Path(__file__).parents[2]
+os.chdir(path_root)
 sys.path.append(str(path_root))
 
 import src.kniffel.classes.custom_exceptions as ex
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.options import KniffelOptions
-from src.rl.env import EnumAction, KniffelEnv
-from utils.draw import KniffelDraw
+from src.deep_rl.env import EnumAction, KniffelEnv
+from src.utils.draw import KniffelDraw
 
 
 class KniffelRL:
@@ -344,6 +347,8 @@ class KniffelRL:
         # Create dir
         os.mkdir(path)
 
+        print(f"Create subdir: {path}")
+
         # Create Callbacks
         checkpoint_weights_filename = path + "/weights_{step}.h5f"
 
@@ -363,7 +368,7 @@ class KniffelRL:
 
         self._append_file(f"{path}/configuration.json", json_object)
 
-        agent, train_score = self.train_agent(
+        agent, _ = self.train_agent(
             actions=actions,
             env=env,
             nb_steps=nb_steps,
@@ -707,9 +712,7 @@ class KniffelRL:
                     log_csv.append(f"##  Action: {enum_action}\n")
                     log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
-                    log_csv.append(
-                        "\n" + KniffelDraw().draw_sheet(kniffel)
-                    )
+                    log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
 
                     self.apply_prediction(kniffel, enum_action, logging)
 
@@ -764,7 +767,7 @@ class KniffelRL:
                 self._append_file(path=f"{path}/game_log/log.txt", content="\n\n")
 
         print()
-        print(f"Finished games: {episodes - break_counter}")
+        print(f"Finished games: {episodes - break_counter}/{episodes}")
         print(f"Average points: {mean(points)}")
         print(f"Max points: {max(points)}")
         print(f"Min points: {min(points)}")
@@ -783,12 +786,12 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/model_4",
-        episodes=1,
+        path="output/weights/p_date=2022-09-06-16_07_19",
+        episodes=10_000,
         env_config=env_config,
         weights_name="weights",
         logging=False,
-        write=True,
+        write=False,
     )
 
 
@@ -802,7 +805,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/model_5",
+        load_path="output/weights/kniffel_v09.05.1_trial_71",
     )
 
 
@@ -813,26 +816,25 @@ if __name__ == "__main__":
         "agent": "DQN",
         "windows_length": 2,
         "layers": 2,
-        "n_units_l1": 96,
-        "n_units_l2": 352,
+        "n_units_l1": 336,
+        "n_units_l2": 240,
         "activation": "linear",
-        "dqn_memory_limit": 151000,
-        "dqn_target_model_update": 7255.064011741529,
-        "enable_dueling_network": True,
-        "train_policy": "LinearAnnealedPolicy",
-        "linear_inner_policy": "MaxBoltzmannQPolicy",
-        "dqn_nb_steps_warmup": 33,
+        "dqn_memory_limit": 251000,
+        "dqn_target_model_update": 30.20167978296491,
+        "enable_dueling_network": False,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 18.75198429964778,
+        "dqn_nb_steps_warmup": 10548,
         "batch_size": 32,
-        "dqn_enable_double_dqn": True,
-        "dqn_dueling_option": "avg",
-        "dqn_adam_learning_rate": 0.0025733184629515233,
-        "dqn_adam_epsilon": 0.09955960980019776,
+        "dqn_enable_double_dqn": False,
+        "dqn_adam_learning_rate": 0.0004816133091678568,
+        "dqn_adam_epsilon": 0.07745742471548528,
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
-        path_prefix="",
+        path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
         env_observation_space=20,
         env_action_space=57,

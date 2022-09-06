@@ -1,4 +1,3 @@
-import re
 from gym import Env
 import gym.spaces as spaces
 import numpy as np

@@ -36,9 +36,11 @@ sys.path.append(str(path_root))
 
 from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
-from src.rl.env import EnumAction
-from src.rl.env import KniffelEnv
-from src.rl.callback.custom_keras_pruning_callback import CustomKerasPruningCallback
+from src.deep_rl.env import EnumAction
+from src.deep_rl.env import KniffelEnv
+from src.deep_rl.callback.custom_keras_pruning_callback import (
+    CustomKerasPruningCallback,
+)
 import src.kniffel.classes.custom_exceptions as ex
 
 

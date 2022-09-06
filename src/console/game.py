@@ -12,11 +12,11 @@ from pathlib import Path
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.rl.rl import KniffelRL
+from src.deep_rl.deep_rl import KniffelRL
 from src.kniffel.classes.dice_set import DiceSet
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.status import KniffelStatus
-from src.rl.env import EnumAction
+from src.deep_rl.env import EnumAction
 from utils.draw import KniffelDraw
 
 
