@@ -16,8 +16,6 @@ sys.path.insert(
 
 from src.kniffel.classes.options import KniffelOptions
 from src.kniffel.classes.kniffel import Kniffel
-import src.kniffel.classes.custom_exceptions as ex
-from src.kniffel.classes import kniffel
 from src.kniffel.classes.dice_set import DiceSet
 
 
@@ -69,8 +67,6 @@ class EnumAction(Enum):
     NEXT_28 = 41  # 28  	1	1	1	0	0
     NEXT_29 = 42  # 29  	1	1	1	0	1
     NEXT_30 = 43  # 30  	1	1	1	1	0
-    # NEXT_31 = 44  # 31  	1	1	1	1	1
-    # Removed this action because this means to keep all dice and reroll. doesnt make sense
 
     # Finish Actions
     FINISH_ONES_SLASH = 44
@@ -623,9 +619,6 @@ class KniffelEnv(Env):
             if EnumAction.NEXT_30 is enum_action:
                 self.kniffel.add_turn(keep=[1, 1, 1, 1, 0])
                 reward += self._reward_roll_dice
-            # if EnumAction.NEXT_31 is enum_action:
-            #    self.kniffel.add_turn(keep=[1, 1, 1, 1, 1])
-            #    reward += self._reward_roll_dice
 
         except Exception as e:
             if e.args[0] == "Game finished!":

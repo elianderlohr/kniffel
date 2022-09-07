@@ -4,7 +4,11 @@ import warnings
 
 import optuna
 
-from keras.callbacks import Callback
+with optuna._imports.try_import() as _imports:
+    from keras.callbacks import Callback
+
+if not _imports.is_successful():
+    Callback = object  # NOQA
 
 import numpy as np
 
@@ -37,6 +41,8 @@ class CustomKerasPruningCallback(Callback):
     ) -> None:
         super().__init__()
 
+        _imports.check()
+
         self._trial = trial
         self._monitor = monitor
         self._interval = interval
@@ -53,6 +59,7 @@ class CustomKerasPruningCallback(Callback):
         return float(mean - (max - min) + max)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict[str, float]] = None) -> None:
+
         self.log_dict["episode_reward"].append(float(logs["episode_reward"]))
         self.log_dict["nb_episode_steps"].append(int(logs["nb_episode_steps"]))
         self.log_dict["nb_steps"].append(int(logs["nb_steps"]))

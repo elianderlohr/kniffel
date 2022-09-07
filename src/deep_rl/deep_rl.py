@@ -479,8 +479,6 @@ class KniffelRL:
             kniffel.add_turn(keep=[1, 1, 1, 0, 1])
         if EnumAction.NEXT_30 is enum_action:
             kniffel.add_turn(keep=[1, 1, 1, 1, 0])
-        # if EnumAction.NEXT_31 is enum_action:
-        #    kniffel.add_turn(keep=[1, 1, 1, 1, 1])
 
         if EnumAction.FINISH_ONES_SLASH is enum_action:
             kniffel.finish_turn(KniffelOptions.ONES_SLASH)

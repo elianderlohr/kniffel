@@ -1,6 +1,4 @@
 # Standard imports
-from re import L
-from statistics import mean
 from datetime import datetime as dt
 import warnings
 from pathlib import Path
@@ -34,14 +32,10 @@ from tensorflow.keras.optimizers import Adam
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.kniffel.classes.options import KniffelOptions
-from src.kniffel.classes.kniffel import Kniffel
-from src.deep_rl.env import EnumAction
 from src.deep_rl.env import KniffelEnv
 from src.deep_rl.callback.custom_keras_pruning_callback import (
     CustomKerasPruningCallback,
 )
-import src.kniffel.classes.custom_exceptions as ex
 
 
 class KniffelRL:
