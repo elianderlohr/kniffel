@@ -131,8 +131,8 @@ class KniffelEnv(Env):
         reward_game_over=-200,
         reward_bonus=5,
         reward_finish=10,
-        env_action_space=58,
-        env_observation_space=32,
+        env_action_space=57,
+        env_observation_space=20,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
@@ -156,9 +156,6 @@ class KniffelEnv(Env):
         # Set start
         self.state = self.kniffel.get_state()
 
-        # Info:
-        # - https://brefeld.homepage.t-online.de/kniffel.html
-        # - https://brefeld.homepage.t-online.de/kniffel-strategie.html
         with open(config_file_path, "r") as file:
             reader = csv.reader(file, delimiter=";")
             d = {v[0]: v[1:] for v in reader}
