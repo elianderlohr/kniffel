@@ -784,10 +784,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-09-06-16_07_19",
-        episodes=10_000,
+        path="output/weights/p_date=2022-09-07-18_16_39",
+        episodes=500,
         env_config=env_config,
-        weights_name="weights",
+        weights_name="weights_250000",
         logging=False,
         write=False,
     )
@@ -812,24 +812,23 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 4,
-        "n_units_l1": 224,
-        "n_units_l2": 416,
-        "n_units_l3": 464,
-        "n_units_l4": 272,
+        "windows_length": 3,
+        "layers": 2,
+        "n_units_l1": 240,
+        "n_units_l2": 448,
         "activation": "linear",
-        "dqn_memory_limit": 251000,
-        "dqn_target_model_update": 40.0874140904574,
+        "dqn_memory_limit": 601000,
+        "dqn_target_model_update": 0.0005709517969668467,
         "enable_dueling_network": True,
-        "train_policy": "LinearAnnealedPolicy",
-        "linear_inner_policy": "MaxBoltzmannQPolicy",
-        "dqn_nb_steps_warmup": 9647,
-        "batch_size": 32,
+        "train_policy": "MaxBoltzmannQPolicy",
+        "max_boltzmann_eps": 0.03773866253426113,
+        "max_boltzmann_tau": 0.15000000000000002,
+        "dqn_nb_steps_warmup": 20078,
+        "batch_size": 512,
         "dqn_enable_double_dqn": True,
         "dqn_dueling_option": "avg",
-        "dqn_adam_learning_rate": 0.0001754878403374925,
-        "dqn_adam_epsilon": 0.03596188087213237,
+        "dqn_adam_learning_rate": 0.018402224145554508,
+        "dqn_adam_epsilon": 0.013059494354936103,
     }
 
     rl = KniffelRL(
