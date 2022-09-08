@@ -841,7 +841,7 @@ if __name__ == "__main__":
     )
 
     env_config = {
-        "reward_roll_dice": 0,
+        "reward_roll_dice": 0.5,
         "reward_game_over": -1000,
         "reward_finish": 150,
         "reward_bonus": 50,

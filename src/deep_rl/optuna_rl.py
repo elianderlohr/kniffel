@@ -41,9 +41,6 @@ from src.deep_rl.callback.custom_keras_pruning_callback import (
 class KniffelRL:
     """Optuna RL Kniffel Class"""
 
-    # Load model from path
-    _load = False
-
     # Hyperparameter object
     _hyperparater_base = {}
 
@@ -70,7 +67,6 @@ class KniffelRL:
 
     def __init__(
         self,
-        load=False,
         test_episodes=100,
         path_prefix="",
         hyperparater_base={},
@@ -79,7 +75,6 @@ class KniffelRL:
         env_action_space=57,
         env_observation_space=20,
     ):
-        self._load = load
         self._hyperparater_base = hyperparater_base
         self._test_episodes = test_episodes
         self._config_path = config_path
@@ -298,7 +293,6 @@ class KniffelRL:
         actions,
         env,
         nb_steps,
-        load_path="",
     ):
         model = self.build_model(actions)
         agent = self.build_agent(model, actions, nb_steps=nb_steps)
@@ -319,13 +313,9 @@ class KniffelRL:
         elif self._agent_value == "CEM":
             agent.compile()
 
-        if self._load:
-            print(f"Load existing model and train: path={load_path}/weights.h5f")
-            agent.load_weights(f"{load_path}/weights.h5f")
-
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=50_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=25_000),
         ]
 
         history = agent.fit(
@@ -386,7 +376,7 @@ class KniffelRL:
             custom_metric,
         )
 
-    def train(self, nb_steps=10_000, load_path="", env_config=""):
+    def train(self, nb_steps=10_000, env_config=""):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
@@ -398,7 +388,6 @@ class KniffelRL:
             actions=self._env_action_space,
             env=env,
             nb_steps=nb_steps,
-            load_path=load_path,
         )
 
         (
@@ -461,14 +450,13 @@ def objective(trial):
     }
 
     env_config = {
-        "reward_roll_dice": 0,
+        "reward_roll_dice": 0.5,
         "reward_game_over": -1000,
         "reward_finish": 150,
         "reward_bonus": 50,
     }
 
     rl = KniffelRL(
-        load=False,
         hyperparater_base=base_hp,
         config_path="src/config/config.csv",
         path_prefix="",
@@ -489,7 +477,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000)
+    ) = rl.train(env_config=env_config, nb_steps=200_000)
 
     trial.set_user_attr("custom_metric", float(custom_metric))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
