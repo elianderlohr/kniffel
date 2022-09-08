@@ -479,6 +479,7 @@ def objective(trial):
         custom_metric,
     ) = rl.train(env_config=env_config, nb_steps=200_000)
 
+    trial.set_user_attr("server", str(server))
     trial.set_user_attr("custom_metric", float(custom_metric))
     trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
     trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
@@ -497,6 +498,8 @@ def objective(trial):
     return float(custom_metric)
 
 
+server = ""
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -507,14 +510,17 @@ if __name__ == "__main__":
     parser.add_argument("--study_name", type=str, default="test")
     parser.add_argument("--new", choices=["true", "false"], default="false", type=str)
     parser.add_argument("--jobs", type=int, default=cpu_count)
+    parser.add_argument("--server", type=str, default="test")
 
     print()
 
     args = parser.parse_args()
 
+    server = args.server
+
     if args.new == "true":
         print(
-            f"Create new study with name '{args.study_name}' and {args.jobs} parallel jobs."
+            f"Create new study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
         )
         study = optuna.create_study(
             study_name=args.study_name,
@@ -523,7 +529,7 @@ if __name__ == "__main__":
         )
     else:
         print(
-            f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs."
+            f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
         )
         study = optuna.load_study(
             study_name=args.study_name,
