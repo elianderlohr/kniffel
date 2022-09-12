@@ -62,13 +62,9 @@ class Attempt:
             if self.is_active() and self.count() > 0 and keep is not None:
                 old_set = self.attempts[-1]
 
-                counter = 1
-                for i in range(len(keep)):
-                    if keep[i] == 1:
-                        dice_set.set_dice(
-                            index=counter, value=old_set.get_dice(counter)
-                        )
-                    counter += 1
+                for i in range(1, len(keep) + 1):
+                    if keep[i - 1] == 1:
+                        dice_set.set_dice(index=i, value=old_set.get_dice(i))
 
             self.attempts.append(dice_set)
 

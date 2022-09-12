@@ -27,7 +27,7 @@ def send_step(dice, env, action, score):
 
 def test_get_config():
     env = KniffelEnv(
-        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=True, config_file_path="src/config/config.csv"
     )
 
     print(env.config)
@@ -39,7 +39,7 @@ def test_env():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=True, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=True, config_file_path="src/config/config.csv"
     )
 
     # try 1
@@ -90,7 +90,7 @@ def test_perfect_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/config.csv"
     )
 
     # try 1
@@ -151,7 +151,7 @@ def test_normal_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/config.csv"
     )
 
     # try 1
@@ -226,7 +226,7 @@ def test_slash_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/config.csv"
     )
 
     # try 1
@@ -274,7 +274,7 @@ def test_broken_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/config.csv"
     )
 
     # try 1
@@ -288,7 +288,7 @@ def test_finish_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/Kniffel.CSV"
+        env_config, logging=False, config_file_path="src/config/config.csv"
     )
 
     # try 1

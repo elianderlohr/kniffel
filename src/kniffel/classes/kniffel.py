@@ -35,7 +35,7 @@ class Kniffel:
     def __init__(self, logging: bool = False, custom=False):
         self.turns: Attempt = []
         self.logging = logging
-        if custom == False:
+        if not custom:
             self.start()
 
     def get_length(self) -> int:
@@ -265,7 +265,6 @@ class Kniffel:
         """
         if self.is_option_possible(option):
             if self.is_new_game() is False and self.is_turn_finished() is False:
-
                 kniffel_option = self.get_last().finish_attempt(option)
 
                 if self.is_finished():
