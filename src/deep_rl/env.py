@@ -664,6 +664,8 @@ class KniffelEnv(Env):
         if self.kniffel.is_bonus():
             reward += self._reward_bonus
 
+        reward += self.kniffel.get_points() / 5
+
         # Return step information
         return self.state, reward, done, {}  # info
 
