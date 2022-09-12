@@ -66,7 +66,7 @@ class KniffelRL:
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
         env_action_space=58,
-        env_observation_space=32,
+        env_observation_space=19,
     ):
         self._load = load
 
@@ -836,14 +836,14 @@ if __name__ == "__main__":
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
-        env_observation_space=20,
+        env_observation_space=19,
         env_action_space=57,
     )
 
     env_config = {
         "reward_roll_dice": 0.5,
-        "reward_game_over": -1000,
-        "reward_finish": 150,
+        "reward_game_over": -300,
+        "reward_finish": 300,
         "reward_bonus": 50,
     }
 

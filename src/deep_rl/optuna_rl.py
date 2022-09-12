@@ -315,7 +315,7 @@ class KniffelRL:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=25_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=50_000),
         ]
 
         history = agent.fit(
@@ -426,7 +426,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN"],
+        "agent": ["DQN", "SARSA", "CEM"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
@@ -451,8 +451,8 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0.5,
-        "reward_game_over": -1000,
-        "reward_finish": 150,
+        "reward_game_over": -300,
+        "reward_finish": 300,
         "reward_bonus": 50,
     }
 
@@ -461,7 +461,7 @@ def objective(trial):
         config_path="src/config/config.csv",
         path_prefix="",
         trial=trial,
-        env_observation_space=20,
+        env_observation_space=19,
         env_action_space=57,
     )
 
@@ -477,7 +477,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=200_000)
+    ) = rl.train(env_config=env_config, nb_steps=250_000)
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("custom_metric", float(custom_metric))
@@ -495,7 +495,7 @@ def objective(trial):
     trial.set_user_attr("nb_steps_min", float(nb_steps_min))
     trial.set_user_attr("nb_steps_mean", float(nb_steps_mean))
 
-    return float(custom_metric)
+    return float(episode_reward_custom)
 
 
 server = ""

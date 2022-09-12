@@ -128,7 +128,7 @@ class KniffelEnv(Env):
         reward_bonus=5,
         reward_finish=10,
         env_action_space=57,
-        env_observation_space=20,
+        env_observation_space=19,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)
@@ -144,7 +144,7 @@ class KniffelEnv(Env):
         """
 
         self.observation_space = spaces.Box(
-            low=-1, high=1, shape=(1, env_observation_space), dtype=np.float64
+            low=-1, high=6, shape=(1, env_observation_space), dtype=np.int8
         )
 
         self.logging = logging
@@ -300,7 +300,6 @@ class KniffelEnv(Env):
             _type_: state, reward, done, info
         """
         reward = 0.0
-        # has_bonus = self.kniffel.is_bonus()
 
         info = {"finished": False, "error": False}
 
@@ -660,6 +659,10 @@ class KniffelEnv(Env):
             print(f"    State NEW: {self.state}")
             print(f"    Reward: {reward}")
             print(f"    Points: {self.kniffel.get_points()}")
+
+        # Add bonus to reward
+        if self.kniffel.is_bonus():
+            reward += self._reward_bonus
 
         # Return step information
         return self.state, reward, done, {}  # info
