@@ -6,6 +6,10 @@ import warnings
 from datetime import datetime as dt
 from pathlib import Path
 from statistics import mean
+from progress.bar import IncrementalBar
+
+warnings.filterwarnings("ignore")
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import numpy as np
 import tensorflow as tf
@@ -381,7 +385,7 @@ class KniffelRL:
         # save weights and configuration as json
         agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
-        self.play(path, 10_000, env_config, logging=False)
+        self.play(path, 10_000, env_config)
 
     def apply_prediction(
         self, kniffel: Kniffel, enum_action: EnumAction, logging=False
@@ -551,8 +555,13 @@ class KniffelRL:
         weights_name="weights",
     ):
         if random:
+            print(f"Play {episodes} random games.")
+            print()
             self.play_random(episodes, env_config)
+
         else:
+            print(f"Play {episodes} games from model {path}.")
+            print()
             self.use_model(
                 path,
                 episodes,
@@ -571,8 +580,11 @@ class KniffelRL:
             env_action_space=self._env_action_space,
         )
 
+        bar = IncrementalBar("Games played", max=episodes)
+
         round = 1
         for episode in range(1, episodes + 1):
+            bar.next()
             state = env.reset()
             done = False
             score = 0
@@ -594,6 +606,8 @@ class KniffelRL:
             print("Episode:{} Score:{}".format(episode, score))
 
             round += 1
+
+        bar.finish()
 
     def build_use_agent(
         self,
@@ -652,35 +666,21 @@ class KniffelRL:
         logging=False,
         write=False,
     ):
-
-        legend = [
-            "TRIES PLAYED",
-            "ONES",
-            "TWOS",
-            "THREES",
-            "FOURS",
-            "FIVES",
-            "SIXES",
-            "BONUS",
-            "TOP POINTS",
-            "THREE TIMES",
-            "FOUR TIMES",
-            "FULL HOUSE",
-            "SMALL STREET",
-            "LARGE STREET",
-            "KNIFFEL",
-            "CHANCE",
-            "BOTTOM POINTS",
-            "TOTAL POINTS",
-            "ROUNDS PLAYED",
-        ]
-
         agent = self.build_use_agent(path, episodes, env_config, weights_name, logging)
 
         points = []
         rounds = []
         break_counter = 0
+
+        bar = IncrementalBar(
+            "Games played",
+            max=episodes,
+            suffix="%(index)d/%(max)d - %(eta)ds",
+        )
+
         for e in range(1, episodes + 1):
+            bar.next()
+
             if write:
                 self._append_file(
                     path=f"{path}/game_log/log.txt",
@@ -701,8 +701,6 @@ class KniffelRL:
                 )
 
                 try:
-                    points_old = kniffel.get_points()
-
                     action = agent.forward(state)
                     enum_action = EnumAction(action)
 
@@ -710,7 +708,7 @@ class KniffelRL:
                     log_csv.append(f"##  Action: {enum_action}\n")
                     log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
-                    log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
+                    # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
 
                     self.apply_prediction(kniffel, enum_action, logging)
 
@@ -764,6 +762,8 @@ class KniffelRL:
             if write:
                 self._append_file(path=f"{path}/game_log/log.txt", content="\n\n")
 
+        bar.finish()
+
         print()
         print(f"Finished games: {episodes - break_counter}/{episodes}")
         print(f"Average points: {mean(points)}")
@@ -784,10 +784,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-09-07-18_16_39",
-        episodes=500,
+        path="output/weights/p_date=2022-09-14-12_20_54",
+        episodes=1000,
         env_config=env_config,
-        weights_name="weights_250000",
+        weights_name="weights_1250000",
         logging=False,
         write=False,
     )
@@ -803,7 +803,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/kniffel_v09.05.1_trial_71",
+        load_path="output/weights/kniffel_v22.09.13.1_trial_62",
     )
 
 
@@ -812,26 +812,25 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
+        "windows_length": 2,
         "layers": 2,
-        "n_units_l1": 48,
-        "n_units_l2": 32,
+        "n_units_l1": 272,
+        "n_units_l2": 336,
         "activation": "linear",
-        "dqn_memory_limit": 301000,
-        "dqn_target_model_update": 0.0006083076976875103,
-        "enable_dueling_network": True,
-        "train_policy": "LinearAnnealedPolicy",
-        "linear_inner_policy": "BoltzmannQPolicy",
-        "dqn_nb_steps_warmup": 189,
+        "dqn_memory_limit": 851000,
+        "dqn_target_model_update": 1.9539242050011145,
+        "enable_dueling_network": False,
+        "train_policy": "EpsGreedyQPolicy",
+        "eps_greedy_eps": 0.023097504197645877,
+        "dqn_nb_steps_warmup": 62,
         "batch_size": 32,
-        "dqn_enable_double_dqn": True,
-        "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.007360052244381354,
-        "dqn_adam_epsilon": 0.0832978490378874,
+        "dqn_enable_double_dqn": False,
+        "dqn_adam_learning_rate": 0.0004441292149779492,
+        "dqn_adam_epsilon": 0.09914581745323232,
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
