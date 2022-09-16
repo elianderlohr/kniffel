@@ -814,23 +814,23 @@ if __name__ == "__main__":
         "agent": "DQN",
         "windows_length": 2,
         "layers": 2,
-        "n_units_l1": 272,
-        "n_units_l2": 336,
+        "n_units_l1": 352,
+        "n_units_l2": 368,
         "activation": "linear",
-        "dqn_memory_limit": 851000,
-        "dqn_target_model_update": 1.9539242050011145,
+        "dqn_memory_limit": 651000,
+        "dqn_target_model_update": 8.275821180525082,
         "enable_dueling_network": False,
-        "train_policy": "EpsGreedyQPolicy",
-        "eps_greedy_eps": 0.023097504197645877,
-        "dqn_nb_steps_warmup": 62,
+        "train_policy": "LinearAnnealedPolicy",
+        "linear_inner_policy": "BoltzmannQPolicy",
+        "dqn_nb_steps_warmup": 183,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
-        "dqn_adam_learning_rate": 0.0004441292149779492,
-        "dqn_adam_epsilon": 0.09914581745323232,
+        "dqn_adam_learning_rate": 0.0004221055798662487,
+        "dqn_adam_epsilon": 0.0020147155248010726,
     }
 
     rl = KniffelRL(
-        load=True,
+        load=False,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
@@ -845,4 +845,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    play(rl, env_config)
+    train(rl, env_config)
