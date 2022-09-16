@@ -26,9 +26,7 @@ def send_step(dice, env, action, score):
 
 
 def test_get_config():
-    env = KniffelEnv(
-        env_config, logging=True, config_file_path="src/config/config.csv"
-    )
+    env = KniffelEnv(env_config, logging=True, config_file_path="src/config/config.csv")
 
     print(env.config)
 
@@ -38,9 +36,7 @@ def test_get_config():
 def test_env():
     score = 0
 
-    env = KniffelEnv(
-        env_config, logging=True, config_file_path="src/config/config.csv"
-    )
+    env = KniffelEnv(env_config, logging=True, config_file_path="src/config/config.csv")
 
     # try 1
     score = send_step([], env, 13, score)
@@ -83,7 +79,7 @@ def test_env():
     # try 13
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
 
-    assert score == 742
+    assert score == 1361.0
 
 
 def test_perfect_game():
@@ -95,15 +91,15 @@ def test_perfect_game():
 
     # try 1
     score = send_step([1, 1, 1, 1, 1], env, 0, score)
-    assert score == 40
+    assert score == 41
 
     # try 2
     score = send_step([2, 2, 2, 2, 2], env, 1, score)
-    assert score == 80
+    assert score == 84
 
     # try 3
     score = send_step([3, 3, 3, 3, 3], env, 2, score)
-    assert score == 120
+    assert score == 130
 
     # try 4
     score = send_step([4, 4, 4, 4, 4], env, 3, score)

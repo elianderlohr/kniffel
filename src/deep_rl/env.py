@@ -304,9 +304,9 @@ class KniffelEnv(Env):
         info = {"finished": False, "error": False}
 
         finished_turn = False
-        finished_game = False
-
+        slashed = False
         done = False
+
         # Apply action
         enum_action = EnumAction(action)
 
@@ -405,7 +405,7 @@ class KniffelEnv(Env):
                     reward += self.get_config_param(
                         KniffelConfig.ONES, KniffelConfig.COLUMN_0
                     )
-
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_TWOS_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.TWOS_SLASH)
@@ -423,7 +423,7 @@ class KniffelEnv(Env):
                     reward += self.get_config_param(
                         KniffelConfig.THREES, KniffelConfig.COLUMN_0
                     )
-
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_FOURS_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOURS_SLASH)
@@ -433,6 +433,7 @@ class KniffelEnv(Env):
                         KniffelConfig.FOURS, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_FIVES_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FIVES_SLASH)
@@ -442,6 +443,7 @@ class KniffelEnv(Env):
                         KniffelConfig.FIVES, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_SIXES_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.SIXES_SLASH)
@@ -451,6 +453,7 @@ class KniffelEnv(Env):
                         KniffelConfig.SIXES, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(
@@ -462,6 +465,7 @@ class KniffelEnv(Env):
                         KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(
@@ -473,6 +477,7 @@ class KniffelEnv(Env):
                         KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(
@@ -484,6 +489,7 @@ class KniffelEnv(Env):
                         KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_SMALL_STREET_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(
@@ -495,6 +501,7 @@ class KniffelEnv(Env):
                         KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_LARGE_STREET_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(
@@ -506,6 +513,7 @@ class KniffelEnv(Env):
                         KniffelConfig.LARGE_STREET, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_KNIFFEL_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.KNIFFEL_SLASH)
@@ -515,6 +523,7 @@ class KniffelEnv(Env):
                         KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_0
                     )
 
+                slashed = True
                 finished_turn = True
             if EnumAction.FINISH_CHANCE_SLASH is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.CHANCE_SLASH)
@@ -523,6 +532,9 @@ class KniffelEnv(Env):
                     reward += self.get_config_param(
                         KniffelConfig.CHANCE, KniffelConfig.COLUMN_0
                     )
+
+                slashed = True
+                finished_turn = True
 
             # Continue enum_actions
             if EnumAction.NEXT_0 is enum_action:
@@ -653,18 +665,12 @@ class KniffelEnv(Env):
 
         self.state = self.kniffel.get_state()
 
-        if self.logging:
-            action_type = "roll_dice" if action >= 13 and action <= 44 else "finish"
-            print(f"    Action ({action_type}): {action}")
-            print(f"    State NEW: {self.state}")
-            print(f"    Reward: {reward}")
-            print(f"    Points: {self.kniffel.get_points()}")
+        if finished_turn and not slashed and not done:
+            # Add bonus to reward
+            if self.kniffel.is_bonus():
+                reward += self._reward_bonus
 
-        # Add bonus to reward
-        if self.kniffel.is_bonus():
-            reward += self._reward_bonus
-
-        reward += self.kniffel.get_points() / 5
+            reward += self.kniffel.get_points() / 5
 
         # Return step information
         return self.state, reward, done, {}  # info
