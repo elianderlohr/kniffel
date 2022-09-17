@@ -16,10 +16,10 @@ def play():
     try:
         kniffel = Kniffel(True)
 
-        kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+        kniffel.mock(DiceSet([6, 6, 6, 1, 2]))
         kniffel.finish_turn(KniffelOptions.THREE_TIMES)
 
-        kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+        kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
         kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
 
         kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
@@ -54,11 +54,11 @@ def play():
         kniffel.mock(DiceSet([4, 4, 4, 4, 4]))
         kniffel.finish_turn(KniffelOptions.FOURS)
 
-        kniffel.mock(DiceSet([5, 5, 5, 5, 5]))
+        kniffel.mock(DiceSet([5, 5, 5, 6, 6]))
         kniffel.finish_turn(KniffelOptions.FIVES)
 
         kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
-        kniffel.mock(DiceSet([6, 6, 6, 6, 6]))
+        kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
         kniffel.finish_turn(KniffelOptions.SIXES)
 
     except Exception as e:
