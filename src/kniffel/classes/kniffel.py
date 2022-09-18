@@ -227,16 +227,16 @@ class Kniffel:
             self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30, True)
         )
         status.append(
-            self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25, True)
+            self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25, False)
         )
         status.append(
-            self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30, True)
+            self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30, False)
         )
         status.append(
-            self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40, True)
+            self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40, False)
         )
         status.append(
-            self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50, True)
+            self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50, False)
         )
         status.append(
             self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30, True)

@@ -665,7 +665,7 @@ class KniffelEnv(Env):
 
         self.state = self.kniffel.get_state()
 
-        if finished_turn and not slashed and not done:
+        if not slashed and not done:
             # Add bonus to reward
             if self.kniffel.is_bonus():
                 reward += self._reward_bonus
