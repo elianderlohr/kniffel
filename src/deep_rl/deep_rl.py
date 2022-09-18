@@ -70,7 +70,7 @@ class KniffelRL:
         hyperparater_base={},
         config_path="src/ai/Kniffel.CSV",
         env_action_space=58,
-        env_observation_space=19,
+        env_observation_space=20,
     ):
         self._load = load
 
@@ -836,7 +836,7 @@ if __name__ == "__main__":
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
-        env_observation_space=19,
+        env_observation_space=20,
         env_action_space=57,
     )
 

@@ -201,6 +201,9 @@ class Kniffel:
         # Tries played
         status.append(self.get_last().count() / 3)
 
+        # Bonus ?
+        status.append(1 if self.is_bonus() else 0)
+
         status.append(
             self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5, True)
         )

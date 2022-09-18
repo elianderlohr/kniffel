@@ -128,7 +128,7 @@ class KniffelEnv(Env):
         reward_bonus=5,
         reward_finish=10,
         env_action_space=57,
-        env_observation_space=19,
+        env_observation_space=20,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel = Kniffel(logging=logging)

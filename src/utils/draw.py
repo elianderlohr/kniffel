@@ -143,7 +143,7 @@ class KniffelDraw:
         lines[3] = []
         lines[4] = []
         for dice_scaled in dice_array:
-            dice = round(dice_scaled * 6)
+            dice = dice_scaled
 
             ascii = ""
             if dice == 1:
