@@ -426,7 +426,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN", "SARSA"],
+        "agent": ["DQN"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
