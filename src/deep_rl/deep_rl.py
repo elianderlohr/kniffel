@@ -832,7 +832,7 @@ if __name__ == "__main__":
     }
 
     rl = KniffelRL(
-        load=True,
+        load=False,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,

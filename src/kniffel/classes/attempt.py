@@ -31,8 +31,9 @@ class Attempt:
             return True
 
     def count(self) -> int:
-        """
-        Get attempts count
+        """Get count of attempts
+
+        :return: amount of attempts
         """
         return len(self.attempts)
 
