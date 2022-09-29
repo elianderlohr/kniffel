@@ -1,4 +1,5 @@
 # Standard imports
+from distutils.log import info
 import json
 import os
 import sys
@@ -39,7 +40,9 @@ sys.path.append(str(path_root))
 import src.kniffel.classes.custom_exceptions as ex
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.options import KniffelOptions
-from src.deep_rl.env import EnumAction, KniffelEnv
+from src.deep_rl.env import KniffelEnv
+from src.deep_rl.env_helper import KniffelEnvHelper
+from src.deep_rl.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
 
 
@@ -192,7 +195,10 @@ class KniffelRL:
         """
         agent = None
 
+        a = self.get_hyperparameter("agent")
+
         if self.get_hyperparameter("agent") == "DQN":
+
             memory = SequentialMemory(
                 limit=self.get_hyperparameter("dqn_memory_limit"),
                 window_length=self.get_hyperparameter("windows_length"),
@@ -217,7 +223,7 @@ class KniffelRL:
             )
 
             if enable_dueling_network:
-                agent.dueling_type = (self.get_hyperparameter("dqn_dueling_option"),)
+                agent.dueling_type = self.get_hyperparameter("dqn_dueling_option")
 
         elif self.get_hyperparameter("agent") == "CEM":
             memory_interval = self.get_hyperparameter("cem_memory_limit")
@@ -333,13 +339,13 @@ class KniffelRL:
             nb_steps=nb_steps, load_path=load_path, env_config=env_config
         )
 
-    def _train(self, nb_steps=10_000, load_path="", env_config=""):
-        date_start = dt.today()
+    def _train(self, nb_steps=10_000, load_path="", env_config="", logging=False):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
             env_observation_space=self._env_observation_space,
             env_action_space=self._env_action_space,
+            logging=logging,
         )
 
         actions = env.action_space.n
@@ -520,29 +526,6 @@ class KniffelRL:
 
         return enum_action
 
-    def test(self, agent):
-        points = []
-        break_counter = 0
-
-        for _ in range(self._test_episodes):
-            kniffel = Kniffel()
-            while True:
-                try:
-                    state = kniffel.get_state()
-                    self.predict_and_apply(agent, kniffel, state)
-                except BaseException as e:
-                    if e == ex.GameFinishedException:
-                        points.append(kniffel.get_points())
-                        break
-                    else:
-                        points.append(kniffel.get_points())
-                        break_counter += 1
-                        break
-
-                points.append(kniffel.get_points())
-
-        return break_counter, mean(points), max(points), min(points)
-
     # Use Model
     def play(
         self,
@@ -653,7 +636,9 @@ class KniffelRL:
         elif self.get_hyperparameter("agent") == "CEM":
             agent.compile()
 
-        agent.load_weights(f"{path}/{weights_name}.h5f")
+        print(f"Load weights {path}/{weights_name}.h5f")
+
+        agent.load_weights(f"{path}/{weights_name}.h5f".format())
 
         return agent
 
@@ -678,6 +663,12 @@ class KniffelRL:
             suffix="%(index)d/%(max)d - %(eta)ds",
         )
 
+        kniffel_env = KniffelEnvHelper(
+            env_config=env_config,
+            logging=logging,
+            config_file_path=self._config_path,
+        )
+
         for e in range(1, episodes + 1):
             bar.next()
 
@@ -687,35 +678,41 @@ class KniffelRL:
                     content="\n".join(KniffelDraw().draw_kniffel_title().split("\n")),
                 )
 
-            kniffel = Kniffel()
+            kniffel_env.reset_kniffel()
 
             rounds_counter = 1
 
             while True:
                 log_csv = []
 
-                state = kniffel.get_state()
+                state = kniffel_env.get_state()
 
                 log_csv.append(
                     f"\n####################################################################################\n"
                 )
 
-                try:
-                    action = agent.forward(state)
-                    enum_action = EnumAction(action)
+                action = agent.forward(state)
 
-                    log_csv.append(f"##  Try: {rounds_counter}\n")
-                    log_csv.append(f"##  Action: {enum_action}\n")
-                    log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
+                enum_action = EnumAction(action)
 
-                    # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
+                log_csv.append(f"##  Try: {rounds_counter}\n")
+                log_csv.append(f"##  Action: {enum_action}\n")
 
-                    self.apply_prediction(kniffel, enum_action, logging)
+                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
+                # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
+
+                reward, done, info = kniffel_env.predict_and_apply(action)
+                agent.backward(reward, done)
+
+                if not done:
                     rounds_counter += 1
-                except BaseException as e:
-                    if e.args[0] == "Game finished!":
-                        points.append(kniffel.get_points())
+
+                else:
+                    agent.memory.append(state, action, 0, True, False)
+
+                    if not info["error"]:
+                        points.append(kniffel_env.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
@@ -732,7 +729,7 @@ class KniffelRL:
 
                         break
                     else:
-                        points.append(kniffel.get_points())
+                        points.append(kniffel_env.kniffel.get_points())
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
@@ -784,10 +781,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-09-20-09_50_24",
-        episodes=5000,
+        path="output/weights/p_date=2022-09-29-20_29_49",
+        episodes=10_000,
         env_config=env_config,
-        weights_name="weights_750000",
+        weights_name="weights",
         logging=False,
         write=False,
     )
@@ -803,7 +800,8 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-09-21-09_34_48",
+        load_path="output/weights/p_date=2022-09-28-16_40_44",
+        logging=False,
     )
 
 
@@ -812,27 +810,27 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 2,
-        "n_units_l1": 288,
-        "n_units_l2": 64,
+        "windows_length": 3,
+        "layers": 4,
+        "n_units_l1": 448,
+        "n_units_l2": 384,
+        "n_units_l3": 352,
+        "n_units_l4": 352,
         "activation": "linear",
-        "dqn_memory_limit": 651000,
-        "dqn_target_model_update": 2.3260999274577983,
+        "dqn_memory_limit": 951000,
+        "dqn_target_model_update": 331.55137033932897,
         "enable_dueling_network": True,
-        "train_policy": "MaxBoltzmannQPolicy",
-        "max_boltzmann_eps": 0.08644624524513417,
-        "max_boltzmann_tau": 0.7500000000000001,
-        "dqn_nb_steps_warmup": 440,
+        "train_policy": "GreedyQPolicy",
+        "dqn_nb_steps_warmup": 16,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.004624556596021736,
-        "dqn_adam_epsilon": 0.0009141557443060972,
+        "dqn_adam_learning_rate": 0.0007695967814685539,
+        "dqn_adam_epsilon": 0.07785399790936202,
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
@@ -847,4 +845,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    train(rl, env_config)
+    play(rl, env_config)

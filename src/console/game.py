@@ -16,7 +16,7 @@ from src.deep_rl.deep_rl import KniffelRL
 from src.kniffel.classes.dice_set import DiceSet
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.status import KniffelStatus
-from src.deep_rl.env import EnumAction
+from src.deep_rl.env_helper import EnumAction
 from utils.draw import KniffelDraw
 
 
