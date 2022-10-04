@@ -1,0 +1,2 @@
+avg score of 100
+max of 170

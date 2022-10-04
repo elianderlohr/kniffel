@@ -781,10 +781,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-10-01-17_21_42",
-        episodes=10_000,
+        path="output/weights/p_date=2022-10-03-11_06_13",
+        episodes=5000,
         env_config=env_config,
-        weights_name="weights_500000",
+        weights_name="weights",
         logging=False,
         write=False,
     )
@@ -800,7 +800,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-10-01-17_21_42",
+        load_path="output/weights/p_date=2022-10-03-18_58_55",
         logging=False,
     )
 
@@ -813,26 +813,27 @@ if __name__ == "__main__":
         "windows_length": 3,
         "layers": 5,
         "n_units_l1": 352,
-        "n_units_l2": 368,
-        "n_units_l3": 416,
+        "n_units_l2": 400,
+        "n_units_l3": 400,
         "n_units_l4": 112,
-        "n_units_l5": 32,
+        "n_units_l5": 400,
         "activation": "linear",
         "dqn_memory_limit": 901000,
-        "dqn_target_model_update": 900.6265996477566,
+        "dqn_target_model_update": 529.6907190483519,
         "enable_dueling_network": True,
-        "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 0.6000000000000001,
-        "dqn_nb_steps_warmup": 46,
+        "train_policy": "MaxBoltzmannQPolicy",
+        "max_boltzmann_eps": 0.05164134557950994,
+        "max_boltzmann_tau": 0.5,
+        "dqn_nb_steps_warmup": 130,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0002364514554548889,
-        "dqn_adam_epsilon": 0.09693884961212633,
+        "dqn_adam_learning_rate": 0.0003036264771839298,
+        "dqn_adam_epsilon": 0.02593558426240954,
     }
 
     rl = KniffelRL(
-        load=True,
+        load=False,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,

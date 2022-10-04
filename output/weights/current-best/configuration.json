@@ -1,0 +1,23 @@
+{
+    "agent": "DQN",
+    "windows_length": 3,
+    "layers": 5,
+    "n_units_l1": 352,
+    "n_units_l2": 400,
+    "n_units_l3": 400,
+    "n_units_l4": 112,
+    "n_units_l5": 400,
+    "activation": "linear",
+    "dqn_memory_limit": 901000,
+    "dqn_target_model_update": 529.6907190483519,
+    "enable_dueling_network": true,
+    "train_policy": "MaxBoltzmannQPolicy",
+    "max_boltzmann_eps": 0.05164134557950994,
+    "max_boltzmann_tau": 0.5,
+    "dqn_nb_steps_warmup": 130,
+    "batch_size": 32,
+    "dqn_enable_double_dqn": false,
+    "dqn_dueling_option": "max",
+    "dqn_adam_learning_rate": 0.0003036264771839298,
+    "dqn_adam_epsilon": 0.02593558426240954
+}
