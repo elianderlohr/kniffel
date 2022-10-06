@@ -143,7 +143,7 @@ The AI model can be used by running the game.py script in the src/console folder
 
 ## Highscores
 
-| Name / ID       | Date       | Training Episodes | Duration | AVG Score | Max score | AVG Rounds | Rounds finished in % | Weights                                                          |
+| Name / ID       | Date       | Train Episodes | Train Duration | Avg Score | Max score | Avg Rounds | % Rounds finished | Path                                                          |
 |-----------------|------------|-------------------|----------|-----------|-----------|------------|----------------------|------------------------------------------------------------------|
 | current-best    | 05.10.2022 | ~750.000          | ~1d      | ~99       | 170       | ~26        | 0%                   | [output/weights/current-best](output/weights/current-best)       |
 | current-best-v2 | 06.10.2022 | ~2.500.000        | ~1d      | ~140      | 210       | ~35        | 90.38%               | [output/weights/current-best-v2](output/weights/current-best-v2) |
