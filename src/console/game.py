@@ -16,7 +16,7 @@ from src.deep_rl.deep_rl import KniffelRL
 from src.kniffel.classes.dice_set import DiceSet
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.status import KniffelStatus
-from src.deep_rl.env_helper import EnumAction
+from src.deep_rl.env_helper import EnumAction, KniffelEnvHelper
 from utils.draw import KniffelDraw
 
 
@@ -337,36 +337,46 @@ if __name__ == "__main__":
         }
 
         agent = rl.build_use_agent(
-            path="output/weights/p_date=2022-09-06-16_07_19",
+            path="output/weights/current-best-v2",
             episodes=1,
             env_config=env_config,
-            weights_name="weights_500000",
+            weights_name="weights",
             logging=False,
         )
 
         if input("    Do you want to use your own dices? (y/n): ") in yes_list:
-            kniffel = Kniffel(custom=True)
+            kniffel_env = KniffelEnvHelper(
+                env_config=env_config,
+                logging=False,
+                config_file_path="src/config/config.csv",
+                custom_kniffel=True,
+            )
             clear()
             print_kniffel()
             while True:
                 if (
-                    kniffel.is_new_game()
-                    or kniffel.get_last().status.value == KniffelStatus.INIT.value
+                    kniffel_env.kniffel.is_new_game()
+                    or kniffel_env.kniffel.get_last().status.value
+                    == KniffelStatus.INIT.value
                 ):
-                    print_header(kniffel, True)
+                    print_header(kniffel_env.kniffel, True)
                     print("    To start please input the dices you just rolled.")
                     dices = input(
                         "    Input your dices in the following style: 1 5 3 2 4: "
                     )
                     dices_list = [int(d) for d in dices.split(" ")]
 
-                    kniffel.mock(DiceSet(mock=dices_list))
+                    kniffel_env.kniffel.mock(DiceSet(mock=dices_list))
 
-                    print_header(kniffel, False, True)
-                elif kniffel.get_last().status.value == KniffelStatus.ATTEMPTING.value:
-                    print_header(kniffel, False)
+                    print_header(kniffel_env.kniffel, False, True)
+                elif (
+                    kniffel_env.kniffel.get_last().status.value
+                    == KniffelStatus.ATTEMPTING.value
+                ):
+                    print_header(kniffel_env.kniffel, False)
 
-                action = agent.forward(kniffel.get_state())
+                state = kniffel_env.get_state()
+                action = agent.forward(state)
                 print()
                 print("    The AI suggest that you do the following action:")
                 print()
@@ -378,7 +388,8 @@ if __name__ == "__main__":
                         input("    Do you want to accept this action? (y/n): ")
                         in yes_list
                     ):
-                        rl.apply_prediction(kniffel, EnumAction(action))
+                        reward, done, info = kniffel_env.predict_and_apply(action)
+                        agent.backward(reward, done)
                 else:
                     while True:
                         if (
@@ -392,17 +403,22 @@ if __name__ == "__main__":
                             )
                             dices_list = [int(d) for d in dices.split(" ")]
 
-                            kniffel.mock(DiceSet(mock=dices_list))
+                            kniffel_env.kniffel.mock(DiceSet(mock=dices_list))
 
                             break
         else:
-            kniffel = Kniffel()
+            kniffel_env = KniffelEnvHelper(
+                env_config=env_config,
+                logging=False,
+                config_file_path="src/config/config.csv",
+                custom_kniffel=False,
+            )
             while True:
-                state = kniffel.get_state()
+                state = kniffel_env.get_state()
                 print()
                 print(KniffelDraw().draw_dices(state[0][0:5]))
                 print()
-                print(KniffelDraw().draw_sheet(kniffel))
+                print(KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
                 action = agent.forward(state)
                 enum_action = EnumAction(action)
@@ -412,9 +428,11 @@ if __name__ == "__main__":
                 )
 
                 if input("    Do you want to accept this action? (y/n): ") in yes_list:
-                    rl.apply_prediction(kniffel, EnumAction(action))
+                    reward, done, info = kniffel_env.predict_and_apply(action)
+                    agent.backward(reward, done)
                 else:
                     new_action = input("    Give the id of the Action: ")
                     new_enum_action = EnumAction(int(new_action))
 
-                    rl.apply_prediction(kniffel, EnumAction(new_enum_action))
+                    reward, done, info = kniffel_env.predict_and_apply(action)
+                    agent.backward(reward, done)

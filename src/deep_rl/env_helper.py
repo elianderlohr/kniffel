@@ -125,9 +125,10 @@ class KniffelEnvHelper:
         reward_game_over=-200,
         reward_bonus=5,
         reward_finish=10,
+        custom_kniffel=False,
     ):
 
-        self.kniffel = Kniffel(logging=logging)
+        self.kniffel = Kniffel(logging=logging, custom=custom_kniffel)
 
         self.logging = logging
 

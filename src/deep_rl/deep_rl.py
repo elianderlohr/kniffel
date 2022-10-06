@@ -636,7 +636,8 @@ class KniffelRL:
         elif self.get_hyperparameter("agent") == "CEM":
             agent.compile()
 
-        print(f"Load weights {path}/{weights_name}.h5f")
+        if logging:
+            print(f"Load weights {path}/{weights_name}.h5f")
 
         agent.load_weights(f"{path}/{weights_name}.h5f".format())
 
@@ -781,7 +782,7 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/current-best-v2",
+        path="output/weights/current-best",
         episodes=5000,
         env_config=env_config,
         weights_name="weights",
@@ -811,28 +812,25 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 5,
-        "n_units_l1": 368,
-        "n_units_l2": 464,
-        "n_units_l3": 320,
-        "n_units_l4": 480,
-        "n_units_l5": 208,
+        "layers": 3,
+        "n_units_l1": 400,
+        "n_units_l2": 480,
+        "n_units_l3": 256,
         "activation": "linear",
-        "dqn_memory_limit": 751000,
-        "dqn_target_model_update": 389.07698601103345,
+        "dqn_memory_limit": 801000,
+        "dqn_target_model_update": 82.04733148423755,
         "enable_dueling_network": True,
-        "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 0.55,
-        "dqn_nb_steps_warmup": 37,
+        "train_policy": "GreedyQPolicy",
+        "dqn_nb_steps_warmup": 15,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.00013442143635690896,
-        "dqn_adam_epsilon": 0.06768437654493833,
+        "dqn_adam_learning_rate": 0.001555815386102815,
+        "dqn_adam_epsilon": 0.06191933645496265,
     }
 
     rl = KniffelRL(
-        load=True,
+        load=False,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
@@ -847,4 +845,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    train(rl, env_config)
+    play(rl, env_config)
