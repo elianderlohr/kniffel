@@ -781,7 +781,7 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-10-03-11_06_13",
+        path="output/weights/current-best-v2",
         episodes=5000,
         env_config=env_config,
         weights_name="weights",
@@ -800,7 +800,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-10-03-18_58_55",
+        load_path="output/weights/current-best-v2",
         logging=False,
     )
 
@@ -832,7 +832,7 @@ if __name__ == "__main__":
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
