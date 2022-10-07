@@ -813,22 +813,21 @@ if __name__ == "__main__":
         "agent": "DQN",
         "windows_length": 1,
         "layers": 3,
-        "n_units_l1": 400,
-        "n_units_l2": 480,
+        "n_units_l1": 416,
+        "n_units_l2": 496,
         "n_units_l3": 256,
         "activation": "linear",
         "dqn_memory_limit": 801000,
-        "dqn_target_model_update": 82.04733148423755,
+        "dqn_target_model_update": 29.564049563072853,
         "enable_dueling_network": True,
         "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 15,
+        "dqn_nb_steps_warmup": 23,
         "batch_size": 32,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.001555815386102815,
-        "dqn_adam_epsilon": 0.06191933645496265,
+        "dqn_adam_learning_rate": 0.0014486372942118175,
+        "dqn_adam_epsilon": 0.06174345193691903,
     }
-
     rl = KniffelRL(
         load=False,
         config_path="src/config/config.csv",
@@ -845,4 +844,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    play(rl, env_config)
+    train(rl, env_config)
