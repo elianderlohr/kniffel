@@ -499,7 +499,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000)
+    ) = rl.train(env_config=env_config, nb_steps=1_000_000)
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("custom_metric", float(custom_metric))
