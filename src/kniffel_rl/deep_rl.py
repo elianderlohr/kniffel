@@ -815,18 +815,18 @@ if __name__ == "__main__":
         "layers": 3,
         "n_units_l1": 416,
         "n_units_l2": 496,
-        "n_units_l3": 256,
+        "n_units_l3": 272,
         "activation": "linear",
         "dqn_memory_limit": 801000,
-        "dqn_target_model_update": 29.564049563072853,
+        "dqn_target_model_update": 4277.661580850757,
         "enable_dueling_network": True,
         "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 23,
+        "dqn_nb_steps_warmup": 13,
         "batch_size": 256,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0014486372942118175,
-        "dqn_adam_epsilon": 0.06174345193691903,
+        "dqn_adam_learning_rate": 0.0014664720972469743,
+        "dqn_adam_epsilon": 0.06434778285007711,
     }
 
     rl = KniffelRL(
