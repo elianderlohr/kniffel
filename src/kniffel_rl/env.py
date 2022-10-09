@@ -17,7 +17,7 @@ sys.path.insert(
 
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.dice_set import DiceSet
-from src.deep_rl.env_helper import KniffelEnvHelper
+from src.kniffel_rl.env_helper import KniffelEnvHelper
 
 
 class KniffelEnv(Env):

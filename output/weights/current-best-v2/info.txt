@@ -5,3 +5,6 @@ Min points: 20
 Average rounds: 35.809
 Max rounds: 39
 Min rounds: 3210
+
+Study Id: 29
+Trial Id: 595

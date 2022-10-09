@@ -40,9 +40,9 @@ sys.path.append(str(path_root))
 import src.kniffel.classes.custom_exceptions as ex
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.options import KniffelOptions
-from src.deep_rl.env import KniffelEnv
-from src.deep_rl.env_helper import KniffelEnvHelper
-from src.deep_rl.env_helper import EnumAction
+from src.kniffel_rl.env import KniffelEnv
+from src.kniffel_rl.env_helper import KniffelEnvHelper
+from src.kniffel_rl.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
 
 
@@ -782,10 +782,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/current-best",
+        path="output/weights/p_date=2022-10-08-18_58_40",
         episodes=5000,
         env_config=env_config,
-        weights_name="weights",
+        weights_name="weights_250000",
         logging=False,
         write=False,
     )
@@ -812,22 +812,26 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 416,
-        "n_units_l2": 496,
-        "n_units_l3": 256,
+        "layers": 5,
+        "n_units_l1": 368,
+        "n_units_l2": 464,
+        "n_units_l3": 320,
+        "n_units_l4": 480,
+        "n_units_l5": 208,
         "activation": "linear",
-        "dqn_memory_limit": 801000,
-        "dqn_target_model_update": 29.564049563072853,
+        "dqn_memory_limit": 751000,
+        "dqn_target_model_update": 389.07698601103345,
         "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 23,
-        "batch_size": 32,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 0.55,
+        "dqn_nb_steps_warmup": 37,
+        "batch_size": 256,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0014486372942118175,
-        "dqn_adam_epsilon": 0.06174345193691903,
+        "dqn_adam_learning_rate": 0.00013442143635690896,
+        "dqn_adam_epsilon": 0.06768437654493833,
     }
+
     rl = KniffelRL(
         load=False,
         config_path="src/config/config.csv",
