@@ -453,7 +453,7 @@ def objective(trial):
     """
 
     base_hp = {
-        "agent": "DQN",
+        "agent": ["DQN"],
         "windows_length": [1],
         "layers": [5],
         "n_units_l1": [368],
