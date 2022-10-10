@@ -801,7 +801,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/current-best-v2",
+        load_path="output/weights/p_date=2022-10-09-09_03_36",
         logging=False,
     )
 
@@ -812,25 +812,28 @@ if __name__ == "__main__":
     hyperparameter = {
         "agent": "DQN",
         "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 416,
-        "n_units_l2": 496,
-        "n_units_l3": 272,
+        "layers": 5,
+        "n_units_l1": 368,
+        "n_units_l2": 464,
+        "n_units_l3": 320,
+        "n_units_l4": 480,
+        "n_units_l5": 208,
         "activation": "linear",
-        "dqn_memory_limit": 801000,
-        "dqn_target_model_update": 4277.661580850757,
+        "dqn_memory_limit": 751000,
+        "dqn_target_model_update": 389.07698601103345,
         "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "dqn_nb_steps_warmup": 13,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 0.55,
+        "dqn_nb_steps_warmup": 37,
         "batch_size": 256,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0014664720972469743,
-        "dqn_adam_epsilon": 0.06434778285007711,
+        "dqn_adam_learning_rate": 0.00013442143635690896,
+        "dqn_adam_epsilon": 0.06768437654493833,
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
