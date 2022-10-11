@@ -363,7 +363,7 @@ class KniffelRL:
         checkpoint_weights_filename = path + "/weights_{step}.h5f"
 
         callbacks = [
-            ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250_000)
+            ModelIntervalCheckpoint(checkpoint_weights_filename, interval=50_000)
         ]
 
         # Log
