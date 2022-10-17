@@ -828,7 +828,7 @@ if __name__ == "__main__":
         "batch_size": 256,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.00013442143635690896,
+        "dqn_adam_learning_rate": 0.000013442143635690896,
         "dqn_adam_epsilon": 0.06768437654493833,
     }
 
