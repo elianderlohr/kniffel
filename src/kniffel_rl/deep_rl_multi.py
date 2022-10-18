@@ -1,7 +1,9 @@
 # Standard imports
 from distutils.log import info
+from itertools import count
 import json
 import os
+from re import I
 import sys
 import warnings
 from datetime import datetime as dt
@@ -809,9 +811,15 @@ def train(rl: KniffelRL, env_config: dict, file_name: str):
 
 import multiprocessing
 import json
+import argparse
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ids", nargs="+", required=True)
+
+    args = parser.parse_args()
 
     jobs = []
 
@@ -819,30 +827,34 @@ if __name__ == "__main__":
     with open(hps_path, "r") as f:
         data = json.load(f)
 
+        counter = 0
         for hp in data["hps"]:
 
-            rl = KniffelRL(
-                load=False,
-                config_path="src/config/config.csv",
-                path_prefix=str(Path(__file__).parents[2]) + "/",
-                hyperparater_base=hp,
-                env_observation_space=20,
-                env_action_space=57,
-            )
+            if str(hp["trial"]) in args.ids:
+                rl = KniffelRL(
+                    load=False,
+                    config_path="src/config/config.csv",
+                    path_prefix=str(Path(__file__).parents[2]) + "/",
+                    hyperparater_base=hp,
+                    env_observation_space=20,
+                    env_action_space=57,
+                )
 
-            env_config = {
-                "reward_roll_dice": 0.5,
-                "reward_game_over": -300,
-                "reward_finish": 300,
-                "reward_bonus": 50,
-            }
+                env_config = {
+                    "reward_roll_dice": 0.5,
+                    "reward_game_over": -300,
+                    "reward_finish": 300,
+                    "reward_bonus": 50,
+                }
 
-            # train(rl, env_config)
+                # train(rl, env_config)
 
-            study_id = hp["study"]
-            trial_id = hp["trial"]
-            file_name = f"study_{study_id}_trial_{trial_id}"
+                study_id = hp["study"]
+                trial_id = hp["trial"]
+                file_name = f"study_{study_id}_trial_{trial_id}"
 
-            p = multiprocessing.Process(target=train, args=(rl, env_config, file_name))
-            jobs.append(p)
-            p.start()
+                p = multiprocessing.Process(
+                    target=train, args=(rl, env_config, file_name)
+                )
+                jobs.append(p)
+                p.start()
