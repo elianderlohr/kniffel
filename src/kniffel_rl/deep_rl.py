@@ -934,4 +934,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    test_all_weights(rl, env_config)
+    train(rl, env_config)
