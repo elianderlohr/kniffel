@@ -537,6 +537,14 @@ class KniffelRL:
         write=False,
         weights_name="weights",
     ):
+        break_counter = 0
+        mean_points = 0
+        max_points = 0
+        min_points = 0
+        mean_rounds = 0
+        max_rounds = 0
+        min_rounds = 0
+
         if random:
             print(f"Play {episodes} random games.")
             print()
@@ -545,7 +553,15 @@ class KniffelRL:
         else:
             print(f"Play {episodes} games from model {path}.")
             print()
-            self.use_model(
+            (
+                break_counter,
+                mean_points,
+                max_points,
+                min_points,
+                mean_rounds,
+                max_rounds,
+                min_rounds,
+            ) = self.use_model(
                 path,
                 episodes,
                 env_config,
@@ -553,6 +569,16 @@ class KniffelRL:
                 logging=logging,
                 write=write,
             )
+
+        return (
+            break_counter,
+            mean_points,
+            max_points,
+            min_points,
+            mean_rounds,
+            max_rounds,
+            min_rounds,
+        )
 
     def play_random(self, episodes, env_config):
         env = KniffelEnv(
@@ -771,7 +797,15 @@ class KniffelRL:
         print(f"Max rounds: {max(rounds)}")
         print(f"Min rounds: {min(rounds)}")
 
-        return break_counter, sum(points) / len(points), max(points), min(points)
+        return (
+            (episodes - break_counter),
+            mean(points),
+            max(points),
+            min(points),
+            mean(rounds),
+            max(rounds),
+            min(rounds),
+        )
 
 
 def play(rl: KniffelRL, env_config: dict):
@@ -782,10 +816,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-10-08-18_58_40",
-        episodes=5000,
+        path="output/weights/current-best-v3-maybe",
+        episodes=2500,
         env_config=env_config,
-        weights_name="weights_250000",
+        weights_name="weights_1000000",
         logging=False,
         write=False,
     )
@@ -804,6 +838,58 @@ def train(rl: KniffelRL, env_config: dict):
         load_path="output/weights/p_date=2022-10-09-09_03_36",
         logging=False,
     )
+
+
+def test_all_weights(rl: KniffelRL, env_config: dict):
+    from pathlib import Path
+
+    file_number = 50000
+
+    while True:
+        weights_file = Path(
+            str(Path(__file__).parents[2])
+            + "/output/weights/current-best-v3-maybe/weights_"
+            + str(file_number)
+            + ".h5f.index"
+        )
+        if weights_file.is_file():
+            print("Load weights: weights_" + str(file_number))
+
+            (
+                break_counter,
+                mean_points,
+                max_points,
+                min_points,
+                mean_rounds,
+                max_rounds,
+                min_rounds,
+            ) = rl.play(
+                path="output/weights/current-best-v3-maybe",
+                episodes=2500,
+                env_config=env_config,
+                weights_name="weights_" + str(file_number),
+                logging=False,
+                write=False,
+            )
+
+            with open(
+                str(Path(__file__).parents[2])
+                + "/output/weights/current-best-v3-maybe/weights_test.txt",
+                "a",
+            ) as myfile:
+                myfile.write("weights_" + str(file_number) + "\n\n")
+                myfile.write(f"  Finished games: {break_counter}\n")
+                myfile.write(f"  Average points: {mean_points}\n")
+                myfile.write(f"  Max points: {max_points}\n")
+                myfile.write(f"  Min points: {min_points}\n")
+                myfile.write(f"  Average rounds: {mean_rounds}\n")
+                myfile.write(f"  Max rounds: {max_rounds}\n")
+                myfile.write(f"  Min rounds: {min_rounds}\n\n")
+
+            file_number += 50000
+
+        else:
+            break
 
 
 if __name__ == "__main__":
@@ -844,8 +930,8 @@ if __name__ == "__main__":
     env_config = {
         "reward_roll_dice": 0.5,
         "reward_game_over": -300,
-        "reward_finish": 300,
+        "reward_finish": 100,
         "reward_bonus": 50,
     }
 
-    train(rl, env_config)
+    test_all_weights(rl, env_config)
