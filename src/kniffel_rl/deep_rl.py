@@ -843,7 +843,7 @@ def train(rl: KniffelRL, env_config: dict):
 def test_all_weights(rl: KniffelRL, env_config: dict):
     from pathlib import Path
 
-    file_number = 50000
+    file_number = 2400000 + 50000
 
     while True:
         weights_file = Path(
@@ -914,7 +914,7 @@ if __name__ == "__main__":
         "batch_size": 256,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.000013442143635690896,
+        "dqn_adam_learning_rate": 0.00013442143635690896,
         "dqn_adam_epsilon": 0.06768437654493833,
     }
 
