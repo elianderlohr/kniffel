@@ -330,12 +330,9 @@ class KniffelRL:
 
         return agent, history
 
-    def calculate_custom_metric(self, l: list) -> float:
-        max = np.max(l)
-        min = np.min(l)
-        mean = np.mean(l)
-
-        return float(mean - (max - min) + max)
+    def calculate_custom_metric(self, l: list):
+        sm_list = [np.power(v, 2) for v in l]
+        return np.mean(sm_list)
 
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)

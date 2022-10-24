@@ -678,8 +678,6 @@ class KniffelRL:
         logging=False,
         write=False,
     ):
-        agent = self.build_use_agent(path, episodes, env_config, weights_name, logging)
-
         points = []
         rounds = []
         break_counter = 0
@@ -696,7 +694,10 @@ class KniffelRL:
             config_file_path=self._config_path,
         )
 
+        agent = self.build_use_agent(path, episodes, env_config, weights_name, logging)
+
         for e in range(1, episodes + 1):
+            agent.reset_states()
             bar.next()
 
             if write:
@@ -736,7 +737,7 @@ class KniffelRL:
                     rounds_counter += 1
 
                 else:
-                    agent.memory.append(state, action, 0, True, False)
+                    # agent.memory.append(state, action, 0, True, False)
 
                     if not info["error"]:
                         points.append(kniffel_env.kniffel.get_points())
@@ -816,10 +817,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/current-best-v3-maybe",
-        episodes=2500,
+        path="output/weights/current-best",
+        episodes=10,
         env_config=env_config,
-        weights_name="weights_1000000",
+        weights_name="weights",
         logging=False,
         write=False,
     )
@@ -843,12 +844,12 @@ def train(rl: KniffelRL, env_config: dict):
 def test_all_weights(rl: KniffelRL, env_config: dict):
     from pathlib import Path
 
-    file_number = 2400000 + 50000
+    file_number = 3450000
 
     while True:
         weights_file = Path(
             str(Path(__file__).parents[2])
-            + "/output/weights/current-best-v3-maybe/weights_"
+            + "/output/weights/p_date=2022-10-17-11_24_00/weights_"
             + str(file_number)
             + ".h5f.index"
         )
@@ -864,7 +865,7 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
                 max_rounds,
                 min_rounds,
             ) = rl.play(
-                path="output/weights/current-best-v3-maybe",
+                path="output/weights/p_date=2022-10-17-11_24_00",
                 episodes=2500,
                 env_config=env_config,
                 weights_name="weights_" + str(file_number),
@@ -874,7 +875,7 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
 
             with open(
                 str(Path(__file__).parents[2])
-                + "/output/weights/current-best-v3-maybe/weights_test.txt",
+                + "/output/weights/p_date=2022-10-17-11_24_00/weights_test.txt",
                 "a",
             ) as myfile:
                 myfile.write("weights_" + str(file_number) + "\n\n")
@@ -934,4 +935,4 @@ if __name__ == "__main__":
         "reward_bonus": 50,
     }
 
-    train(rl, env_config)
+    play(rl, env_config)

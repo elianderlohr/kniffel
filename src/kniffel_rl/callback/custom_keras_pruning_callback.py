@@ -51,12 +51,9 @@ class CustomKerasPruningCallback(Callback):
         self.log_dict["nb_episode_steps"] = []
         self.log_dict["nb_steps"] = []
 
-    def _calculate_custom_metric(self, l: list) -> float:
-        max = np.max(l)
-        min = np.min(l)
-        mean = np.mean(l)
-
-        return float(mean - (max - min) + max)
+    def _calculate_custom_metric(self, l: list):
+        sm_list = [ np.power(v, 2) for v in l]
+        return np.mean(sm_list)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict[str, float]] = None) -> None:
 
@@ -81,8 +78,10 @@ class CustomKerasPruningCallback(Callback):
             current_score = float(episode_reward_custom)
         elif self._monitor == "nb_episode_steps":
             current_score = float(nb_episode_steps_custom)
-        else:    
-            current_score = float(episode_reward_custom + (nb_episode_steps_custom * 10))
+        else:
+            current_score = float(
+                episode_reward_custom + (nb_episode_steps_custom * 10)
+            )
 
         if self.log_dict[self._monitor] is None:
             message = (
