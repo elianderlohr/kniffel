@@ -277,6 +277,8 @@ class KniffelEnvHelper:
         slashed = False
         reward = 0
 
+        simple = True
+
         info = {"finished": False, "error": False}
 
         # Apply action
@@ -286,82 +288,133 @@ class KniffelEnvHelper:
             # Finish Actions
             if EnumAction.FINISH_ONES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.ONES)
-                points = selected_option.points / 1
-                reward += self.rewards_single(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 1
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_TWOS is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.TWOS)
-                points = selected_option.points / 2
-                reward += self.rewards_single(points)
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 2
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_THREES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.THREES)
-                points = selected_option.points / 3
-                reward += self.rewards_single(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 3
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_FOURS is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOURS)
-                points = selected_option.points / 4
-                reward += self.rewards_single(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 4
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_FIVES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FIVES)
-                points = selected_option.points / 5
-                reward += self.rewards_single(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 5
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_SIXES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.SIXES)
-                points = selected_option.points / 6
-                reward += self.rewards_single(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points / 6
+                    reward += self.rewards_single(points)
 
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
-                reward += self.reward_three_times(selected_option.points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    reward += self.reward_three_times(selected_option.points)
 
                 finished_turn = True
             if EnumAction.FINISH_FOUR_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
-                reward += self.reward_four_times(selected_option.points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    reward += self.reward_four_times(selected_option.points)
 
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
-                reward += self.get_config_param(
-                    KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_5
-                )
+
+                if simple:
+                    reward += 25
+                else:
+                    reward += self.get_config_param(
+                        KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_5
+                    )
 
                 finished_turn = True
             if EnumAction.FINISH_SMALL_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
-                reward += self.get_config_param(
-                    KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
-                )
+
+                if simple:
+                    reward += 30
+                else:
+                    reward += self.get_config_param(
+                        KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
+                    )
 
                 finished_turn = True
             if EnumAction.FINISH_LARGE_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
-                reward += self.get_config_param(
-                    KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
-                )
+
+                if simple:
+                    reward += 40
+                else:
+                    reward += self.get_config_param(
+                        KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
+                    )
 
                 finished_turn = True
             if EnumAction.FINISH_KNIFFEL is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
-                reward += self.get_config_param(
-                    KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_5
-                )
+
+                if simple:
+                    reward += 50
+                else:
+                    reward += self.get_config_param(
+                        KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_5
+                    )
 
                 finished_turn = True
             if EnumAction.FINISH_CHANCE is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.CHANCE)
-                points = selected_option.points
-                reward += self.reward_chance(points)
+
+                if simple:
+                    reward += selected_option.points
+                else:
+                    points = selected_option.points
+                    reward += self.reward_chance(points)
 
                 finished_turn = True
 
@@ -634,7 +687,5 @@ class KniffelEnvHelper:
             # Add bonus to reward
             if self.kniffel.is_bonus():
                 reward += self._reward_bonus
-
-            reward += self.kniffel.get_points() / 5
 
         return reward, done, info

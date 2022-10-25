@@ -728,10 +728,10 @@ class KniffelRL:
 
                 log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
 
-                # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel))
-
                 reward, done, info = kniffel_env.predict_and_apply(action)
                 agent.backward(reward, done)
+
+                log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
                 if not done:
                     rounds_counter += 1
@@ -817,12 +817,12 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/current-best",
-        episodes=10,
+        path="output/weights/study_29_trial_779",
+        episodes=5,
         env_config=env_config,
-        weights_name="weights",
+        weights_name="weights_3400000",
         logging=False,
-        write=False,
+        write=True,
     )
 
 
@@ -844,12 +844,16 @@ def train(rl: KniffelRL, env_config: dict):
 def test_all_weights(rl: KniffelRL, env_config: dict):
     from pathlib import Path
 
-    file_number = 3450000
+    file_number = 3000000
+
+    folder = "study_29_trial_779"
 
     while True:
         weights_file = Path(
             str(Path(__file__).parents[2])
-            + "/output/weights/p_date=2022-10-17-11_24_00/weights_"
+            + "/output/weights/"
+            + folder
+            + "/weights_"
             + str(file_number)
             + ".h5f.index"
         )
@@ -865,7 +869,7 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
                 max_rounds,
                 min_rounds,
             ) = rl.play(
-                path="output/weights/p_date=2022-10-17-11_24_00",
+                path="output/weights/" + folder,
                 episodes=2500,
                 env_config=env_config,
                 weights_name="weights_" + str(file_number),
@@ -875,7 +879,9 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
 
             with open(
                 str(Path(__file__).parents[2])
-                + "/output/weights/p_date=2022-10-17-11_24_00/weights_test.txt",
+                + "/output/weights/"
+                + folder
+                + "/weights_test.txt",
                 "a",
             ) as myfile:
                 myfile.write("weights_" + str(file_number) + "\n\n")
@@ -931,8 +937,8 @@ if __name__ == "__main__":
     env_config = {
         "reward_roll_dice": 0.5,
         "reward_game_over": -300,
-        "reward_finish": 0,
-        "reward_bonus": 50,
+        "reward_finish": 50,
+        "reward_bonus": 25,
     }
 
-    play(rl, env_config)
+    train(rl, env_config)
