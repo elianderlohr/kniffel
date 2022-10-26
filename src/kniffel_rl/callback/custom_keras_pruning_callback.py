@@ -52,7 +52,7 @@ class CustomKerasPruningCallback(Callback):
         self.log_dict["nb_steps"] = []
 
     def _calculate_custom_metric(self, l: list):
-        sm_list = [ np.power(v, 2) for v in l]
+        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]
         return np.mean(sm_list)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict[str, float]] = None) -> None:

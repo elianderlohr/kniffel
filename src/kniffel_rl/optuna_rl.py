@@ -331,7 +331,7 @@ class KniffelRL:
         return agent, history
 
     def calculate_custom_metric(self, l: list):
-        sm_list = [np.power(v, 2) for v in l]
+        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]
         return np.mean(sm_list)
 
     def validate_model(self, agent, env):
@@ -522,7 +522,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-server.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-do-user-12591153-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
         print(
@@ -530,7 +530,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-server.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-do-user-12591153-0.b.db.ondigitalocean.com:25060/kniffel",
         )
 
     study.optimize(
