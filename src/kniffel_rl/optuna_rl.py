@@ -418,7 +418,7 @@ class KniffelRL:
 
 def objective(trial):
     base_hp = {
-        "windows_length": [1, 2, 3],
+        "windows_length": [1, 2, 3, 4, 5, 6],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
@@ -449,8 +449,8 @@ def objective(trial):
     env_config = {
         "reward_roll_dice": 0.5,
         "reward_game_over": -300,
-        "reward_finish": 300,
-        "reward_bonus": 50,
+        "reward_finish": 50,
+        "reward_bonus": 25,
     }
 
     rl = KniffelRL(
@@ -522,7 +522,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-server.mysql.database.azure.com:3306/kniffel",
         )
     else:
         print(
@@ -530,7 +530,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-server.mysql.database.azure.com:3306/kniffel",
         )
 
     study.optimize(
