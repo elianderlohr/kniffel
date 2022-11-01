@@ -817,12 +817,12 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/study_29_trial_779",
-        episodes=5,
+        path="output/weights/p_date=2022-10-25-19_28_48",
+        episodes=10000,
         env_config=env_config,
-        weights_name="weights_3400000",
+        weights_name="weights_1100000",
         logging=False,
-        write=True,
+        write=False,
     )
 
 
@@ -844,9 +844,11 @@ def train(rl: KniffelRL, env_config: dict):
 def test_all_weights(rl: KniffelRL, env_config: dict):
     from pathlib import Path
 
-    file_number = 3000000
+    episodes = 2_500
 
-    folder = "study_29_trial_779"
+    file_number = 50000
+
+    folder = "p_date=2022-11-01-15_11_08"
 
     while True:
         weights_file = Path(
@@ -870,7 +872,7 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
                 min_rounds,
             ) = rl.play(
                 path="output/weights/" + folder,
-                episodes=2500,
+                episodes=episodes,
                 env_config=env_config,
                 weights_name="weights_" + str(file_number),
                 logging=False,
@@ -885,7 +887,9 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
                 "a",
             ) as myfile:
                 myfile.write("weights_" + str(file_number) + "\n\n")
-                myfile.write(f"  Finished games: {break_counter}\n")
+                myfile.write(
+                    f"  Finished games: {float(int(break_counter)/int(episodes))}% ({break_counter}/{episodes})\n"
+                )
                 myfile.write(f"  Average points: {mean_points}\n")
                 myfile.write(f"  Max points: {max_points}\n")
                 myfile.write(f"  Min points: {min_points}\n")
@@ -935,10 +939,10 @@ if __name__ == "__main__":
     )
 
     env_config = {
-        "reward_roll_dice": 0.5,
-        "reward_game_over": -300,
+        "reward_roll_dice": 0,
+        "reward_game_over": -375,
         "reward_finish": 50,
         "reward_bonus": 25,
     }
 
-    train(rl, env_config)
+    test_all_weights(rl, env_config)
