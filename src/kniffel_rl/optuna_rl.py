@@ -373,12 +373,13 @@ class KniffelRL:
             custom_metric,
         )
 
-    def train(self, nb_steps=10_000, env_config=""):
+    def train(self, nb_steps=10_000, env_config="", reward_simple=True):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
             env_action_space=self._env_action_space,
             env_observation_space=self._env_observation_space,
+            reward_simple=reward_simple,
         )
 
         agent, _ = self.train_agent(
@@ -417,6 +418,9 @@ class KniffelRL:
 
 
 def objective(trial):
+
+    reward_simple = False
+
     base_hp = {
         "windows_length": [1, 2, 3, 4, 5, 6],
         "batch_size": [32],
@@ -474,7 +478,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000)
+    ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("custom_metric", float(custom_metric))

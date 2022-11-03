@@ -339,14 +339,27 @@ class KniffelRL:
             nb_steps=nb_steps, load_path=load_path, env_config=env_config
         )
 
-    def _train(self, nb_steps=10_000, load_path="", env_config="", logging=False):
+    def _train(
+        self,
+        nb_steps=10_000,
+        load_path="",
+        env_config="",
+        logging=False,
+        reward_simple=True,
+    ):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
             env_observation_space=self._env_observation_space,
             env_action_space=self._env_action_space,
             logging=logging,
+            reward_simple=reward_simple,
         )
+
+        if reward_simple:
+            print("Use simple reward system!")
+        else:
+            print("Use complex reward system!")
 
         actions = env.action_space.n
 
@@ -833,11 +846,14 @@ def train(rl: KniffelRL, env_config: dict):
         rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
+    reward_simple = False
+
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-10-09-09_03_36",
+        load_path="output/weights/p_date=2022-10-19-09_23_40",
         logging=False,
+        reward_simple=reward_simple,
     )
 
 
@@ -922,7 +938,7 @@ if __name__ == "__main__":
         "train_policy": "BoltzmannQPolicy",
         "boltzmann_tau": 0.55,
         "dqn_nb_steps_warmup": 37,
-        "batch_size": 256,
+        "batch_size": 32,
         "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
         "dqn_adam_learning_rate": 0.00013442143635690896,
@@ -945,4 +961,4 @@ if __name__ == "__main__":
         "reward_bonus": 25,
     }
 
-    test_all_weights(rl, env_config)
+    train(rl, env_config)

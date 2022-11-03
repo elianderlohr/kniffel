@@ -36,6 +36,7 @@ class KniffelEnv(Env):
         reward_finish=10,
         env_action_space=57,
         env_observation_space=20,
+        reward_simple=True,
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel_helper = KniffelEnvHelper(
@@ -46,6 +47,7 @@ class KniffelEnv(Env):
             reward_game_over=reward_game_over,
             reward_bonus=reward_bonus,
             reward_finish=reward_finish,
+            reward_simple=reward_simple,
         )
 
         # Actions we can take
