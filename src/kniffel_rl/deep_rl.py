@@ -851,7 +851,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-10-19-09_23_40",
+        load_path="output/weights/current-best-v1",
         logging=False,
         reward_simple=reward_simple,
     )
@@ -864,7 +864,7 @@ def test_all_weights(rl: KniffelRL, env_config: dict):
 
     file_number = 50000
 
-    folder = "p_date=2022-11-01-15_11_08"
+    folder = "current-best-v1"
 
     while True:
         weights_file = Path(
@@ -956,9 +956,9 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -50,
-        "reward_finish": 50,
-        "reward_bonus": 25,
+        "reward_game_over": -25,
+        "reward_finish": 25,
+        "reward_bonus": 10,
     }
 
     train(rl, env_config)
