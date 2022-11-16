@@ -427,7 +427,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN"],
+        "agent": ["DQN", "SARSA", "CEM"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",
@@ -452,9 +452,9 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -50,
-        "reward_finish": 50,
-        "reward_bonus": 25,
+        "reward_game_over": -25,
+        "reward_finish": 25,
+        "reward_bonus": 10,
     }
 
     rl = KniffelRL(
