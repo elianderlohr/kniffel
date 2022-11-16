@@ -14,12 +14,20 @@ import numpy as np
 def play():
 
     try:
-        kniffel = Kniffel(True)
+        kniffel = Kniffel(custom=False)
+
+        print(kniffel.get_state())
+        print()
+        print(np.shape(kniffel.get_state()))
 
         kniffel.mock(DiceSet([6, 6, 6, 1, 2]))
         kniffel.finish_turn(KniffelOptions.THREE_TIMES)
 
         kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
+        print(kniffel.get_state())
+        print()
+        print(np.shape(kniffel.get_state()))
+
         kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
 
         kniffel.mock(DiceSet([6, 6, 6, 5, 5]))

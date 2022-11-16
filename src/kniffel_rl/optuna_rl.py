@@ -119,7 +119,7 @@ class KniffelRL:
         for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l{}".format(i), 16, 512, step=16),
+                    self._trial.suggest_int("n_units_l{}".format(i), 16, 512, step=32),
                     activation="relu",
                 )
             )
@@ -179,7 +179,7 @@ class KniffelRL:
         elif key == "EpsGreedyQPolicy":
 
             policy = EpsGreedyQPolicy(
-                eps=self._trial.suggest_float("eps_greedy_eps", 1e-9, 1e-1)
+                eps=self._trial.suggest_float("eps_greedy_eps", 1e-5, 1e-1)
             )
 
         elif key == "GreedyQPolicy":
@@ -195,7 +195,7 @@ class KniffelRL:
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
-                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-9, 1e-1),
+                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1e-1),
                 tau=self._trial.suggest_float("max_boltzmann_tau", 0.05, 1, step=0.05),
             )
         elif key == "BoltzmannGumbelQPolicy":
@@ -220,13 +220,13 @@ class KniffelRL:
         if self._agent_value == "DQN":
             memory = SequentialMemory(
                 limit=self._trial.suggest_int(
-                    "dqn_memory_limit", 1_000, 1_000_000, step=50_000
+                    "dqn_memory_limit", 500_000, 1_000_000, step=50_000
                 ),
                 window_length=self.window_length,
             )
 
-            dqn_target_model_update = self._trial.suggest_loguniform(
-                "dqn_target_model_update", 1e-05, 1e04
+            dqn_target_model_update = self._trial.suggest_int(
+                "dqn_target_model_update", 1, 1000
             )
 
             enable_dueling_network = self._trial.suggest_categorical(
@@ -238,9 +238,7 @@ class KniffelRL:
                 memory=memory,
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=self._trial.suggest_int(
-                    "dqn_nb_steps_warmup", 10, 25_000, log=1
-                ),
+                nb_steps_warmup=25,
                 enable_dueling_network=enable_dueling_network,
                 target_model_update=int(round(dqn_target_model_update))
                 if dqn_target_model_update > 0
@@ -266,9 +264,7 @@ class KniffelRL:
                 model=model,
                 memory=memory,
                 nb_actions=actions,
-                nb_steps_warmup=self._trial.suggest_int(
-                    "cem_nb_steps_warmup", 10, 25_000, log=1
-                ),
+                nb_steps_warmup=25,
                 batch_size=self._return_trial("batch_size"),
                 memory_interval=memory_interval,
             )
@@ -279,9 +275,7 @@ class KniffelRL:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 test_policy=self.get_policy(self._return_trial("test_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=self._trial.suggest_int(
-                    "sarsa_nb_steps_warmup", 10, 25_000, log=1
-                ),
+                nb_steps_warmup=25,
                 delta_clip=self._trial.suggest_float("sarsa_delta_clip", 0.01, 0.99),
                 gamma=self._trial.suggest_float("sarsa_gamma", 0.01, 0.99),
             )
@@ -302,11 +296,11 @@ class KniffelRL:
                 Adam(
                     learning_rate=self._trial.suggest_float(
                         "{}_adam_learning_rate".format(self._agent_value.lower()),
-                        1e-9,
+                        1e-5,
                         1e-1,
                     ),
                     epsilon=self._trial.suggest_float(
-                        "{}_adam_epsilon".format(self._agent_value.lower()), 1e-9, 1e-1
+                        "{}_adam_epsilon".format(self._agent_value.lower()), 1e-5, 1e-1
                     ),
                 ),
             )
@@ -427,7 +421,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN", "SARSA", "CEM"],
+        "agent": ["DQN"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",

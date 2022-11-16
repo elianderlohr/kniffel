@@ -830,10 +830,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-10-25-19_28_48",
-        episodes=10000,
+        path="output/weights/p_date=2022-11-13-22_16_59",
+        episodes=2000,
         env_config=env_config,
-        weights_name="weights_1100000",
+        weights_name="weights_3850000",
         logging=False,
         write=False,
     )
@@ -961,4 +961,4 @@ if __name__ == "__main__":
         "reward_bonus": 10,
     }
 
-    train(rl, env_config)
+    play(rl, env_config)
