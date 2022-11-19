@@ -190,16 +190,54 @@ class Kniffel:
 
         return 0
 
+    def create_one_hot_dice_encoding(self, status: list, dice: int):
+        for i in range(1, 7):
+            if i == dice:
+                status.append(1)
+            else:
+                status.append(0)
+
+        return status
+
     def get_state(self):
         """Get state of game as list of integers
 
         :return: state of game as list of integer
         """
         turn = self.get_last()
-        status = [dice / 6 for dice in turn.get_latest().get_as_array()]
+
+        status = list()
+        status = self.create_one_hot_dice_encoding(
+            status, turn.get_latest().get_as_array()[0]
+        )
+        status = self.create_one_hot_dice_encoding(
+            status, turn.get_latest().get_as_array()[1]
+        )
+        status = self.create_one_hot_dice_encoding(
+            status, turn.get_latest().get_as_array()[2]
+        )
+        status = self.create_one_hot_dice_encoding(
+            status, turn.get_latest().get_as_array()[3]
+        )
+        status = self.create_one_hot_dice_encoding(
+            status, turn.get_latest().get_as_array()[4]
+        )
 
         # Tries played
-        status.append(self.get_last().count() / 3)
+        if self.get_last().count() == 1:
+            status.append(1)
+            status.append(0)
+            status.append(0)
+
+        if self.get_last().count() == 2:
+            status.append(0)
+            status.append(1)
+            status.append(0)
+
+        if self.get_last().count() == 3:
+            status.append(0)
+            status.append(0)
+            status.append(1)
 
         # Bonus ?
         status.append(1 if self.is_bonus() else 0)

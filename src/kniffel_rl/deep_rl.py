@@ -213,7 +213,7 @@ class KniffelRL:
                 memory=memory,
                 policy=self.get_policy("train_policy"),
                 nb_actions=actions,
-                nb_steps_warmup=self.get_hyperparameter("dqn_nb_steps_warmup"),
+                nb_steps_warmup=25,
                 enable_dueling_network=enable_dueling_network,
                 target_model_update=int(round(dqn_target_model_update))
                 if dqn_target_model_update > 0
@@ -851,7 +851,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/current-best-v1",
+        load_path="output/weights/p_date=2022-11-18-19_03_46",
         logging=False,
         reward_simple=reward_simple,
     )
@@ -924,25 +924,20 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 5,
-        "n_units_l1": 368,
-        "n_units_l2": 464,
-        "n_units_l3": 320,
-        "n_units_l4": 480,
-        "n_units_l5": 208,
+        "windows_length": 3,
+        "layers": 2,
+        "n_units_l1": 432,
+        "n_units_l2": 144,
         "activation": "linear",
-        "dqn_memory_limit": 751000,
-        "dqn_target_model_update": 389.07698601103345,
+        "dqn_memory_limit": 900000,
+        "dqn_target_model_update": 93,
         "enable_dueling_network": True,
-        "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 0.55,
-        "dqn_nb_steps_warmup": 37,
-        "batch_size": 32,
-        "dqn_enable_double_dqn": False,
+        "train_policy": "GreedyQPolicy",
+        "batch_size": 256,
+        "dqn_enable_double_dqn": True,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.00013442143635690896,
-        "dqn_adam_epsilon": 0.06768437654493833,
+        "dqn_adam_learning_rate": 0.0009192159201494121,
+        "dqn_adam_epsilon": 0.030539090477580473,
     }
 
     rl = KniffelRL(
@@ -950,7 +945,7 @@ if __name__ == "__main__":
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
-        env_observation_space=20,
+        env_observation_space=47,
         env_action_space=57,
     )
 
@@ -961,4 +956,4 @@ if __name__ == "__main__":
         "reward_bonus": 10,
     }
 
-    play(rl, env_config)
+    train(rl, env_config)

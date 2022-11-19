@@ -34,7 +34,7 @@ class DiceSet:
         return self.dices
 
     def get_as_array(self):
-        return [v.get() for k, v in self.dices.items()]
+        return [v.get() for _, v in self.dices.items()]
 
     def get_dice(self, index: int):
         """
