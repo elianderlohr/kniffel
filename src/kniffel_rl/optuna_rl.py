@@ -419,7 +419,7 @@ def objective(trial):
         "windows_length": [1, 2, 3, 4, 5, 6],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
-        "activation": ["linear"],
+        "activation": ["linear", "relu", "sigmoid", "softmax"],
         "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN"],
         "linear_inner_policy": [
