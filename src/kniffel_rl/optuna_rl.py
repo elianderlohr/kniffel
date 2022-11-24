@@ -456,7 +456,7 @@ def objective(trial):
         config_path="src/config/config.csv",
         path_prefix="",
         trial=trial,
-        env_observation_space=20,
+        env_observation_space=47,
         env_action_space=57,
     )
 

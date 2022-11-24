@@ -343,7 +343,7 @@ class KniffelRL:
         self,
         nb_steps=10_000,
         load_path="",
-        env_config="",
+        env_config={},
         logging=False,
         reward_simple=True,
     ):
@@ -830,10 +830,10 @@ def play(rl: KniffelRL, env_config: dict):
         env_config (dict): environment dict
     """
     rl.play(
-        path="output/weights/p_date=2022-11-13-22_16_59",
+        path="output/weights/p_date=2022-11-24-12_53_40",
         episodes=2000,
         env_config=env_config,
-        weights_name="weights_3850000",
+        weights_name="weights",
         logging=False,
         write=False,
     )
@@ -851,7 +851,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-11-18-19_03_46",
+        load_path="output/weights/p_date=2022-11-24-12_53_40",
         logging=False,
         reward_simple=reward_simple,
     )
@@ -924,24 +924,26 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 3,
-        "layers": 2,
-        "n_units_l1": 432,
-        "n_units_l2": 144,
-        "activation": "linear",
-        "dqn_memory_limit": 900000,
-        "dqn_target_model_update": 93,
+        "windows_length": 1,
+        "layers": 3,
+        "n_units_l1": 464,
+        "n_units_l2": 272,
+        "n_units_l3": 400,
+        "activation": "relu",
+        "dqn_memory_limit": 550000,
+        "dqn_target_model_update": 39,
         "enable_dueling_network": True,
-        "train_policy": "GreedyQPolicy",
-        "batch_size": 256,
-        "dqn_enable_double_dqn": True,
+        "train_policy": "BoltzmannGumbelQPolicy",
+        "boltzmann_gumbel_C": 0.030300330988162844,
+        "batch_size": 32,
+        "dqn_enable_double_dqn": False,
         "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0009192159201494121,
-        "dqn_adam_epsilon": 0.030539090477580473,
+        "dqn_adam_learning_rate": 0.0014278989017746766,
+        "dqn_adam_epsilon": 0.09423713423697956,
     }
 
     rl = KniffelRL(
-        load=False,
+        load=True,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,

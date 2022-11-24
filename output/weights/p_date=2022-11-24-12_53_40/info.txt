@@ -1,0 +1,7 @@
+Finished games: 0/2000
+Average points: 109.4225
+Max points: 188
+Min points: 48
+Average rounds: 22.1945
+Max rounds: 33
+Min rounds: 12
