@@ -8,6 +8,7 @@ from datetime import datetime as dt
 from pathlib import Path
 from statistics import mean
 from progress.bar import IncrementalBar
+from datetime import datetime
 
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -108,7 +109,9 @@ class KniffelRL:
 
         for i in range(1, self.get_hyperparameter("layers") + 1):
             model.add(
-                Dense(self.get_hyperparameter("n_units_l" + str(i)), activation="relu")
+                Dense(
+                    self.get_hyperparameter("n_units_l" + str(i)), activation="linear"
+                )
             )
 
         model.add(Dense(actions, activation=self.get_hyperparameter("activation")))
@@ -347,6 +350,8 @@ class KniffelRL:
         logging=False,
         reward_simple=True,
     ):
+        episodes = 2000
+
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
@@ -404,7 +409,34 @@ class KniffelRL:
         # save weights and configuration as json
         agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
-        self.play(path, 10_000, env_config)
+        (
+            break_counter,
+            mean_points,
+            max_points,
+            min_points,
+            mean_rounds,
+            max_rounds,
+            min_rounds,
+        ) = self.play(path, episodes, env_config)
+
+        # datetime object containing current date and time
+        now = datetime.now()
+
+        # dd/mm/YY H:M:S
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+        result = f"""
+Datetime: {dt_string}
+    Finished games: {break_counter}/{episodes}
+    Average points: {mean_points}
+    Max points: {max_points}
+    Min points: {min_points}
+    Average rounds: {mean_rounds}
+    Max rounds: {max_rounds}
+    Min rounds: {min_rounds}
+        """
+
+        self._append_file(path=f"{path}/info.txt", content=result)
 
     def apply_prediction(
         self, kniffel: Kniffel, enum_action: EnumAction, logging=False
@@ -737,9 +769,12 @@ class KniffelRL:
                 enum_action = EnumAction(action)
 
                 log_csv.append(f"##  Try: {rounds_counter}\n")
+                log_csv.append(
+                    f"##  Attempts left: {kniffel_env.kniffel.get_last().attempts_left()}/3\n"
+                )
                 log_csv.append(f"##  Action: {enum_action}\n")
 
-                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:5]))
+                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
 
                 reward, done, info = kniffel_env.predict_and_apply(action)
                 agent.backward(reward, done)
@@ -822,24 +857,56 @@ class KniffelRL:
         )
 
 
-def play(rl: KniffelRL, env_config: dict):
+def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "weights"):
     """Play a model
 
     Args:
         rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    rl.play(
-        path="output/weights/p_date=2022-11-24-12_53_40",
-        episodes=2000,
+    episodes = 2000
+    path = f"output/weights/{dir_name}"
+
+    (
+        break_counter,
+        mean_points,
+        max_points,
+        min_points,
+        mean_rounds,
+        max_rounds,
+        min_rounds,
+    ) = rl.play(
+        path=path,
+        episodes=episodes,
         env_config=env_config,
-        weights_name="weights",
+        weights_name=weights_name,
         logging=False,
         write=False,
     )
 
+    from datetime import datetime
 
-def train(rl: KniffelRL, env_config: dict):
+    # datetime object containing current date and time
+    now = datetime.now()
+
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+    result = f"""
+Datetime: {dt_string}
+    Finished games: {break_counter}/{episodes}
+    Average points: {mean_points}
+    Max points: {max_points}
+    Min points: {min_points}
+    Average rounds: {mean_rounds}
+    Max rounds: {max_rounds}
+    Min rounds: {min_rounds}
+    """
+
+    rl._append_file(path=f"{path}/info.txt", content=result)
+
+
+def train(rl: KniffelRL, env_config: dict, dir_name: str):
     """Train a model
 
     Args:
@@ -851,7 +918,7 @@ def train(rl: KniffelRL, env_config: dict):
     rl._train(
         nb_steps=20_000_000,
         env_config=env_config,
-        load_path="output/weights/p_date=2022-11-24-12_53_40",
+        load_path=f"output/weights/{dir_name}",
         logging=False,
         reward_simple=reward_simple,
     )
@@ -924,26 +991,24 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 3,
-        "n_units_l1": 464,
-        "n_units_l2": 272,
-        "n_units_l3": 400,
-        "activation": "relu",
-        "dqn_memory_limit": 550000,
-        "dqn_target_model_update": 39,
-        "enable_dueling_network": True,
-        "train_policy": "BoltzmannGumbelQPolicy",
-        "boltzmann_gumbel_C": 0.030300330988162844,
+        "windows_length": 2,
+        "layers": 1,
+        "layer_activation": "tanh",
+        "n_units_l1": 96,
+        "activation": "linear",
+        "dqn_memory_limit": 850000,
+        "dqn_target_model_update": 297,
+        "enable_dueling_network": False,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 0.05,
         "batch_size": 32,
-        "dqn_enable_double_dqn": False,
-        "dqn_dueling_option": "max",
-        "dqn_adam_learning_rate": 0.0014278989017746766,
-        "dqn_adam_epsilon": 0.09423713423697956,
+        "dqn_enable_double_dqn": True,
+        "dqn_adam_learning_rate": 0.001652452803570361,
+        "dqn_adam_epsilon": 0.0030694127483911677,
     }
 
     rl = KniffelRL(
-        load=True,
+        load=False,
         config_path="src/config/config.csv",
         path_prefix=str(Path(__file__).parents[2]) + "/",
         hyperparater_base=hyperparameter,
@@ -958,4 +1023,7 @@ if __name__ == "__main__":
         "reward_bonus": 10,
     }
 
-    train(rl, env_config)
+    dir_name = "p_date=2022-12-01-13_53_04"
+
+    # play(rl, env_config, dir_name, weights_name="weights_250000")
+    train(rl, env_config, dir_name)

@@ -207,24 +207,27 @@ class KniffelEnvHelper:
         else:
             return alternative
 
-    def rewards_single(self, dice_count) -> float:
+    def count_same_dice(self, dice: list) -> int:
+        return max(dice.count(i) for i in dice)
+
+    def rewards_single(self, kniffel_type: KniffelConfig, dice_count: int) -> float:
         """Calculate reward based on amount of dices used for finishing the round.
 
         :param dice_count: amount of dices
         :return: reward
         """
         if dice_count == 0:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_0)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_0)
         elif dice_count == 1:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_1)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_1)
         elif dice_count == 2:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_2)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_2)
         elif dice_count == 3:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_3)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_3)
         elif dice_count == 4:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_4)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_4)
         else:
-            return self.get_config_param(KniffelConfig.ONES, KniffelConfig.COLUMN_5)
+            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_5)
 
     def reward_chance(self, score) -> float:
         reward = 0
@@ -288,6 +291,8 @@ class KniffelEnvHelper:
         # Apply action
         enum_action = EnumAction(action)
 
+        dices = self.kniffel.get_last().get_latest().get_as_array()
+
         try:
             # Finish Actions
             if EnumAction.FINISH_ONES is enum_action:
@@ -297,11 +302,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 1
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.ONES, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_TWOS is enum_action:
@@ -310,11 +311,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 2
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.TWOS, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_THREES is enum_action:
@@ -324,11 +321,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 3
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.THREES, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_FOURS is enum_action:
@@ -338,11 +331,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 4
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.FOURS, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_FIVES is enum_action:
@@ -352,11 +341,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 5
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.FIVES, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_SIXES is enum_action:
@@ -366,11 +351,7 @@ class KniffelEnvHelper:
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 6
-                    reward += (
-                        math.sqrt(selected_option.points * self.rewards_single(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.rewards_single(KniffelConfig.SIXES, int(points))
 
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES is enum_action:
@@ -388,14 +369,7 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    reward += (
-                        math.sqrt(
-                            selected_option.points
-                            * self.reward_four_times(selected_option.points)
-                        )
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.reward_four_times(selected_option.points)
 
                 finished_turn = True
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
@@ -404,15 +378,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += 25
                 else:
-                    reward += (
-                        math.sqrt(
-                            25
-                            * self.get_config_param(
-                                KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_5
-                            )
-                        )
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
+                    reward += self.get_config_param(
+                        KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_5
                     )
 
                 finished_turn = True
@@ -422,15 +389,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += 30
                 else:
-                    reward += (
-                        math.sqrt(
-                            30
-                            * self.get_config_param(
-                                KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
-                            )
-                        )
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
+                    reward += self.get_config_param(
+                        KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
                     )
 
                 finished_turn = True
@@ -440,15 +400,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += 40
                 else:
-                    reward += (
-                        math.sqrt(
-                            40
-                            * self.get_config_param(
-                                KniffelConfig.LARGE_STREET, KniffelConfig.COLUMN_5
-                            )
-                        )
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
+                    reward += self.get_config_param(
+                        KniffelConfig.LARGE_STREET, KniffelConfig.COLUMN_5
                     )
 
                 finished_turn = True
@@ -458,15 +411,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += 50
                 else:
-                    reward += (
-                        math.sqrt(
-                            50
-                            * self.get_config_param(
-                                KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_5
-                            )
-                        )
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
+                    reward += self.get_config_param(
+                        KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_5
                     )
 
                 finished_turn = True
@@ -478,11 +424,7 @@ class KniffelEnvHelper:
                 else:
                     points = selected_option.points
 
-                    reward += (
-                        math.sqrt(points * self.reward_chance(points))
-                        * 10.0
-                        * float(self.kniffel.get_last().attempts_left())
-                    )
+                    reward += self.reward_chance(points)
 
                 finished_turn = True
 
@@ -755,7 +697,5 @@ class KniffelEnvHelper:
             # Add bonus to reward
             if self.kniffel.is_bonus():
                 reward += self._reward_bonus
-
-        reward += reward / self.kniffel.turns_left()
 
         return reward, done, info

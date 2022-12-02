@@ -9,9 +9,9 @@ from src.kniffel_rl.env_helper import KniffelConfig
 
 env_config = {
     "reward_roll_dice": 0,
-    "reward_game_over": -500,
-    "reward_finish": 150,
-    "reward_bonus": 50,
+    "reward_game_over": -15,
+    "reward_finish": 15,
+    "reward_bonus": 5,
 }
 
 
@@ -288,7 +288,10 @@ def test_finish_game():
     score = 0
 
     env = KniffelEnv(
-        env_config, logging=False, config_file_path="src/config/config.csv"
+        env_config,
+        logging=False,
+        config_file_path="src/config/config.csv",
+        reward_simple=False,
     )
 
     # try 1
@@ -341,7 +344,7 @@ def test_finish_game():
 
     # try 13
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
-    # assert score == 742
+    assert score == 742
 
     # Reset Env
     env.reset()

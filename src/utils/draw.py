@@ -77,19 +77,19 @@ class KniffelDraw:
         sheet = f"""     ____________________________________      ____________________________________
     | CATEGORY       | STATE  |  POINTS  |    | CATEGORY       | STATE  |  POINTS  |
     |::::::::::::::::|::::::::|::::::::::|    |::::::::::::::::|::::::::|::::::::::|
-    | ONES           |   {self.get_float(state[7], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.ONES, KniffelOptions.ONES_SLASH))}    |    | THREE TIMES    |   {self.get_float(state[13], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREE_TIMES, KniffelOptions.THREE_TIMES_SLASH))}    |
+    | ONES           |   {self.get_float(state[34], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.ONES, KniffelOptions.ONES_SLASH))}    |    | THREE TIMES    |   {self.get_float(state[40], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREE_TIMES, KniffelOptions.THREE_TIMES_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | TWOS           |   {self.get_float(state[8], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.TWOS, KniffelOptions.TWOS_SLASH))}    |    | FOURS TIMES    |   {self.get_float(state[14], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOUR_TIMES, KniffelOptions.FOUR_TIMES_SLASH))}    |
+    | TWOS           |   {self.get_float(state[35], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.TWOS, KniffelOptions.TWOS_SLASH))}    |    | FOURS TIMES    |   {self.get_float(state[41], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOUR_TIMES, KniffelOptions.FOUR_TIMES_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | THREES         |   {self.get_float(state[9], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREES, KniffelOptions.THREES_SLASH))}    |    | FULL HOUSE     |   {self.get_float(state[15], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FULL_HOUSE, KniffelOptions.FULL_HOUSE_SLASH))}    |
+    | THREES         |   {self.get_float(state[36], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.THREES, KniffelOptions.THREES_SLASH))}    |    | FULL HOUSE     |   {self.get_float(state[42], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FULL_HOUSE, KniffelOptions.FULL_HOUSE_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | FOURS          |   {self.get_float(state[10], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOURS, KniffelOptions.FOURS_SLASH))}    |    | SMALL STREET   |   {self.get_float(state[16], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SMALL_STREET, KniffelOptions.SMALL_STREET_SLASH))}    |
+    | FOURS          |   {self.get_float(state[37], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FOURS, KniffelOptions.FOURS_SLASH))}    |    | SMALL STREET   |   {self.get_float(state[43], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SMALL_STREET, KniffelOptions.SMALL_STREET_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | FIVES          |   {self.get_float(state[11], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FIVES, KniffelOptions.FIVES_SLASH))}    |    | LARGE STREET   |   {self.get_float(state[17], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.LARGE_STREET, KniffelOptions.LARGE_STREET_SLASH))}    |
+    | FIVES          |   {self.get_float(state[38], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.FIVES, KniffelOptions.FIVES_SLASH))}    |    | LARGE STREET   |   {self.get_float(state[44], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.LARGE_STREET, KniffelOptions.LARGE_STREET_SLASH))}    |
     |================|========|==========|    |================|========|==========|
-    | SIXES          |   {self.get_float(state[12], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SIXES, KniffelOptions.SIXES_SLASH))}    |    | KNIFFEL        |   {self.get_float(state[18], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.KNIFFEL, KniffelOptions.KNIFFEL_SLASH))}    |
+    | SIXES          |   {self.get_float(state[39], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SIXES, KniffelOptions.SIXES_SLASH))}    |    | KNIFFEL        |   {self.get_float(state[45], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.KNIFFEL, KniffelOptions.KNIFFEL_SLASH))}    |
     |################|########|##########|    |================|========|==========|
-    |  BONUS         |   {self.get_float(state[6], state=True)}   |    {self.get_float(35 if kniffel.is_bonus() else 0)}    |    | CHANCE         |   {self.get_float(state[19], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.CHANCE, KniffelOptions.CHANCE_SLASH))}    |
+    |  BONUS         |   {self.get_float(state[33], state=True)}   |    {self.get_float(35 if kniffel.is_bonus() else 0)}    |    | CHANCE         |   {self.get_float(state[46], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.CHANCE, KniffelOptions.CHANCE_SLASH))}    |
     |================|========|==========|    |################|########|##########|
     |  TOP POINTS    |        |   {self.get_long_float(kniffel.get_points_top())}    |    |  BOTTOM POINTS |        |   {self.get_long_float(kniffel.get_points_bottom())}    |
     |################|########|##########|    |================|========|==========|
@@ -136,6 +136,17 @@ class KniffelDraw:
         else:
             return str(round(f, dec))
 
+    def get_dice(self, dice_array: list) -> int:
+        dice = 0
+        counter = 0
+
+        for val in dice_array:
+            counter += 1
+            if val == 1:
+                dice = counter
+                break
+        return dice
+
     def draw_dices(self, dice_array: list) -> str:
         """Return dices as ascii art
 
@@ -148,8 +159,17 @@ class KniffelDraw:
         lines[2] = []
         lines[3] = []
         lines[4] = []
-        for dice_scaled in dice_array:
-            dice = round(dice_scaled * 6)
+
+        dices = [
+            self.get_dice(dice_array[0:6]),
+            self.get_dice(dice_array[6:12]),
+            self.get_dice(dice_array[12:18]),
+            self.get_dice(dice_array[18:24]),
+            self.get_dice(dice_array[24:30]),
+        ]
+
+        for dice_scaled in dices:
+            dice = round(dice_scaled)
 
             ascii = ""
             if dice == 1:

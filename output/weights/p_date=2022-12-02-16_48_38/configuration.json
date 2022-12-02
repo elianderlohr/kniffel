@@ -1,0 +1,17 @@
+{
+    "agent": "DQN",
+    "windows_length": 2,
+    "layers": 1,
+    "layer_activation": "tanh",
+    "n_units_l1": 96,
+    "activation": "linear",
+    "dqn_memory_limit": 850000,
+    "dqn_target_model_update": 297,
+    "enable_dueling_network": false,
+    "train_policy": "BoltzmannQPolicy",
+    "boltzmann_tau": 0.05,
+    "batch_size": 32,
+    "dqn_enable_double_dqn": true,
+    "dqn_adam_learning_rate": 0.001652452803570361,
+    "dqn_adam_epsilon": 0.0030694127483911677
+}

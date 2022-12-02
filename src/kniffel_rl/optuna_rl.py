@@ -115,12 +115,17 @@ class KniffelRL:
             )
         )
 
-        layers = self._trial.suggest_int("layers", 2, 5)
+        layers = self._trial.suggest_int("layers", 1, 4)
+
+        layer_activation = self._trial.suggest_categorical(
+            "layer_activation", ["relu", "linear", "tanh"]
+        )
+
         for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l{}".format(i), 16, 512, step=32),
-                    activation="relu",
+                    self._trial.suggest_int("n_units_l{}".format(i), 32, 512, step=32),
+                    activation=layer_activation,
                 )
             )
 
@@ -297,7 +302,7 @@ class KniffelRL:
                     learning_rate=self._trial.suggest_float(
                         "{}_adam_learning_rate".format(self._agent_value.lower()),
                         1e-5,
-                        1e-1,
+                        1e-2,
                     ),
                     epsilon=self._trial.suggest_float(
                         "{}_adam_epsilon".format(self._agent_value.lower()), 1e-5, 1e-1
@@ -416,10 +421,10 @@ def objective(trial):
     reward_simple = False
 
     base_hp = {
-        "windows_length": [1, 2, 3, 4, 5, 6],
+        "windows_length": [1, 2, 3, 4],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
-        "activation": ["linear", "relu", "sigmoid", "softmax"],
+        "activation": ["linear", "relu", "sigmoid", "tanh"],
         "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN"],
         "linear_inner_policy": [
@@ -428,12 +433,12 @@ def objective(trial):
             "MaxBoltzmannQPolicy",
         ],
         "train_policy": [
-            "LinearAnnealedPolicy",
+            # "LinearAnnealedPolicy",
             "EpsGreedyQPolicy",
             "GreedyQPolicy",
             "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-            "BoltzmannGumbelQPolicy",
+            # "MaxBoltzmannQPolicy",
+            # "BoltzmannGumbelQPolicy",
         ],
         "test_policy": [
             "LinearAnnealedPolicy",
@@ -475,9 +480,9 @@ def objective(trial):
     ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
 
     trial.set_user_attr("server", str(server))
-    trial.set_user_attr("custom_metric", float(custom_metric))
-    trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
-    trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
+    # trial.set_user_attr("custom_metric", float(custom_metric))
+    # trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
+    # trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
     trial.set_user_attr("param", trial.params)
 
     # trial.set_user_attr("episode_reward", list(episode_reward))
@@ -520,7 +525,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-do-user-12591153-0.b.db.ondigitalocean.com:25060/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
         )
     else:
         print(
@@ -528,12 +533,12 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel-do-user-12591153-0.b.db.ondigitalocean.com:25060/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
         )
 
     study.optimize(
         objective,
-        n_trials=1000,
+        n_trials=12,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
