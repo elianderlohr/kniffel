@@ -117,15 +117,13 @@ class KniffelRL:
 
         layers = self._trial.suggest_int("layers", 1, 4)
 
-        layer_activation = self._trial.suggest_categorical(
-            "layer_activation", ["relu", "linear", "tanh"]
-        )
-
         for i in range(1, layers + 1):
             model.add(
                 Dense(
                     self._trial.suggest_int("n_units_l{}".format(i), 32, 512, step=32),
-                    activation=layer_activation,
+                    activation=self._trial.suggest_categorical(
+                        "n_activation_l{}".format(i), ["relu", "linear", "tanh"]
+                    ),
                 )
             )
 
@@ -451,9 +449,9 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -25,
-        "reward_finish": 25,
-        "reward_bonus": 10,
+        "reward_game_over": -15,
+        "reward_finish": 15,
+        "reward_bonus": 5,
     }
 
     rl = KniffelRL(

@@ -110,12 +110,13 @@ class KniffelRL:
         for i in range(1, self.get_hyperparameter("layers") + 1):
             model.add(
                 Dense(
-                    self.get_hyperparameter("n_units_l" + str(i)), activation="linear"
+                    self.get_hyperparameter("n_units_l" + str(i)),
+                    activation=self.get_hyperparameter("n_activation_l{}".format(i)),
                 )
             )
 
         model.add(Dense(actions, activation=self.get_hyperparameter("activation")))
-        # model.summary()
+        model.summary()
         return model
 
     def get_inner_policy(self):
@@ -893,7 +894,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "we
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     result = f"""
-Datetime: {dt_string}
+Datetime: {dt_string}, weights_name: {weights_name}
     Finished games: {break_counter}/{episodes}
     Average points: {mean_points}
     Max points: {max_points}
@@ -991,20 +992,21 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 2,
+        "windows_length": 1,
         "layers": 1,
-        "layer_activation": "tanh",
-        "n_units_l1": 96,
-        "activation": "linear",
-        "dqn_memory_limit": 850000,
-        "dqn_target_model_update": 297,
-        "enable_dueling_network": False,
-        "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 0.05,
+        "n_units_l1": 448,
+        "n_activation_l1": "linear",
+        "activation": "sigmoid",
+        "dqn_memory_limit": 800000,
+        "dqn_target_model_update": 616,
+        "enable_dueling_network": True,
+        "train_policy": "EpsGreedyQPolicy",
+        "eps_greedy_eps": 0.015906713205054695,
         "batch_size": 32,
-        "dqn_enable_double_dqn": True,
-        "dqn_adam_learning_rate": 0.001652452803570361,
-        "dqn_adam_epsilon": 0.0030694127483911677,
+        "dqn_enable_double_dqn": False,
+        "dqn_dueling_option": "avg",
+        "dqn_adam_learning_rate": 0.005080986673746435,
+        "dqn_adam_epsilon": 0.021335027020516872,
     }
 
     rl = KniffelRL(
@@ -1018,12 +1020,12 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -25,
-        "reward_finish": 25,
-        "reward_bonus": 10,
+        "reward_game_over": -15,
+        "reward_finish": 15,
+        "reward_bonus": 5,
     }
 
-    dir_name = "p_date=2022-12-01-13_53_04"
+    dir_name = "p_date=2022-12-05-16_43_35"
 
-    # play(rl, env_config, dir_name, weights_name="weights_250000")
+    # play(rl, env_config, dir_name, weights_name="weights")
     train(rl, env_config, dir_name)
