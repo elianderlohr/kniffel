@@ -232,24 +232,30 @@ class KniffelEnvHelper:
     def reward_chance(self, score) -> float:
         reward = 0
         if score >= 5:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_0)
-        if score >= 10:
             reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_1)
-        if score >= 15:
+        if score >= 10:
             reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_2)
-        if score >= 20:
+        if score >= 15:
             reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_3)
-        if score >= 25:
+        if score >= 20:
             reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_4)
-        if score >= 30:
+        if score >= 25:
             reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_5)
 
         return reward
 
-    def reward_three_times(self, score) -> float:
+    def reward_three_times(self, score: int) -> float:
         reward = 0
 
-        if score >= 1:
+        if score >= 5:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_1
+            )
+        if score >= 10:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_2
+            )
+        if score >= 15:
             reward = self.get_config_param(
                 KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_3
             )
@@ -267,13 +273,25 @@ class KniffelEnvHelper:
     def reward_four_times(self, score) -> float:
         reward = 0
 
-        if score >= 1:
+        if score >= 5:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_1
+            )
+        if score >= 10:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_2
+            )
+        if score >= 15:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_3
+            )
+        if score >= 20:
             reward = self.get_config_param(
                 KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_4
             )
         if score >= 25:
             reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_5
+                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_5
             )
 
         return reward

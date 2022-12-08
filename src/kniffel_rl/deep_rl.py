@@ -793,10 +793,15 @@ Datetime: {dt_string}
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
-                        log_csv.append(f"\nFinished/Error:")
-                        log_csv.append(f"\n  Prediction Allowed: False")
-                        log_csv.append(f"\n  Error: False")
-                        log_csv.append(f"\n  Game Finished: True")
+                        log_csv.append(
+                            "####################################################################################\n"
+                        )
+                        log_csv.append(
+                            "####################################################################################\n"
+                        )
+                        log_csv.append("##  Finished:\n")
+                        log_csv.append("##    Error: False\n")
+                        log_csv.append("##    Game Finished: True\n")
 
                         if write:
                             self._append_file(
@@ -811,11 +816,18 @@ Datetime: {dt_string}
                         break_counter += 1
                         rounds_counter = 1
 
-                        log_csv.append("\n")
-                        log_csv.append(f"Finished/Error:")
-                        log_csv.append(f"\n  Error: {e}")
-                        log_csv.append(f"\n  Prediction Allowed: False")
-                        log_csv.append(f"\n  Error: True")
+                        log_csv.append(
+                            "\n\n####################################################################################"
+                        )
+                        log_csv.append(
+                            "\n####################################################################################\n"
+                        )
+                        log_csv.append("##  Error:\n")
+                        log_csv.append("##    Error: True\n")
+
+                        error_description = str(info["exception_description"])
+                        log_csv.append(f"##    Error: {error_description}\n")
+                        log_csv.append("##    Prediction Allowed: False\n")
 
                         if write:
                             self._append_file(
@@ -858,15 +870,24 @@ Datetime: {dt_string}
         )
 
 
-def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "weights"):
+def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = ""):
     """Play a model
 
     Args:
         rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    episodes = 2000
+    episodes = 5
     path = f"output/weights/{dir_name}"
+
+    if not os.path.exists(f"{path}/checkpoint"):
+        print("No checkpoint found, therefore no weights found.")
+        return
+
+    if weights_name == "":
+        with open(f"{path}/checkpoint") as f:
+            line0 = f.readlines()[0]
+            weights_name = line0.split('model_checkpoint_path: "')[1].split('.h5f"')[0]
 
     (
         break_counter,
@@ -882,7 +903,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "we
         env_config=env_config,
         weights_name=weights_name,
         logging=False,
-        write=False,
+        write=True,
     )
 
     from datetime import datetime
@@ -994,19 +1015,18 @@ if __name__ == "__main__":
         "agent": "DQN",
         "windows_length": 1,
         "layers": 1,
-        "n_units_l1": 448,
-        "n_activation_l1": "linear",
-        "activation": "sigmoid",
-        "dqn_memory_limit": 800000,
-        "dqn_target_model_update": 616,
-        "enable_dueling_network": True,
-        "train_policy": "EpsGreedyQPolicy",
-        "eps_greedy_eps": 0.015906713205054695,
+        "n_units_l1": 128,
+        "n_activation_l1": "relu",
+        "activation": "linear",
+        "dqn_memory_limit": 850000,
+        "dqn_target_model_update": 467,
+        "enable_dueling_network": False,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 1.0,
         "batch_size": 32,
-        "dqn_enable_double_dqn": False,
-        "dqn_dueling_option": "avg",
-        "dqn_adam_learning_rate": 0.005080986673746435,
-        "dqn_adam_epsilon": 0.021335027020516872,
+        "dqn_enable_double_dqn": True,
+        "dqn_adam_learning_rate": 0.002294227812991094,
+        "dqn_adam_epsilon": 0.017663581150131127,
     }
 
     rl = KniffelRL(
@@ -1025,7 +1045,7 @@ if __name__ == "__main__":
         "reward_bonus": 5,
     }
 
-    dir_name = "p_date=2022-12-05-16_43_35"
+    dir_name = "p_date=2022-12-08-10_43_54"
 
-    # play(rl, env_config, dir_name, weights_name="weights")
-    train(rl, env_config, dir_name)
+    play(rl, env_config, dir_name)
+    # train(rl, env_config, dir_name)

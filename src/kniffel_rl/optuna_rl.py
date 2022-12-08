@@ -115,7 +115,7 @@ class KniffelRL:
             )
         )
 
-        layers = self._trial.suggest_int("layers", 1, 4)
+        layers = self._trial.suggest_int("layers", 2, 5)
 
         for i in range(1, layers + 1):
             model.add(

@@ -29,7 +29,7 @@ class Kniffel:
         ex.SelectedOptionException: Exception when wrong option is selected
     """
 
-    turns: Attempt = []
+    turns: Attempt = list()
     logging = False
 
     def __init__(self, logging: bool = False, custom=False):
@@ -291,7 +291,7 @@ class Kniffel:
         """
         self.add_turn()
 
-    def add_turn(self, keep: list = None):
+    def add_turn(self, keep: list = []):
         """
         Add turn
 
