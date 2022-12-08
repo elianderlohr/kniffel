@@ -877,7 +877,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "")
         rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    episodes = 5
+    episodes = 2_000
     path = f"output/weights/{dir_name}"
 
     if not os.path.exists(f"{path}/checkpoint"):
@@ -903,7 +903,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "")
         env_config=env_config,
         weights_name=weights_name,
         logging=False,
-        write=True,
+        write=False,
     )
 
     from datetime import datetime
@@ -1040,12 +1040,12 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -15,
-        "reward_finish": 15,
-        "reward_bonus": 5,
+        "reward_game_over": -25,
+        "reward_finish": 25,
+        "reward_bonus": 7,
     }
 
-    dir_name = "p_date=2022-12-08-10_43_54"
+    dir_name = "p_date=2022-12-08-12_16_49"
 
     play(rl, env_config, dir_name)
     # train(rl, env_config, dir_name)

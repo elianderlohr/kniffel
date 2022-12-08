@@ -7,6 +7,8 @@ sys.path.append(str(path_root))
 from src.kniffel_rl.env import KniffelEnv
 from src.kniffel_rl.env_helper import KniffelConfig
 
+from src.kniffel_rl.env_helper import EnumAction
+
 env_config = {
     "reward_roll_dice": 0,
     "reward_game_over": -15,
@@ -340,7 +342,7 @@ def test_finish_game():
 
     # try 12
     score = send_step([6, 6, 6, 6, 6], env, 11, score)
-    # assert score == 512
+    assert score == 512
 
     # try 13
     score = send_step([6, 6, 6, 6, 6], env, 12, score)
@@ -354,3 +356,136 @@ def test_finish_game():
 
     # assert score == 40
     assert env.kniffel_helper.kniffel.get_length() == 2
+
+
+def apply_and_reset(env, action, dices, reset=True):
+    score = send_step(dices, env, action, 0)
+
+    if reset:
+        env.reset()
+
+    return score
+
+
+def test_individual():
+    env = KniffelEnv(
+        env_config,
+        logging=False,
+        config_file_path="src/config/config.csv",
+        reward_simple=False,
+    )
+
+    # try ones
+    assert apply_and_reset(env, EnumAction.FINISH_ONES, [1, 1, 1, 1, 1]) == 10
+    assert apply_and_reset(env, EnumAction.FINISH_ONES, [1, 1, 1, 1, 6]) == 4
+    assert apply_and_reset(env, EnumAction.FINISH_ONES, [1, 1, 1, 6, 6]) == 2
+    assert apply_and_reset(env, EnumAction.FINISH_ONES, [1, 1, 6, 6, 6]) == 1
+    assert apply_and_reset(env, EnumAction.FINISH_ONES, [1, 6, 6, 6, 6]) == 0.4
+
+    # try twos
+    assert apply_and_reset(env, EnumAction.FINISH_TWOS, [2, 2, 2, 2, 2]) == 14.14213562
+    assert apply_and_reset(env, EnumAction.FINISH_TWOS, [2, 2, 2, 2, 6]) == 5.656854249
+    assert apply_and_reset(env, EnumAction.FINISH_TWOS, [2, 2, 2, 6, 6]) == 2.828427125
+    assert apply_and_reset(env, EnumAction.FINISH_TWOS, [2, 2, 6, 6, 6]) == 1.414213562
+    assert apply_and_reset(env, EnumAction.FINISH_TWOS, [2, 6, 6, 6, 6]) == 0.565685425
+
+    # try threes
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREES, [3, 3, 3, 3, 3]) == 17.32050808
+    )
+    assert apply_and_reset(env, EnumAction.FINISH_THREES, [3, 3, 3, 3, 6]) == 6.92820323
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREES, [3, 3, 3, 6, 6]) == 3.464101615
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREES, [3, 3, 6, 6, 6]) == 1.732050808
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREES, [3, 6, 6, 6, 6]) == 0.692820323
+    )
+
+    # try fours
+    assert apply_and_reset(env, EnumAction.FINISH_FOURS, [4, 4, 4, 4, 4]) == 20
+    assert apply_and_reset(env, EnumAction.FINISH_FOURS, [4, 4, 4, 4, 6]) == 8
+    assert apply_and_reset(env, EnumAction.FINISH_FOURS, [4, 4, 4, 6, 6]) == 4
+    assert apply_and_reset(env, EnumAction.FINISH_FOURS, [4, 4, 6, 6, 6]) == 2
+    assert apply_and_reset(env, EnumAction.FINISH_FOURS, [4, 6, 6, 6, 6]) == 0.8
+
+    # try fives
+    assert apply_and_reset(env, EnumAction.FINISH_FIVES, [5, 5, 5, 5, 5]) == 22.36067977
+    assert apply_and_reset(env, EnumAction.FINISH_FIVES, [5, 5, 5, 5, 6]) == 8.94427191
+    assert apply_and_reset(env, EnumAction.FINISH_FIVES, [5, 5, 5, 6, 6]) == 4.472135955
+    assert apply_and_reset(env, EnumAction.FINISH_FIVES, [5, 5, 6, 6, 6]) == 2.236067977
+    assert apply_and_reset(env, EnumAction.FINISH_FIVES, [5, 6, 6, 6, 6]) == 0.894427191
+
+    # try sixes
+    assert apply_and_reset(env, EnumAction.FINISH_SIXES, [6, 6, 6, 6, 6]) == 24.49489743
+    assert apply_and_reset(env, EnumAction.FINISH_SIXES, [6, 6, 6, 6, 5]) == 9.797958971
+    assert apply_and_reset(env, EnumAction.FINISH_SIXES, [6, 6, 6, 5, 5]) == 4.898979486
+    assert apply_and_reset(env, EnumAction.FINISH_SIXES, [6, 6, 5, 5, 5]) == 2.449489743
+    assert apply_and_reset(env, EnumAction.FINISH_SIXES, [6, 5, 5, 5, 5]) == 0.979795897
+
+    # try three of a kind
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [1, 1, 1, 1, 1])
+        == 4.472135955
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [2, 2, 2, 1, 1])
+        == 4.472135955
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [3, 3, 3, 1, 1])
+        == 4.472135955
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [4, 4, 4, 1, 1])
+        == 4.472135955
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [5, 5, 5, 1, 1])
+        == 4.472135955
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [6, 6, 6, 1, 1])
+        == 7.745966692
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_THREE_TIMES, [6, 6, 6, 5, 5])
+        == 24.49489743
+    )
+
+    # try four of a kind
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_FOUR_TIMES, [1, 1, 1, 1, 1])
+        == 7.745966692
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_FOUR_TIMES, [6, 6, 6, 6, 1])
+        == 24.49489743
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_FOUR_TIMES, [6, 6, 6, 6, 6])
+        == 24.49489743
+    )
+
+    # try negative four of a kind
+    assert apply_and_reset(env, EnumAction.FINISH_FOUR_TIMES, [1, 1, 1, 2, 2]) == -15
+
+    # try chance
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_CHANCE, [1, 1, 1, 1, 1]) == 1.264911064
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_CHANCE, [2, 2, 2, 2, 2]) == 2.738612788
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_CHANCE, [3, 3, 3, 3, 3]) == 5.163977795
+    )
+    assert apply_and_reset(env, EnumAction.FINISH_CHANCE, [4, 4, 4, 4, 4]) == 10
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_CHANCE, [5, 5, 5, 5, 5]) == 24.49489743
+    )
+    assert (
+        apply_and_reset(env, EnumAction.FINISH_CHANCE, [6, 6, 6, 6, 6]) == 24.49489743
+    )

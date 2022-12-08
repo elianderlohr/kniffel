@@ -449,9 +449,9 @@ def objective(trial):
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -15,
-        "reward_finish": 15,
-        "reward_bonus": 5,
+        "reward_game_over": -25,
+        "reward_finish": 25,
+        "reward_bonus": 7,
     }
 
     rl = KniffelRL(
