@@ -877,7 +877,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "")
         rl (KniffelRL): Kniffel RL Class
         env_config (dict): environment dict
     """
-    episodes = 2_000
+    episodes = 10  # 2_000
     path = f"output/weights/{dir_name}"
 
     if not os.path.exists(f"{path}/checkpoint"):
@@ -903,7 +903,7 @@ def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = "")
         env_config=env_config,
         weights_name=weights_name,
         logging=False,
-        write=False,
+        write=True,
     )
 
     from datetime import datetime
@@ -1013,22 +1013,30 @@ if __name__ == "__main__":
 
     hyperparameter = {
         "agent": "DQN",
-        "windows_length": 1,
-        "layers": 1,
-        "n_units_l1": 128,
-        "n_activation_l1": "relu",
-        "activation": "linear",
-        "dqn_memory_limit": 850000,
-        "dqn_target_model_update": 467,
-        "enable_dueling_network": False,
-        "train_policy": "BoltzmannQPolicy",
-        "boltzmann_tau": 1.0,
+        "windows_length": 4,
+        "layers": 5,
+        "n_units_l1": 384,
+        "n_activation_l1": "tanh",
+        "n_units_l2": 128,
+        "n_activation_l2": "tanh",
+        "n_units_l3": 416,
+        "n_activation_l3": "relu",
+        "n_units_l4": 192,
+        "n_activation_l4": "linear",
+        "n_units_l5": 512,
+        "n_activation_l5": "linear",
+        "activation": "tanh",
+        "dqn_memory_limit": 700000,
+        "dqn_target_model_update": 773,
+        "enable_dueling_network": True,
+        "train_policy": "EpsGreedyQPolicy",
+        "eps_greedy_eps": 0.02380982541034781,
         "batch_size": 32,
-        "dqn_enable_double_dqn": True,
-        "dqn_adam_learning_rate": 0.002294227812991094,
-        "dqn_adam_epsilon": 0.017663581150131127,
+        "dqn_enable_double_dqn": False,
+        "dqn_dueling_option": "avg",
+        "dqn_adam_learning_rate": 7.800665812452315e-05,
+        "dqn_adam_epsilon": 0.06784892776611416,
     }
-
     rl = KniffelRL(
         load=False,
         config_path="src/config/config.csv",
@@ -1040,12 +1048,12 @@ if __name__ == "__main__":
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -25,
-        "reward_finish": 25,
-        "reward_bonus": 7,
+        "reward_game_over": -40,
+        "reward_finish": 15,
+        "reward_bonus": 5,
     }
 
-    dir_name = "p_date=2022-12-08-12_16_49"
+    dir_name = "bestv6"
 
-    play(rl, env_config, dir_name)
-    # train(rl, env_config, dir_name)
+    # play(rl, env_config, dir_name)
+    train(rl, env_config, dir_name)
