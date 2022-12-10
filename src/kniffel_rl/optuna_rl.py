@@ -115,7 +115,7 @@ class KniffelRL:
             )
         )
 
-        layers = self._trial.suggest_int("layers", 2, 5)
+        layers = self._trial.suggest_int("layers", 2, 4)
 
         for i in range(1, layers + 1):
             model.add(
@@ -536,7 +536,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=1000,
+        n_trials=8,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
