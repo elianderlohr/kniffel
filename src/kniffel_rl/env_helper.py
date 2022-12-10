@@ -328,8 +328,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    points = selected_option.points / 2
-                    reward += self.rewards_single(KniffelConfig.TWOS, int(points))
+                    dice_count = selected_option.points / 2
+                    reward += self.rewards_single(KniffelConfig.TWOS, int(dice_count))
 
                 finished_turn = True
             if EnumAction.FINISH_THREES is enum_action:
@@ -338,8 +338,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    points = selected_option.points / 3
-                    reward += self.rewards_single(KniffelConfig.THREES, int(points))
+                    dice_count = selected_option.points / 3
+                    reward += self.rewards_single(KniffelConfig.THREES, int(dice_count))
 
                 finished_turn = True
             if EnumAction.FINISH_FOURS is enum_action:
@@ -348,8 +348,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    points = selected_option.points / 4
-                    reward += self.rewards_single(KniffelConfig.FOURS, int(points))
+                    dice_count = selected_option.points / 4
+                    reward += self.rewards_single(KniffelConfig.FOURS, int(dice_count))
 
                 finished_turn = True
             if EnumAction.FINISH_FIVES is enum_action:
@@ -358,8 +358,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    points = selected_option.points / 5
-                    reward += self.rewards_single(KniffelConfig.FIVES, int(points))
+                    dice_count = selected_option.points / 5
+                    reward += self.rewards_single(KniffelConfig.FIVES, int(dice_count))
 
                 finished_turn = True
             if EnumAction.FINISH_SIXES is enum_action:
@@ -368,8 +368,8 @@ class KniffelEnvHelper:
                 if self.reward_simple:
                     reward += selected_option.points
                 else:
-                    points = selected_option.points / 6
-                    reward += self.rewards_single(KniffelConfig.SIXES, int(points))
+                    dice_count = selected_option.points / 6
+                    reward += self.rewards_single(KniffelConfig.SIXES, int(dice_count))
 
                 finished_turn = True
             if EnumAction.FINISH_THREE_TIMES is enum_action:
@@ -683,7 +683,10 @@ class KniffelEnvHelper:
             if e.args[0] == "Game finished!":
                 done = True
 
-                reward += self._reward_finish
+                if self.kniffel.get_points() > self._reward_finish:
+                    reward += self.kniffel.get_points()
+                else:
+                    reward += self._reward_finish
 
                 info = {
                     "finished": True,

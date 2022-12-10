@@ -115,15 +115,12 @@ class KniffelRL:
             )
         )
 
-        layers = self._trial.suggest_int("layers", 2, 4)
-
+        layers = self._return_trial("layers")
         for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l{}".format(i), 32, 512, step=32),
-                    activation=self._trial.suggest_categorical(
-                        "n_activation_l{}".format(i), ["relu", "linear", "tanh"]
-                    ),
+                    self._return_trial("n_units_l{}".format(i)),
+                    activation="relu",
                 )
             )
 
@@ -181,9 +178,7 @@ class KniffelRL:
 
         elif key == "EpsGreedyQPolicy":
 
-            policy = EpsGreedyQPolicy(
-                eps=self._trial.suggest_float("eps_greedy_eps", 1e-5, 1e-1)
-            )
+            policy = EpsGreedyQPolicy(eps=self._return_trial("eps_greedy_eps"))
 
         elif key == "GreedyQPolicy":
 
@@ -192,19 +187,27 @@ class KniffelRL:
         elif key == "BoltzmannQPolicy":
 
             policy = BoltzmannQPolicy(
-                tau=self._trial.suggest_float("boltzmann_tau", 0.05, 1, step=0.05)
+                tau=self._return_trial(
+                    "boltzmann_tau",
+                )
             )
 
         elif key == "MaxBoltzmannQPolicy":
 
             policy = MaxBoltzmannQPolicy(
-                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1e-1),
-                tau=self._trial.suggest_float("max_boltzmann_tau", 0.05, 1, step=0.05),
+                eps=self._return_trial(
+                    "max_boltzmann_eps",
+                ),
+                tau=self._return_trial(
+                    "max_boltzmann_tau",
+                ),
             )
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
-                C=self._trial.suggest_loguniform("boltzmann_gumbel_C", 1e-5, 1e2)
+                C=self._return_trial(
+                    "boltzmann_gumbel_C",
+                )
             )
 
         return policy
@@ -222,18 +225,18 @@ class KniffelRL:
 
         if self._agent_value == "DQN":
             memory = SequentialMemory(
-                limit=self._trial.suggest_int(
-                    "dqn_memory_limit", 500_000, 1_000_000, step=50_000
+                limit=self._return_trial(
+                    "dqn_memory_limit",
                 ),
                 window_length=self.window_length,
             )
 
-            dqn_target_model_update = self._trial.suggest_int(
-                "dqn_target_model_update", 1, 1000
+            dqn_target_model_update = self._return_trial(
+                "dqn_target_model_update",
             )
 
-            enable_dueling_network = self._trial.suggest_categorical(
-                "enable_dueling_network", [True, False]
+            enable_dueling_network = self._return_trial(
+                "enable_dueling_network",
             )
 
             agent = DQNAgent(
@@ -241,7 +244,9 @@ class KniffelRL:
                 memory=memory,
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=25,
+                nb_steps_warmup=self._return_trial(
+                    "dqn_nb_steps_warmup",
+                ),
                 enable_dueling_network=enable_dueling_network,
                 target_model_update=int(round(dqn_target_model_update))
                 if dqn_target_model_update > 0
@@ -254,8 +259,8 @@ class KniffelRL:
                 agent.dueling_type = (self._return_trial("dqn_dueling_option"),)
 
         elif self._agent_value == "CEM":
-            memory_interval = self._trial.suggest_int(
-                "cem_memory_limit", 1_000, 750_000, step=50_000
+            memory_interval = self._return_trial(
+                "cem_memory_limit",
             )
 
             memory = EpisodeParameterMemory(
@@ -267,7 +272,9 @@ class KniffelRL:
                 model=model,
                 memory=memory,
                 nb_actions=actions,
-                nb_steps_warmup=25,
+                nb_steps_warmup=self._return_trial(
+                    "cem_nb_steps_warmup",
+                ),
                 batch_size=self._return_trial("batch_size"),
                 memory_interval=memory_interval,
             )
@@ -278,9 +285,15 @@ class KniffelRL:
                 policy=self.get_policy(self._return_trial("train_policy")),
                 test_policy=self.get_policy(self._return_trial("test_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=25,
-                delta_clip=self._trial.suggest_float("sarsa_delta_clip", 0.01, 0.99),
-                gamma=self._trial.suggest_float("sarsa_gamma", 0.01, 0.99),
+                nb_steps_warmup=self._return_trial(
+                    "sarsa_nb_steps_warmup",
+                ),
+                delta_clip=self._return_trial(
+                    "sarsa_delta_clip",
+                ),
+                gamma=self._return_trial(
+                    "sarsa_gamma",
+                ),
             )
 
         return agent
@@ -297,13 +310,11 @@ class KniffelRL:
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
             agent.compile(
                 Adam(
-                    learning_rate=self._trial.suggest_float(
+                    learning_rate=self._return_trial(
                         "{}_adam_learning_rate".format(self._agent_value.lower()),
-                        1e-5,
-                        1e-2,
                     ),
-                    epsilon=self._trial.suggest_float(
-                        "{}_adam_epsilon".format(self._agent_value.lower()), 1e-5, 1e-1
+                    epsilon=self._return_trial(
+                        "{}_adam_epsilon".format(self._agent_value.lower()),
                     ),
                 ),
             )
@@ -327,9 +338,12 @@ class KniffelRL:
 
         return agent, history
 
-    def calculate_custom_metric(self, l: list):
-        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]
-        return np.mean(sm_list)
+    def calculate_custom_metric(self, l: list) -> float:
+        max = np.max(l)
+        min = np.min(l)
+        mean = np.mean(l)
+
+        return float(mean - (max - min) + max)
 
     def validate_model(self, agent, env):
         scores = agent.test(env, nb_episodes=100, visualize=False)
@@ -370,13 +384,12 @@ class KniffelRL:
             custom_metric,
         )
 
-    def train(self, nb_steps=10_000, env_config="", reward_simple=True):
+    def train(self, nb_steps=10_000, env_config=""):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
             env_action_space=self._env_action_space,
             env_observation_space=self._env_observation_space,
-            reward_simple=reward_simple,
         )
 
         agent, _ = self.train_agent(
@@ -415,43 +428,58 @@ class KniffelRL:
 
 
 def objective(trial):
-
-    reward_simple = False
+    """{
+        "agent": "DQN",
+        "windows_length": 1,
+        "layers": 5,
+        "n_units_l1": 368,
+        "n_units_l2": 464,
+        "n_units_l3": 320,
+        "n_units_l4": 480,
+        "n_units_l5": 208,
+        "activation": "linear",
+        "dqn_memory_limit": 751000,
+        "dqn_target_model_update": 389.07698601103345,
+        "enable_dueling_network": true,
+        "train_policy": "BoltzmannQPolicy",
+        "boltzmann_tau": 0.55,
+        "dqn_nb_steps_warmup": 37,
+        "batch_size": 32,
+        "dqn_enable_double_dqn": false,
+        "dqn_dueling_option": "max",
+        "dqn_adam_learning_rate": 0.00013442143635690896,
+        "dqn_adam_epsilon": 0.06768437654493833
+    }
+    """
 
     base_hp = {
-        "windows_length": [1, 2, 3, 4],
-        "batch_size": [32],
-        "dqn_dueling_option": ["avg", "max"],
-        "activation": ["linear", "relu", "sigmoid", "tanh"],
-        "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN"],
-        "linear_inner_policy": [
-            "EpsGreedyQPolicy",
-            "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-        ],
-        "train_policy": [
-            # "LinearAnnealedPolicy",
-            "EpsGreedyQPolicy",
-            "GreedyQPolicy",
-            "BoltzmannQPolicy",
-            # "MaxBoltzmannQPolicy",
-            # "BoltzmannGumbelQPolicy",
-        ],
-        "test_policy": [
-            "LinearAnnealedPolicy",
-            "EpsGreedyQPolicy",
-            "GreedyQPolicy",
-            "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-        ],
+        "windows_length": [1],
+        "layers": [5],
+        "n_units_l1": [368],
+        "n_units_l2": [464],
+        "n_units_l3": [320],
+        "n_units_l4": [480],
+        "n_units_l5": [208],
+        "activation": ["linear"],
+        "dqn_memory_limit": [751000],
+        "dqn_target_model_update": [389.07698601103345],
+        "enable_dueling_network": [True],
+        "train_policy": ["BoltzmannQPolicy"],
+        "boltzmann_tau": [0.55],
+        "dqn_nb_steps_warmup": [37],
+        "dqn_enable_double_dqn": [False],
+        "dqn_dueling_option": ["max"],
+        "dqn_adam_learning_rate": [0.00013442143635690896],
+        "dqn_adam_epsilon": [0.06768437654493833],
+        "batch_size": [16, 32, 64, 128, 256, 512],
     }
 
     env_config = {
-        "reward_roll_dice": 0,
-        "reward_game_over": -25,
-        "reward_finish": 25,
-        "reward_bonus": 7,
+        "reward_roll_dice": 0.5,
+        "reward_game_over": -300,
+        "reward_finish": 300,
+        "reward_bonus": 50,
     }
 
     rl = KniffelRL(
@@ -459,7 +487,7 @@ def objective(trial):
         config_path="src/config/config.csv",
         path_prefix="",
         trial=trial,
-        env_observation_space=47,
+        env_observation_space=20,
         env_action_space=57,
     )
 
@@ -475,12 +503,12 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
+    ) = rl.train(env_config=env_config, nb_steps=1_000_000)
 
     trial.set_user_attr("server", str(server))
-    # trial.set_user_attr("custom_metric", float(custom_metric))
-    # trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
-    # trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
+    trial.set_user_attr("custom_metric", float(custom_metric))
+    trial.set_user_attr("episode_reward_custom", float(episode_reward_custom))
+    trial.set_user_attr("nb_steps_custom", float(nb_steps_custom))
     trial.set_user_attr("param", trial.params)
 
     # trial.set_user_attr("episode_reward", list(episode_reward))
@@ -523,7 +551,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
     else:
         print(
@@ -531,7 +559,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffel:{args.pw}@kniffel-do-user-12010256-0.b.db.ondigitalocean.com:25060/kniffel",
         )
 
     study.optimize(
