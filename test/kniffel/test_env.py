@@ -4,10 +4,10 @@ import sys
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.kniffel_rl.env import KniffelEnv
-from src.kniffel_rl.env_helper import KniffelConfig
+from env.open_ai_env import KniffelEnv
+from src.env.env_helper import KniffelConfig
 
-from src.kniffel_rl.env_helper import EnumAction
+from src.env.env_helper import EnumAction
 
 env_config = {
     "reward_roll_dice": 0,
