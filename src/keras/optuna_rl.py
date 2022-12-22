@@ -228,9 +228,19 @@ class KniffelRL:
                 window_length=self.window_length,
             )
 
-            dqn_target_model_update = self._trial.suggest_uniform(
-                "dqn_target_model_update", 0, 1000
+            dqn_target_model_update_float = self._trial.suggest_categorical(
+                "dqn_target_model_update_is_float", [True, False]
             )
+            
+            dqn_target_model_update = 0
+            if dqn_target_model_update_float:
+                dqn_target_model_update = self._trial.suggest_float(
+                    "dqn_target_model_update_float", 0, 1
+                )
+            else:
+                dqn_target_model_update = self._trial.suggest_int(
+                    "dqn_target_model_update_int", 1, 10_000, step=10
+                )
 
             enable_dueling_network = self._trial.suggest_categorical(
                 "enable_dueling_network", [True, False]
@@ -296,17 +306,17 @@ class KniffelRL:
         agent = self.build_agent(model, actions, nb_steps=nb_steps) 
         
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
-            _learning_rate = self._trial.suggest_uniform(
+            _learning_rate = self._trial.suggest_float(
                 "{}_adam_learning_rate".format(self._agent_value.lower()),
                 0,2
             )            
-            _beta1 = self._trial.suggest_uniform(
+            _beta1 = self._trial.suggest_float(
                 "{}_adam_beta_1".format(self._agent_value.lower()), 0, 1
             )
-            _beta2 = self._trial.suggest_uniform(
+            _beta2 = self._trial.suggest_float(
                 "{}_adam_beta_2".format(self._agent_value.lower()), 0, 1
             )
-            _epsilon = self._trial.suggest_uniform(
+            _epsilon = self._trial.suggest_float(
                 "{}_adam_epsilon".format(self._agent_value.lower()), 0, 1
             )
             _amsgrad = self._trial.suggest_categorical("{}_adam_amsgrad".format(self._agent_value.lower()), [False, True])
