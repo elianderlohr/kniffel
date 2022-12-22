@@ -698,6 +698,16 @@ Datetime: {dt_string}
                             self.get_hyperparameter("agent").lower()
                         )
                     ),
+                    beta_1=self.get_hyperparameter(
+                        "{}_adam_beta_1".format(
+                            self.get_hyperparameter("agent").lower()
+                        )
+                    ),
+                    beta_2=self.get_hyperparameter(
+                        "{}_adam_beta_2".format(
+                            self.get_hyperparameter("agent").lower()
+                        )
+                    ),
                     epsilon=self.get_hyperparameter(
                         "{}_adam_epsilon".format(
                             self.get_hyperparameter("agent").lower()

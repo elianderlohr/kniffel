@@ -32,7 +32,7 @@ from tensorflow.keras.optimizers import Adam
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from env.open_ai_env import KniffelEnv
+from src.env.open_ai_env import KniffelEnv
 from src.env.callback.custom_keras_pruning_callback import (
     CustomKerasPruningCallback,
 )
@@ -57,7 +57,7 @@ class KniffelRL:
     _trial: optuna.trial.Trial = None
 
     # Agent
-    _agent_value = ""
+    _agent_value: str = ""
 
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
@@ -147,7 +147,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=250_000,
             )
 
         elif key == "BoltzmannQPolicy":
@@ -158,7 +158,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=250_000,
             )
 
         if key == "MaxBoltzmannQPolicy":
@@ -168,7 +168,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=250_000,
             )
 
         return policy
@@ -228,8 +228,8 @@ class KniffelRL:
                 window_length=self.window_length,
             )
 
-            dqn_target_model_update = self._trial.suggest_int(
-                "dqn_target_model_update", 1, 1000
+            dqn_target_model_update = self._trial.suggest_uniform(
+                "dqn_target_model_update", 0, 1000
             )
 
             enable_dueling_network = self._trial.suggest_categorical(
@@ -292,21 +292,32 @@ class KniffelRL:
         nb_steps,
     ):
         model = self.build_model(actions)
-        agent = self.build_agent(model, actions, nb_steps=nb_steps)
-
+        
+        agent = self.build_agent(model, actions, nb_steps=nb_steps) 
+        
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
-            agent.compile(
-                Adam(
-                    learning_rate=self._trial.suggest_float(
-                        "{}_adam_learning_rate".format(self._agent_value.lower()),
-                        1e-5,
-                        1e-2,
-                    ),
-                    epsilon=self._trial.suggest_float(
-                        "{}_adam_epsilon".format(self._agent_value.lower()), 1e-5, 1e-1
-                    ),
-                ),
+            _learning_rate = self._trial.suggest_uniform(
+                "{}_adam_learning_rate".format(self._agent_value.lower()),
+                0,2
+            )            
+            _beta1 = self._trial.suggest_uniform(
+                "{}_adam_beta_1".format(self._agent_value.lower()), 0, 1
             )
+            _beta2 = self._trial.suggest_uniform(
+                "{}_adam_beta_2".format(self._agent_value.lower()), 0, 1
+            )
+            _epsilon = self._trial.suggest_uniform(
+                "{}_adam_epsilon".format(self._agent_value.lower()), 0, 1
+            )
+            _amsgrad = self._trial.suggest_categorical("{}_adam_amsgrad".format(self._agent_value.lower()), [False, True])
+
+            agent.compile(Adam(
+                    learning_rate=_learning_rate,
+                    beta_1=_beta1,
+                    beta_2=_beta2,
+                    epsilon=_epsilon,
+                    amsgrad=bool(_amsgrad)
+                ),)
         elif self._agent_value == "CEM":
             agent.compile()
 
@@ -431,12 +442,12 @@ def objective(trial):
             "MaxBoltzmannQPolicy",
         ],
         "train_policy": [
-            # "LinearAnnealedPolicy",
+            "LinearAnnealedPolicy",
             "EpsGreedyQPolicy",
             "GreedyQPolicy",
             "BoltzmannQPolicy",
-            # "MaxBoltzmannQPolicy",
-            # "BoltzmannGumbelQPolicy",
+            "MaxBoltzmannQPolicy",
+            "BoltzmannGumbelQPolicy",
         ],
         "test_policy": [
             "LinearAnnealedPolicy",
@@ -523,7 +534,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
         )
     else:
         print(
@@ -531,7 +542,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/kniffel",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
         )
 
     study.optimize(
