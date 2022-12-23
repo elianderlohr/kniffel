@@ -120,9 +120,9 @@ class KniffelRL:
         for i in range(1, layers + 1):
             model.add(
                 Dense(
-                    self._trial.suggest_int("n_units_l{}".format(i), 32, 512, step=32),
+                    self._trial.suggest_int("n_units_l{}".format(i), 32, 256, step=32),
                     activation=self._trial.suggest_categorical(
-                        "n_activation_l{}".format(i), ["relu", "linear", "tanh"]
+                        "n_activation_l{}".format(i), ["relu", "tanh"]
                     ),
                 )
             )
@@ -440,7 +440,7 @@ def objective(trial):
     reward_simple = False
 
     base_hp = {
-        "windows_length": [1, 2, 3, 4],
+        "windows_length": [1],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear", "relu", "sigmoid", "tanh"],
@@ -557,7 +557,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=1000,
+        n_trials=1_000,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
