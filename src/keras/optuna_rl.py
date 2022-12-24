@@ -496,7 +496,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=10_000, reward_simple=reward_simple)
+    ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
 
     trial.set_user_attr("server", str(server))
     # trial.set_user_attr("custom_metric", float(custom_metric))
@@ -557,7 +557,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=1_000,
+        n_trials=12,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
