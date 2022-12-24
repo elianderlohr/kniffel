@@ -333,7 +333,7 @@ class KniffelRL:
 
         callbacks = []
         callbacks += [
-            CustomKerasPruningCallback(self._trial, "episode_reward", interval=50_000),
+            CustomKerasPruningCallback(self._trial, "episode_reward", interval=20_000),
         ]
 
         history = agent.fit(
@@ -496,7 +496,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
+    ) = rl.train(env_config=env_config, nb_steps=10_000, reward_simple=reward_simple)
 
     trial.set_user_attr("server", str(server))
     # trial.set_user_attr("custom_metric", float(custom_metric))
@@ -544,7 +544,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
         )
     else:
         print(
@@ -552,7 +552,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
         )
 
     study.optimize(
