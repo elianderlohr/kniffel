@@ -182,7 +182,7 @@ class KniffelRL:
         elif key == "EpsGreedyQPolicy":
 
             policy = EpsGreedyQPolicy(
-                eps=self._trial.suggest_float("eps_greedy_eps", 1e-5, 1e-1)
+                eps=self._trial.suggest_float("eps_greedy_eps", 1e-5, 1)
             )
 
         elif key == "GreedyQPolicy":
@@ -191,20 +191,26 @@ class KniffelRL:
 
         elif key == "BoltzmannQPolicy":
 
+            clip = self._trial.suggest_int("boltzmann_clip", 200, 1000, step=100)
+
             policy = BoltzmannQPolicy(
-                tau=self._trial.suggest_float("boltzmann_tau", 0.05, 1, step=0.05)
+                tau=self._trial.suggest_float("boltzmann_tau", 0.05, 1, step=0.05),
+                clip=(clip * -1, clip)
             )
 
         elif key == "MaxBoltzmannQPolicy":
 
+            clip = self._trial.suggest_int("boltzmann_clip", 200, 1000, step=100)
+
             policy = MaxBoltzmannQPolicy(
-                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1e-1),
+                eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1),
                 tau=self._trial.suggest_float("max_boltzmann_tau", 0.05, 1, step=0.05),
+                clip=(clip * -1, clip)
             )
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
-                C=self._trial.suggest_loguniform("boltzmann_gumbel_C", 1e-5, 1e2)
+                C=self._trial.suggest_float("boltzmann_gumbel_C", 1e-5, 1)
             )
 
         return policy
@@ -223,19 +229,21 @@ class KniffelRL:
         if self._agent_value == "DQN":
             memory = SequentialMemory(
                 limit=self._trial.suggest_int(
-                    "dqn_memory_limit", 500_000, 1_000_000, step=50_000
+                    "dqn_memory_limit", 50_000, 2_000_000, step=50_000
                 ),
                 window_length=self.window_length,
             )
 
-            dqn_target_model_update_float = self._trial.suggest_categorical(
-                "dqn_target_model_update_is_float", [True, False]
-            )
+            #dqn_target_model_update_float = self._trial.suggest_categorical(
+            #    "dqn_target_model_update_is_float", [True, False]
+            #)
+
+            dqn_target_model_update_float = True
             
             dqn_target_model_update = 0
             if dqn_target_model_update_float:
                 dqn_target_model_update = self._trial.suggest_float(
-                    "dqn_target_model_update_float", 0, 1
+                    "dqn_target_model_update_float", 1e-6,1e-1
                 )
             else:
                 dqn_target_model_update = self._trial.suggest_int(
@@ -251,17 +259,15 @@ class KniffelRL:
                 memory=memory,
                 policy=self.get_policy(self._return_trial("train_policy")),
                 nb_actions=actions,
-                nb_steps_warmup=25,
-                enable_dueling_network=enable_dueling_network,
+                nb_steps_warmup=39,
+                enable_dueling_network=bool(enable_dueling_network),
                 target_model_update=int(round(dqn_target_model_update))
                 if dqn_target_model_update > 0
                 else float(dqn_target_model_update),
                 batch_size=self._return_trial("batch_size"),
-                enable_double_dqn=self._return_trial("dqn_enable_double_dqn"),
+                enable_double_dqn=bool(self._return_trial("dqn_enable_double_dqn")),
+                dueling_type="avg" if enable_dueling_network else str(self._return_trial("dqn_dueling_option")),
             )
-
-            if enable_dueling_network:
-                agent.dueling_type = (self._return_trial("dqn_dueling_option"),)
 
         elif self._agent_value == "CEM":
             memory_interval = self._trial.suggest_int(
@@ -308,16 +314,16 @@ class KniffelRL:
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
             _learning_rate = self._trial.suggest_float(
                 "{}_adam_learning_rate".format(self._agent_value.lower()),
-                0,2
+                1e-6,1e-1
             )            
             _beta1 = self._trial.suggest_float(
-                "{}_adam_beta_1".format(self._agent_value.lower()), 0, 1
+                "{}_adam_beta_1".format(self._agent_value.lower()), 1e-6,1e-1
             )
             _beta2 = self._trial.suggest_float(
-                "{}_adam_beta_2".format(self._agent_value.lower()), 0, 1
+                "{}_adam_beta_2".format(self._agent_value.lower()), 0.1,0.999
             )
             _epsilon = self._trial.suggest_float(
-                "{}_adam_epsilon".format(self._agent_value.lower()), 0, 1
+                "{}_adam_epsilon".format(self._agent_value.lower()), 0.1,0.999
             )
             _amsgrad = self._trial.suggest_categorical("{}_adam_amsgrad".format(self._agent_value.lower()), [False, True])
 
@@ -557,7 +563,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=1000,
+        n_trials=12,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
