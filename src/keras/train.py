@@ -1,14 +1,13 @@
 # Standard imports
-from distutils.log import info
+import numpy as np
 import json
 import os
 import sys
 import warnings
 from datetime import datetime as dt
 from pathlib import Path
-from statistics import mean
 from progress.bar import IncrementalBar
-from datetime import datetime
+import gym
 
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -21,9 +20,9 @@ from tensorflow.keras.optimizers import Adam
 
 # Keras imports
 import rl
-from rl.agents import CEMAgent, DQNAgent, SARSAAgent
+from rl.agents import DQNAgent
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
-from rl.memory import EpisodeParameterMemory, SequentialMemory
+from rl.memory import  SequentialMemory
 from rl.policy import (
     BoltzmannGumbelQPolicy,
     BoltzmannQPolicy,
@@ -46,19 +45,16 @@ from src.env.env_helper import KniffelEnvHelper
 from src.env.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
 
-
 class KniffelRL:
-    # Load model from path
-    _load = False
 
-    # Hyperparameter object
-    _hyperparater_base = {}
+    # OpenAI Gym environment
+    env : KniffelEnv
 
     # Test episodes
     _test_episodes = 100
 
     # path prefix
-    _path_prefix = ""
+    base_path = ""
 
     # Path to config csv
     _config_path = ""
@@ -66,36 +62,62 @@ class KniffelRL:
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
+    # Env config
+    env_config = {}
+
+    # agent dict
+    agent_dict = {}
+
+    # logging
+    logging = False
+
+    # Env parameters
+    _env_observation_space: int = 47
+    _env_action_space: int = 57
+
     def __init__(
         self,
-        load=False,
-        test_episodes=100,
-        path_prefix="",
-        hyperparater_base={},
+        agent_dict: dict,
+        base_path:str="",
+        env_config={},
         config_path="src/ai/Kniffel.CSV",
-        env_action_space=58,
-        env_observation_space=20,
+        env_action_space=57,
+        env_observation_space=47,
+        logging=False,
     ):
-        self._load = load
+        """ Init the class
 
-        self._test_episodes = test_episodes
+        :param agent_path: Path to agent json file, defaults to ""
+        :param base_path: base path of project, defaults to ""
+        :param env_config: env dict, defaults to {}
+        :param config_path: path to config file, defaults to "src/ai/Kniffel.CSV"
+        :param env_action_space: Action space, defaults to 57
+        :param env_observation_space: Observation space, defaults to 47
+        :param logging: use logging, defaults to False
+        """
+
         self._config_path = config_path
-        self._hyperparater_base = hyperparater_base
 
+        # Set env action space and observation space
         self._env_action_space = env_action_space
         self._env_observation_space = env_observation_space
 
-        if path_prefix == "":
-            try:
+        # Set env config
+        self.env_config = env_config
 
-                self._path_prefix = "/"
-            except:
-                self._path_prefix = ""
-        else:
-            self._path_prefix = path_prefix
+        self.base_path = base_path            
+
+        self.logging = logging
+
+        self.env = self.get_kniffel_env()
+
+        self.agent_dict = agent_dict
+
+    def get_hyperparameter(self, key):
+        return self.agent_dict[key]
 
     # Model
-    def build_model(self, actions):
+    def build_model(self):
         model = tf.keras.Sequential()
         model.add(
             Flatten(
@@ -115,12 +137,22 @@ class KniffelRL:
                 )
             )
 
-        model.add(Dense(actions, activation=self.get_hyperparameter("activation")))
+        model.add(Dense(self._env_action_space, activation=self.get_hyperparameter("activation")))
         model.summary()
         return model
 
-    def get_inner_policy(self):
+    def get_inner_policy(self, anneal_steps) -> LinearAnnealedPolicy:
         key = self.get_hyperparameter("linear_inner_policy")
+
+        # Set default to eps greedy q policy
+        policy = LinearAnnealedPolicy(
+                EpsGreedyQPolicy(),
+                attr="eps",
+                value_max=1,
+                value_min=0.1,
+                value_test=0.05,
+                nb_steps=anneal_steps,
+            )
 
         if key == "EpsGreedyQPolicy":
             policy = LinearAnnealedPolicy(
@@ -129,7 +161,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=anneal_steps,
             )
 
         elif key == "BoltzmannQPolicy":
@@ -140,27 +172,36 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=anneal_steps,
             )
 
-        if key == "MaxBoltzmannQPolicy":
+        elif key == "MaxBoltzmannQPolicy":
             policy = LinearAnnealedPolicy(
                 MaxBoltzmannQPolicy(),
                 attr="eps",
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=1_000_000,
+                nb_steps=anneal_steps,
             )
 
         return policy
 
-    def get_policy(self, _key):
-        key = self.get_hyperparameter(_key)
+    def get_policy(self, _key, anneal_steps):
+        """
+        Get policy
 
-        policy = None
+        :param _key: key of policy
+        :param anneal_steps: number of steps
+        :return: policy        
+        """
+        key = self.get_hyperparameter(_key)
+        
+        # Use greedy q policy as default
+        policy = GreedyQPolicy()
+
         if key == "LinearAnnealedPolicy":
-            policy = self.get_inner_policy()
+            policy = self.get_inner_policy(anneal_steps)
 
         elif key == "EpsGreedyQPolicy":
 
@@ -171,15 +212,21 @@ class KniffelRL:
             policy = GreedyQPolicy()
 
         elif key == "BoltzmannQPolicy":
+            
+            clip = self.get_hyperparameter("max_boltzmann_clip")
 
-            policy = BoltzmannQPolicy(tau=self.get_hyperparameter("boltzmann_tau"))
+            policy = BoltzmannQPolicy(tau=self.get_hyperparameter("boltzmann_tau"),
+            clip=(clip * -1, clip))
 
         elif key == "MaxBoltzmannQPolicy":
+            
+            clip = self.get_hyperparameter("max_boltzmann_clip")
 
             policy = MaxBoltzmannQPolicy(
                 eps=self.get_hyperparameter("max_boltzmann_eps"),
                 tau=self.get_hyperparameter("max_boltzmann_tau"),
-            )
+                clip=(clip * -1, clip),
+           )
         elif key == "BoltzmannGumbelQPolicy":
 
             policy = BoltzmannGumbelQPolicy(
@@ -188,78 +235,121 @@ class KniffelRL:
 
         return policy
 
-    def build_agent(self, model, actions, nb_steps):
-        """Build dqn agent
+    def build_agent(self) -> DQNAgent:
+        """ Build the agent
 
-        :param model: deep neural network model (keras)
-        :param actions: action space
-        :param nb_steps: steps the model should be trained
-        :param hyperparameter: hyperparameter the agent should use
-        :return: agent
+        :param agent_dict: Agent dict
+        :return: Agent
         """
-        agent = None
 
-        a = self.get_hyperparameter("agent")
+        # Build neural network
+        neural_network = self.build_model()
+        
+        # Build agent
+        memory = SequentialMemory(
+            limit=self.get_hyperparameter(
+                "dqn_memory_limit"
+            ),
+            window_length=self.get_hyperparameter("windows_length"),
+        )
 
-        if self.get_hyperparameter("agent") == "DQN":
-
-            memory = SequentialMemory(
-                limit=self.get_hyperparameter("dqn_memory_limit"),
-                window_length=self.get_hyperparameter("windows_length"),
+        dqn_target_model_update_float = True
+        
+        dqn_target_model_update = 0
+        if dqn_target_model_update_float:
+            dqn_target_model_update = self.get_hyperparameter(
+                "dqn_target_model_update_float", 
+            )
+        else:
+            dqn_target_model_update = self.get_hyperparameter(
+                "dqn_target_model_update_int", 
             )
 
-            dqn_target_model_update = self.get_hyperparameter("dqn_target_model_update")
+        enable_dueling_network = self.get_hyperparameter(
+            "enable_dueling_network",
+        )
 
-            enable_dueling_network = self.get_hyperparameter("enable_dueling_network")
+        anneal_steps = self.get_hyperparameter("anneal_steps")
 
-            agent = DQNAgent(
-                model=model,
-                memory=memory,
-                policy=self.get_policy("train_policy"),
-                nb_actions=actions,
-                nb_steps_warmup=25,
-                enable_dueling_network=enable_dueling_network,
-                target_model_update=int(round(dqn_target_model_update))
-                if dqn_target_model_update > 0
-                else float(dqn_target_model_update),
-                batch_size=self.get_hyperparameter("batch_size"),
-                enable_double_dqn=self.get_hyperparameter("dqn_enable_double_dqn"),
+        # Agent
+        agent = DQNAgent(
+            model=neural_network,
+            memory=memory,
+            policy=self.get_policy("train_policy", anneal_steps),
+            nb_actions=self._env_action_space,
+            nb_steps_warmup=39,
+            enable_dueling_network=bool(enable_dueling_network),
+            target_model_update=int(round(dqn_target_model_update))
+            if dqn_target_model_update > 0
+            else float(dqn_target_model_update),
+            batch_size=self.get_hyperparameter("batch_size"),
+            enable_double_dqn=bool(self.get_hyperparameter("dqn_enable_double_dqn")),
+            dueling_type="avg" if enable_dueling_network else str(self.get_hyperparameter("dqn_dueling_option")),
+        )
+
+        return agent      
+
+    def build_adam(self) -> Adam:
+        """ Build the adam optimizer
+
+        :return: Optimizer
+        """
+        learning_rate=float(self.get_hyperparameter(
+            "{}_adam_learning_rate".format(
+                self.get_hyperparameter("agent").lower()
             )
+        ))
 
-            if enable_dueling_network:
-                agent.dueling_type = self.get_hyperparameter("dqn_dueling_option")
-
-        elif self.get_hyperparameter("agent") == "CEM":
-            memory_interval = self.get_hyperparameter("cem_memory_limit")
-
-            memory = EpisodeParameterMemory(
-                limit=memory_interval,
-                window_length=self.get_hyperparameter("windows_length"),
+        beta_1=float(self.get_hyperparameter(
+            "{}_adam_beta_1".format(
+                self.get_hyperparameter("agent").lower()
             )
+        ))
 
-            agent = CEMAgent(
-                model=model,
-                memory=memory,
-                nb_actions=actions,
-                nb_steps_warmup=self.get_hyperparameter("cem_nb_steps_warmup"),
-                batch_size=self.get_hyperparameter("batch_size"),
-                memory_interval=memory_interval,
+        beta_2=float(self.get_hyperparameter(
+            "{}_adam_beta_2".format(
+                self.get_hyperparameter("agent").lower()
             )
+        ))
 
-        elif self.get_hyperparameter("agent") == "SARSA":
-            agent = SARSAAgent(
-                model=model,
-                policy=self.get_policy("train_policy"),
-                test_policy=self.get_policy("test_policy"),
-                nb_actions=actions,
-                nb_steps_warmup=self.get_hyperparameter("sarsa_nb_steps_warmup"),
-                delta_clip=self.get_hyperparameter("sarsa_delta_clip"),
-                gamma=self.get_hyperparameter("sarsa_gamma"),
+        epsilon=float(self.get_hyperparameter(
+            "{}_adam_epsilon".format(
+                self.get_hyperparameter("agent").lower()
+            ),
+        ))
+
+        amsgrad=bool(self.get_hyperparameter(
+            "{}_adam_amsgrad".format(
+                self.get_hyperparameter("agent").lower()
             )
+        ))
 
-        return agent
+        optimizer = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=amsgrad)
+
+        return optimizer
+
+    def get_kniffel_env(self) -> KniffelEnv:
+        """ Get the environment for the agent
+
+        :return: Kniffel OpenAI environment
+        """
+        env = KniffelEnv(
+            self.env_config,
+            logging=self.logging,
+            config_file_path=self._config_path,
+            env_observation_space=self._env_observation_space,
+            env_action_space=self._env_action_space,
+        )
+
+        return env
 
     def _append_file(self, path, content, retry=0):
+        """Append content to file
+
+        :param path: path of the file
+        :param content: content to append
+        :param retry: retry amount, defaults to 0
+        """
         try:
             with open(path, "a") as file:
                 file.write(content)
@@ -273,108 +363,53 @@ class KniffelRL:
                 print(path)
                 print(e)
 
-    def get_hyperparameter(self, key):
-        return self._hyperparater_base[key]
-
-    def train_agent(
-        self,
-        actions,
-        env,
-        nb_steps,
-        callbacks,
-        load_path="",
-    ):
-        model = self.build_model(actions)
-        agent = self.build_agent(
-            model,
-            actions,
-            nb_steps=nb_steps,
-        )
-
-        if (
-            self.get_hyperparameter("agent") == "DQN"
-            or self.get_hyperparameter("agent") == "SARSA"
-        ):
-            agent.compile(
-                Adam(
-                    learning_rate=self.get_hyperparameter(
-                        "{}_adam_learning_rate".format(
-                            self.get_hyperparameter("agent").lower()
-                        )
-                    ),
-                    epsilon=self.get_hyperparameter(
-                        "{}_adam_epsilon".format(
-                            self.get_hyperparameter("agent").lower()
-                        ),
-                    ),
-                ),
-            )
-        elif self.get_hyperparameter("agent") == "CEM":
-            agent.compile()
-
-        if self._load:
-            print(f"Load existing model and train: path={load_path}/weights.h5f")
-            agent.load_weights(f"{load_path}/weights.h5f")
-
-        history = agent.fit(
-            env,
-            nb_steps=nb_steps,
-            verbose=1,
-            visualize=False,
-            callbacks=callbacks,
-            # action_repetition=2,
-            log_interval=50_000,
-        )
-
-        return agent, history
-
-    def validate_model(self, agent, env):
-        scores = agent.test(env, nb_episodes=100, visualize=False)
+    def validate_model(self, agent):
+        scores = agent.test(self.env, nb_episodes=100, visualize=False)
 
         episode_reward = np.mean(scores.history["episode_reward"])
         nb_steps = np.mean(scores.history["nb_steps"])
         print(f"episode_reward: {episode_reward}")
         print(f"nb_steps: {nb_steps}")
 
-        return scores
-
-    def train(self, nb_steps=10_000, load_path="", env_config=""):
-        return self._train(
-            nb_steps=nb_steps, load_path=load_path, env_config=env_config
-        )
-
-    def _train(
+    def train(
         self,
         nb_steps=10_000,
-        load_path="",
-        env_config={},
-        logging=False,
-        reward_simple=True,
     ):
-        episodes = 2000
+        episodes = 1_000
 
-        env = KniffelEnv(
-            env_config,
-            config_file_path=self._config_path,
-            env_observation_space=self._env_observation_space,
-            env_action_space=self._env_action_space,
-            logging=logging,
-            reward_simple=reward_simple,
+        reward_simple = self.env_config["reward_simple"]
+
+        dir_name = "p_date={}/".format(self.datetime)
+
+        path = os.path.join(
+            self.base_path, "output/weights/", dir_name
         )
+
+        # Create dir
+        print(f"Create subdir: {path}")
+        os.makedirs(path, exist_ok=True)
 
         if reward_simple:
             print("Use simple reward system!")
         else:
             print("Use complex reward system!")
 
-        actions = env.action_space.n
+        # Build Agent
+        agent = self.build_agent()
 
+        # Get optimizer
+        optimizer = self.build_adam()
+
+        # compile the agent
+        agent.compile(optimizer=optimizer, metrics=["mae"])
+
+        # create callbacks
         callbacks = []
 
-        path = f"{self._path_prefix}output/weights/p_date={self.datetime}"
+        path = f"{self.base_path}output/weights/p_date={self.datetime}"
 
         # Create dir
-        os.mkdir(path)
+        # os.mkdir(path)
 
         print(f"Create subdir: {path}")
 
@@ -390,54 +425,37 @@ class KniffelRL:
 
         callbacks += [FileLogger(log_file, interval=1_000)]
 
-        callbacks += [EarlyStopping(patience=10, monitor="episode_reward", mode="max")]
-
-        # Save configuration json
-        json_object = json.dumps(hyperparameter, indent=4)
-
-        self._append_file(f"{path}/configuration.json", json_object)
-
-        agent, _ = self.train_agent(
-            actions=actions,
-            env=env,
+        # fit the agent
+        agent.fit(
+            self.env,
             nb_steps=nb_steps,
-            load_path=load_path,
+            visualize=False,
+            verbose=1,
+            nb_max_episode_steps=39,
             callbacks=callbacks,
+            log_interval=50_000,
         )
 
-        test_scores = self.validate_model(agent, env=env)
+        # SAVE
 
-        # save weights and configuration as json
+        # 1. Save configuration json
+        self._append_file(f"{path}/configuration.json", json.dumps(self.agent_dict, indent=4))
+
+        # 2. Save the weight from the model
         agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
-        (
-            break_counter,
-            mean_points,
-            max_points,
-            min_points,
-            mean_rounds,
-            max_rounds,
-            min_rounds,
-        ) = self.play(path, episodes, env_config)
 
-        # datetime object containing current date and time
-        now = datetime.now()
+        # TEST AND PLAY
 
-        # dd/mm/YY H:M:S
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        # Validate model
+        self.validate_model(agent)
 
-        result = f"""
-Datetime: {dt_string}
-    Finished games: {break_counter}/{episodes}
-    Average points: {mean_points}
-    Max points: {max_points}
-    Min points: {min_points}
-    Average rounds: {mean_rounds}
-    Max rounds: {max_rounds}
-    Min rounds: {min_rounds}
-        """
+        # play
+        metrics = self.play(agent, path, episodes)
 
-        self._append_file(path=f"{path}/info.txt", content=result)
+        self._append_file(path=f"{path}/info.txt", content=json.dumps(metrics, indent=4, sort_keys=True))
+
+        return metrics
 
     def apply_prediction(
         self, kniffel: Kniffel, enum_action: EnumAction, logging=False
@@ -572,171 +590,42 @@ Datetime: {dt_string}
 
         return enum_action
 
-    # Use Model
+    # Play model
     def play(
         self,
-        path,
-        episodes,
-        env_config,
-        random=False,
-        logging=False,
+        agent: DQNAgent,
+        path: str,
+        episodes:int,
         write=False,
-        weights_name="weights",
     ):
-        break_counter = 0
-        mean_points = 0
-        max_points = 0
-        min_points = 0
-        mean_rounds = 0
-        max_rounds = 0
-        min_rounds = 0
+        print(f"Play {episodes} games from model {path}.")
+        print()
 
-        if random:
-            print(f"Play {episodes} random games.")
-            print()
-            self.play_random(episodes, env_config)
-
-        else:
-            print(f"Play {episodes} games from model {path}.")
-            print()
-            (
-                break_counter,
-                mean_points,
-                max_points,
-                min_points,
-                mean_rounds,
-                max_rounds,
-                min_rounds,
-            ) = self.use_model(
-                path,
-                episodes,
-                env_config,
-                weights_name=weights_name,
-                logging=logging,
-                write=write,
-            )
-
-        return (
-            break_counter,
-            mean_points,
-            max_points,
-            min_points,
-            mean_rounds,
-            max_rounds,
-            min_rounds,
-        )
-
-    def play_random(self, episodes, env_config):
-        env = KniffelEnv(
-            env_config,
-            logging=True,
-            config_file_path=self._config_path,
-            env_observation_space=self._env_observation_space,
-            env_action_space=self._env_action_space,
-        )
-
-        bar = IncrementalBar("Games played", max=episodes)
-
-        round = 1
-        for episode in range(1, episodes + 1):
-            bar.next()
-            state = env.reset()
-            done = False
-            score = 0
-
-            print("####")
-            print(round)
-
-            try_out = 1
-            while not done:
-                action = env.action_space.sample()
-                n_state, reward, done, info = env.step(action)
-                score += reward
-                print(f"Try: {try_out}")
-                print(f"Action: {action}")
-                print(f"Score: {score}")
-                print(n_state)
-                try_out += 1
-
-            print("Episode:{} Score:{}".format(episode, score))
-
-            round += 1
-
-        bar.finish()
-
-    def build_use_agent(
-        self,
+        metrics = self.use_model(
+            agent,
         path,
         episodes,
-        env_config,
-        weights_name="weights",
-        logging=False,
-    ):
-        env = KniffelEnv(
-            env_config,
-            logging=logging,
-            config_file_path=self._config_path,
-            env_observation_space=self._env_observation_space,
-            env_action_space=self._env_action_space,
-        )
-
-        f = open(f"{path}/configuration.json")
-        self._hyperparater_base = dict(json.load(f))
-
-        actions = env.action_space.n
-
-        model = self.build_model(actions)
-        agent = self.build_agent(model, actions, nb_steps=episodes)
-        if (
-            self.get_hyperparameter("agent") == "DQN"
-            or self.get_hyperparameter("agent") == "SARSA"
-        ):
-            agent.compile(
-                Adam(
-                    learning_rate=self.get_hyperparameter(
-                        "{}_adam_learning_rate".format(
-                            self.get_hyperparameter("agent").lower()
-                        )
-                    ),
-                    beta_1=self.get_hyperparameter(
-                        "{}_adam_beta_1".format(
-                            self.get_hyperparameter("agent").lower()
-                        )
-                    ),
-                    beta_2=self.get_hyperparameter(
-                        "{}_adam_beta_2".format(
-                            self.get_hyperparameter("agent").lower()
-                        )
-                    ),
-                    epsilon=self.get_hyperparameter(
-                        "{}_adam_epsilon".format(
-                            self.get_hyperparameter("agent").lower()
-                        ),
-                    ),
-                ),
+        write=write,
             )
-        elif self.get_hyperparameter("agent") == "CEM":
-            agent.compile()
 
-        if logging:
-            print(f"Load weights {path}/{weights_name}.h5f")
+        return metrics
 
-        agent.load_weights(f"{path}/{weights_name}.h5f".format())
-
-        return agent
+    def calculate_custom_metric(self, l: list):
+        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l] # type: ignore
+        return np.mean(sm_list)
 
     def use_model(
         self,
-        path,
-        episodes,
-        env_config,
-        weights_name="weights",
-        logging=False,
-        write=False,
+        agent :DQNAgent,
+        path: str,
+        episodes:int,
+        write:bool=False,
     ):
         points = []
         rounds = []
         break_counter = 0
+
+        print("Start playing games...")
 
         bar = IncrementalBar(
             "Games played",
@@ -745,59 +634,59 @@ Datetime: {dt_string}
         )
 
         kniffel_env = KniffelEnvHelper(
-            env_config=env_config,
-            logging=logging,
+            env_config=self.env_config,
+            logging=self.logging,
             config_file_path=self._config_path,
         )
 
-        agent = self.build_use_agent(path, episodes, env_config, weights_name, logging)
+        model = agent.model
 
         for e in range(1, episodes + 1):
-            agent.reset_states()
-            bar.next()
-
             if write:
                 self._append_file(
                     path=f"{path}/game_log/log.txt",
                     content="\n".join(KniffelDraw().draw_kniffel_title().split("\n")),
-                )
+                )            
 
+            # reset values
+            agent.reset_states()
+            bar.next()
             kniffel_env.reset_kniffel()
-
             rounds_counter = 1
+            done = False
 
-            while True:
+            while not done:
                 log_csv = []
 
+                # Get fresh state
                 state = kniffel_env.get_state()
 
+                # predict action
+                action = agent.forward(state)
+                enum_action = EnumAction(action)
+
+                # Apply action to model
+                reward, done, info = kniffel_env.predict_and_apply(action)
+
+                # Apply action to model
+                agent.backward(reward, done)
+                
+                # DEBUG
                 log_csv.append(
                     f"\n####################################################################################\n"
                 )
-
-                action = agent.forward(state)
-
-                enum_action = EnumAction(action)
-
                 log_csv.append(f"##  Try: {rounds_counter}\n")
                 log_csv.append(
                     f"##  Attempts left: {kniffel_env.kniffel.get_last().attempts_left()}/3\n"
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
-
                 log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
-
-                reward, done, info = kniffel_env.predict_and_apply(action)
-                agent.backward(reward, done)
-
                 log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
                 if not done:
+                    # if game not over increase round counter
                     rounds_counter += 1
-
                 else:
-                    # agent.memory.append(state, action, 0, True, False)
-
                     if not info["error"]:
                         points.append(kniffel_env.kniffel.get_points())
                         rounds.append(rounds_counter)
@@ -860,202 +749,66 @@ Datetime: {dt_string}
 
         bar.finish()
 
-        print()
-        print(f"Finished games: {episodes - break_counter}/{episodes}")
-        print(f"Average points: {mean(points)}")
-        print(f"Max points: {max(points)}")
-        print(f"Min points: {min(points)}")
-        print(f"Average rounds: {mean(rounds)}")
-        print(f"Max rounds: {max(rounds)}")
-        print(f"Min rounds: {min(rounds)}")
+        metrics = {
+            "finished_games": episodes - break_counter,
+            "error_games": break_counter,
+            "rounds_played": episodes, 
+            "average_points": np.mean(points),
+            "max_points": max(points),
+            "min_points": min(points),
+            "average_rounds": np.mean(rounds),
+            "max_rounds": max(rounds),
+            "min_rounds": min(rounds),
+            "custom_metric": self.calculate_custom_metric(points),
+        }
 
-        return (
-            (episodes - break_counter),
-            mean(points),
-            max(points),
-            min(points),
-            mean(rounds),
-            max(rounds),
-            min(rounds),
-        )
+        print(json.dumps(metrics, indent=4, sort_keys=True))
 
-
-def play(rl: KniffelRL, env_config: dict, dir_name: str, weights_name: str = ""):
-    """Play a model
-
-    Args:
-        rl (KniffelRL): Kniffel RL Class
-        env_config (dict): environment dict
-    """
-    episodes = 10  # 2_000
-    path = f"output/weights/{dir_name}"
-
-    if not os.path.exists(f"{path}/checkpoint"):
-        print("No checkpoint found, therefore no weights found.")
-        return
-
-    if weights_name == "":
-        with open(f"{path}/checkpoint") as f:
-            line0 = f.readlines()[0]
-            weights_name = line0.split('model_checkpoint_path: "')[1].split('.h5f"')[0]
-
-    (
-        break_counter,
-        mean_points,
-        max_points,
-        min_points,
-        mean_rounds,
-        max_rounds,
-        min_rounds,
-    ) = rl.play(
-        path=path,
-        episodes=episodes,
-        env_config=env_config,
-        weights_name=weights_name,
-        logging=False,
-        write=True,
-    )
-
-    from datetime import datetime
-
-    # datetime object containing current date and time
-    now = datetime.now()
-
-    # dd/mm/YY H:M:S
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-
-    result = f"""
-Datetime: {dt_string}, weights_name: {weights_name}
-    Finished games: {break_counter}/{episodes}
-    Average points: {mean_points}
-    Max points: {max_points}
-    Min points: {min_points}
-    Average rounds: {mean_rounds}
-    Max rounds: {max_rounds}
-    Min rounds: {min_rounds}
-    """
-
-    rl._append_file(path=f"{path}/info.txt", content=result)
-
-
-def train(rl: KniffelRL, env_config: dict, dir_name: str):
-    """Train a model
-
-    Args:
-        rl (KniffelRL): Kniffel RL Class
-        env_config (dict): environment dict
-    """
-    reward_simple = False
-
-    rl._train(
-        nb_steps=20_000_000,
-        env_config=env_config,
-        load_path=f"output/weights/{dir_name}",
-        logging=False,
-        reward_simple=reward_simple,
-    )
-
-
-def test_all_weights(rl: KniffelRL, env_config: dict):
-    from pathlib import Path
-
-    episodes = 2_500
-
-    file_number = 50000
-
-    folder = "current-best-v1"
-
-    while True:
-        weights_file = Path(
-            str(Path(__file__).parents[2])
-            + "/output/weights/"
-            + folder
-            + "/weights_"
-            + str(file_number)
-            + ".h5f.index"
-        )
-        if weights_file.is_file():
-            print("Load weights: weights_" + str(file_number))
-
-            (
-                break_counter,
-                mean_points,
-                max_points,
-                min_points,
-                mean_rounds,
-                max_rounds,
-                min_rounds,
-            ) = rl.play(
-                path="output/weights/" + folder,
-                episodes=episodes,
-                env_config=env_config,
-                weights_name="weights_" + str(file_number),
-                logging=False,
-                write=False,
-            )
-
-            with open(
-                str(Path(__file__).parents[2])
-                + "/output/weights/"
-                + folder
-                + "/weights_test.txt",
-                "a",
-            ) as myfile:
-                myfile.write("weights_" + str(file_number) + "\n\n")
-                myfile.write(
-                    f"  Finished games: {float(int(break_counter)/int(episodes))}% ({break_counter}/{episodes})\n"
-                )
-                myfile.write(f"  Average points: {mean_points}\n")
-                myfile.write(f"  Max points: {max_points}\n")
-                myfile.write(f"  Min points: {min_points}\n")
-                myfile.write(f"  Average rounds: {mean_rounds}\n")
-                myfile.write(f"  Max rounds: {max_rounds}\n")
-                myfile.write(f"  Min rounds: {min_rounds}\n\n")
-
-            file_number += 50000
-
-        else:
-            break
-
+        return metrics
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    hyperparameter = {
-    "agent": "DQN",
-    "windows_length": 1,
-    "layers": 1,
-    "n_units_l1": 128,
-    "n_activation_l1": "relu",
-    "activation": "linear",
-    "dqn_memory_limit": 850000,
-    "dqn_target_model_update": 467,
-    "enable_dueling_network": False,
-    "train_policy": "BoltzmannQPolicy",
-    "boltzmann_tau": 1.0,
-    "batch_size": 32,
-    "dqn_enable_double_dqn": True,
-    "dqn_adam_learning_rate": 0.002294227812991094,
-    "dqn_adam_epsilon": 0.017663581150131127
-}
+    env_config = {
+        "reward_roll_dice": 0,
+        "reward_game_over": -25,
+        "reward_finish": 25,
+        "reward_bonus": 7,
+        "reward_simple": False,
+    }
+
+    agent_dict = {'activation': 'tanh',
+        'agent': 'DQN',
+        'batch_size': 128,
+        'dqn_adam_amsgrad': True,
+        'dqn_adam_beta_1': 0.06673816055360411,
+        'dqn_adam_beta_2': 0.990329256873792,
+        'dqn_adam_epsilon': 0.9890763438061195,
+        'dqn_adam_learning_rate': 0.08350853863946625,
+        'dqn_enable_double_dqn': True,
+        'dqn_memory_limit': 400000,
+        'dqn_target_model_update_float': 0.09932745805714228,
+        'enable_dueling_network': True,
+        'eps_greedy_eps': 0.20094821555459225,
+        'layers': 2,
+        'n_activation_l1': 'tanh',
+        'n_activation_l2': 'tanh',
+        'n_units_l1': 32,
+        'n_units_l2': 96,
+        'train_policy': 'EpsGreedyQPolicy',
+        'windows_length': 1,
+        'anneal_steps': 100_000
+        }
+
 
     rl = KniffelRL(
-        load=False,
+        agent_dict=agent_dict,
+        base_path=str(Path(__file__).parents[2]) + "/",
+        env_config=env_config,
         config_path="src/config/config.csv",
-        path_prefix=str(Path(__file__).parents[2]) + "/",
-        hyperparater_base=hyperparameter,
         env_observation_space=47,
         env_action_space=57,
     )
 
-    env_config = {
-        "reward_roll_dice": 0,
-        "reward_game_over": -40,
-        "reward_finish": 15,
-        "reward_bonus": 5,
-    }
-
-    dir_name = "bestv6"
-
-    # play(rl, env_config, dir_name)
-    train(rl, env_config, dir_name)
+    rl.train(20_000_000)
+    # rl.play(dir_name="p_date=2022-12-19-22_11_30", episodes=5, write=True)

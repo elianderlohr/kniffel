@@ -200,7 +200,7 @@ class KniffelRL:
 
         elif key == "MaxBoltzmannQPolicy":
 
-            clip = self._trial.suggest_int("boltzmann_clip", 200, 1000, step=100)
+            clip = self._trial.suggest_int("max_boltzmann_eps", 200, 1000, step=100)
 
             policy = MaxBoltzmannQPolicy(
                 eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1),
@@ -397,7 +397,7 @@ class KniffelRL:
             custom_metric,
         )
 
-    def train(self, nb_steps=10_000, env_config="", reward_simple=True):
+    def train(self, nb_steps=10_000, env_config={}, reward_simple=True):
         env = KniffelEnv(
             env_config,
             config_file_path=self._config_path,
@@ -563,7 +563,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=1000,
+        n_trials=12,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )
