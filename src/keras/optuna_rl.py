@@ -74,7 +74,10 @@ class KniffelRL:
         trial: optuna.trial.Trial = None,
         env_action_space=57,
         env_observation_space=20,
+        env_config={},
     ):
+        self.env_config = env_config
+
         self._hyperparater_base = hyperparater_base
         self._test_episodes = test_episodes
         self._config_path = config_path
@@ -98,6 +101,36 @@ class KniffelRL:
                 self._path_prefix = ""
         else:
             self._path_prefix = path_prefix
+
+        # if env_config has reward_mode
+        if "reward_mode" in env_config:
+            if env_config["reward_mode"] == "kniffel" or env_config["reward_mode"] == "custom":
+                print("Reward mode set to '{}'".format(env_config["reward_mode"]))
+                self.reward_mode = env_config["reward_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'kniffel' or 'custom'".format(
+                        env_config["reward_mode"]
+                    )
+                )
+        else:
+            self.reward_mode = "kniffel"
+            print("No reward mode set, using default 'kniffel'")
+
+        # if env_config has state_mode
+        if "state_mode" in env_config:
+            if env_config["state_mode"] == "binary" or env_config["state_mode"] == "continuous":
+                print("State mode set to '{}'".format(env_config["state_mode"]))
+                self.state_mode = env_config["state_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'binary' or 'continuous'".format(
+                        env_config["state_mode"]
+                    )
+                )
+        else:
+            self.state_mode = "binary"
+            print("No state mode set, using default 'binary'")
 
     def _return_trial(self, key):
         return self._trial.suggest_categorical(key, self._hyperparater_base[key])
@@ -200,7 +233,7 @@ class KniffelRL:
 
         elif key == "MaxBoltzmannQPolicy":
 
-            clip = self._trial.suggest_int("max_boltzmann_eps", 200, 1000, step=100)
+            clip = self._trial.suggest_int("max_boltzmann_clip", 200, 1000, step=100)
 
             policy = MaxBoltzmannQPolicy(
                 eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1),
@@ -397,13 +430,14 @@ class KniffelRL:
             custom_metric,
         )
 
-    def train(self, nb_steps=10_000, env_config={}, reward_simple=True):
+    def train(self, nb_steps=10_000):
         env = KniffelEnv(
-            env_config,
+            self.env_config,
             config_file_path=self._config_path,
             env_action_space=self._env_action_space,
             env_observation_space=self._env_observation_space,
-            reward_simple=reward_simple,
+            reward_mode=self.reward_mode,
+            state_mode=self.state_mode,
         )
 
         agent, _ = self.train_agent(
@@ -443,8 +477,6 @@ class KniffelRL:
 
 def objective(trial):
 
-    reward_simple = False
-
     base_hp = {
         "windows_length": [1],
         "batch_size": [32],
@@ -479,6 +511,8 @@ def objective(trial):
         "reward_game_over": -25,
         "reward_finish": 25,
         "reward_bonus": 7,
+        "reward_mode": "custom",
+        "state_mode": "binary",
     }
 
     rl = KniffelRL(
@@ -488,6 +522,7 @@ def objective(trial):
         trial=trial,
         env_observation_space=47,
         env_action_space=57,
+        env_config=env_config
     )
 
     (
@@ -502,7 +537,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(env_config=env_config, nb_steps=250_000, reward_simple=reward_simple)
+    ) = rl.train(nb_steps=250_000)
 
     trial.set_user_attr("server", str(server))
     # trial.set_user_attr("custom_metric", float(custom_metric))
