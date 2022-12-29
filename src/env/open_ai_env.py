@@ -30,24 +30,18 @@ class KniffelEnv(Env):
         env_config,
         config_file_path="/Kniffel.CSV",
         logging=False,
-        reward_roll_dice=0,
-        reward_game_over=-200,
-        reward_bonus=5,
-        reward_finish=10,
         env_action_space=57,
         env_observation_space=20,
-        reward_simple=True,
+        reward_mode="kniffel", # kniffel, custom
+        state_mode="binary", # binary, continuous
     ):
         """Initialize Kniffel Envioronment"""
         self.kniffel_helper = KniffelEnvHelper(
             env_config,
             logging=False,
             config_file_path=config_file_path,
-            reward_roll_dice=reward_roll_dice,
-            reward_game_over=reward_game_over,
-            reward_bonus=reward_bonus,
-            reward_finish=reward_finish,
-            reward_simple=reward_simple,
+            reward_mode=reward_mode,
+            state_mode=state_mode,
         )
 
         # Actions we can take

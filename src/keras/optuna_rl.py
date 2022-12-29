@@ -238,7 +238,7 @@ class KniffelRL:
             #    "dqn_target_model_update_is_float", [True, False]
             #)
 
-            dqn_target_model_update_float = True
+            dqn_target_model_update_float = False
             
             dqn_target_model_update = 0
             if dqn_target_model_update_float:
@@ -247,7 +247,7 @@ class KniffelRL:
                 )
             else:
                 dqn_target_model_update = self._trial.suggest_int(
-                    "dqn_target_model_update_int", 1, 10_000, step=10
+                    "dqn_target_model_update_int", 1, 10_000
                 )
 
             enable_dueling_network = self._trial.suggest_categorical(
@@ -314,16 +314,16 @@ class KniffelRL:
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
             _learning_rate = self._trial.suggest_float(
                 "{}_adam_learning_rate".format(self._agent_value.lower()),
-                1e-6,1e-1
+                1e-6, 1e-2
             )            
             _beta1 = self._trial.suggest_float(
-                "{}_adam_beta_1".format(self._agent_value.lower()), 1e-6,1e-1
+                "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
             )
             _beta2 = self._trial.suggest_float(
-                "{}_adam_beta_2".format(self._agent_value.lower()), 0.1,0.999
+                "{}_adam_beta_2".format(self._agent_value.lower()), 0.6, 1
             )
             _epsilon = self._trial.suggest_float(
-                "{}_adam_epsilon".format(self._agent_value.lower()), 0.1,0.999
+                "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
             )
             _amsgrad = self._trial.suggest_categorical("{}_adam_amsgrad".format(self._agent_value.lower()), [False, True])
 
@@ -563,7 +563,7 @@ if __name__ == "__main__":
 
     study.optimize(
         objective,
-        n_trials=12,
+        n_trials=1000,
         catch=(ValueError,),
         n_jobs=args.jobs,
     )

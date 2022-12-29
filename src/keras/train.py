@@ -109,6 +109,36 @@ class KniffelRL:
 
         self.logging = logging
 
+        # if env_config has reward_mode
+        if "reward_mode" in env_config:
+            if env_config["reward_mode"] == "kniffel" or env_config["reward_mode"] == "custom":
+                print("Reward mode set to '{}'".format(env_config["reward_mode"]))
+                self.reward_mode = env_config["reward_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'kniffel' or 'custom'".format(
+                        env_config["reward_mode"]
+                    )
+                )
+        else:
+            self.reward_mode = "kniffel"
+            print("No reward mode set, using default 'kniffel'")
+
+        # if env_config has state_mode
+        if "state_mode" in env_config:
+            if env_config["state_mode"] == "binary" or env_config["state_mode"] == "continuous":
+                print("State mode set to '{}'".format(env_config["state_mode"]))
+                self.state_mode = env_config["state_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'binary' or 'continuous'".format(
+                        env_config["state_mode"]
+                    )
+                )
+        else:
+            self.state_mode = "binary"
+            print("No state mode set, using default 'binary'")
+
         self.env = self.get_kniffel_env()
 
         self.agent_dict = agent_dict
@@ -339,6 +369,8 @@ class KniffelRL:
             config_file_path=self._config_path,
             env_observation_space=self._env_observation_space,
             env_action_space=self._env_action_space,
+            reward_mode=self.reward_mode,
+            state_mode=self.state_mode,
         )
 
         return env
@@ -377,8 +409,6 @@ class KniffelRL:
     ):
         episodes = 1_000
 
-        reward_simple = self.env_config["reward_simple"]
-
         dir_name = "p_date={}/".format(self.datetime)
 
         path = os.path.join(
@@ -388,11 +418,6 @@ class KniffelRL:
         # Create dir
         print(f"Create subdir: {path}")
         os.makedirs(path, exist_ok=True)
-
-        if reward_simple:
-            print("Use simple reward system!")
-        else:
-            print("Use complex reward system!")
 
         # Build Agent
         agent = self.build_agent()
@@ -774,31 +799,31 @@ if __name__ == "__main__":
         "reward_game_over": -25,
         "reward_finish": 25,
         "reward_bonus": 7,
-        "reward_simple": False,
+        "reward_mode": "custom",
+        "state_mode": "binary",
     }
 
-    agent_dict = {'activation': 'tanh',
+    agent_dict = {'activation': 'softmax',
         'agent': 'DQN',
-        'batch_size': 128,
+        'batch_size': 32,
         'dqn_adam_amsgrad': True,
-        'dqn_adam_beta_1': 0.06673816055360411,
-        'dqn_adam_beta_2': 0.990329256873792,
-        'dqn_adam_epsilon': 0.9890763438061195,
-        'dqn_adam_learning_rate': 0.08350853863946625,
+        'dqn_adam_beta_1': 0.07413427797004694,
+        'dqn_adam_beta_2': 0.7934674227386145,
+        'dqn_adam_epsilon': 0.9850266019583699,
+        'dqn_adam_learning_rate': 0.09887324836826909,
         'dqn_enable_double_dqn': True,
-        'dqn_memory_limit': 400000,
-        'dqn_target_model_update_float': 0.09932745805714228,
+        'dqn_memory_limit': 550000,
+        'dqn_target_model_update_float': 0.063075917992795,
         'enable_dueling_network': True,
-        'eps_greedy_eps': 0.20094821555459225,
+        'eps_greedy_eps': 0.1909757855541791,
         'layers': 2,
         'n_activation_l1': 'tanh',
         'n_activation_l2': 'tanh',
-        'n_units_l1': 32,
+        'n_units_l1': 64,
         'n_units_l2': 96,
         'train_policy': 'EpsGreedyQPolicy',
         'windows_length': 1,
-        'anneal_steps': 100_000
-        }
+        "anneal_steps": 1_000_000,}
 
 
     rl = KniffelRL(

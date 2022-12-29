@@ -121,12 +121,9 @@ class KniffelEnvHelper:
         env_config,
         logging=False,
         config_file_path="/Kniffel.CSV",
-        reward_roll_dice=0,
-        reward_game_over=-200,
-        reward_bonus=5,
-        reward_finish=10,
         custom_kniffel=False,
-        reward_simple=True,
+        reward_mode="kniffel", # kniffel, custom
+        state_mode="binary", # binary, continuous
     ):
         # http://www.brefeld.homepage.t-online.de/kniffel.html
         # http://www.brefeld.homepage.t-online.de/kniffel-strategie.html
@@ -159,20 +156,32 @@ class KniffelEnvHelper:
                 for k, v in d.items()
             }
 
-        self._reward_roll_dice = self.put_parameter(
-            env_config, "reward_roll_dice", reward_roll_dice
-        )
-        self._reward_game_over = self.put_parameter(
-            env_config, "reward_game_over", reward_game_over
-        )
-        self._reward_bonus = self.put_parameter(
-            env_config, "reward_bonus", reward_bonus
-        )
-        self._reward_finish = self.put_parameter(
-            env_config, "reward_finish", reward_finish
-        )
+        self.reward_mode = reward_mode
+        self.state_mode = state_mode
 
-        self.reward_simple = reward_simple
+        if "reward_roll_dice" in env_config:
+            self._reward_roll_dice = env_config["reward_roll_dice"]
+        else:
+            self._reward_roll_dice = 0
+            print("reward_roll_dice not in env_config, set to default '0'")
+
+        if "reward_game_over" in env_config:
+            self._reward_game_over = env_config["reward_game_over"]
+        else:
+            self._reward_game_over = 25
+            print("reward_game_over not in env_config, set to default '25'")
+
+        if "reward_bonus" in env_config:
+            self._reward_bonus = env_config["reward_bonus"]
+        else:
+            self._reward_bonus = 25
+            print("reward_bonus not in env_config, set to default '25'")
+
+        if "reward_finish" in env_config:
+            self._reward_finish = env_config["reward_finish"]
+        else:
+            self._reward_finish = 5
+            print("reward_finish not in env_config, set to default '5'")
 
     def reset_kniffel(self):
         self.kniffel = Kniffel()
@@ -316,7 +325,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_ONES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.ONES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     points = selected_option.points / 1
@@ -325,7 +334,7 @@ class KniffelEnvHelper:
                 finished_turn = True
             if EnumAction.FINISH_TWOS is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.TWOS)
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     dice_count = selected_option.points / 2
@@ -335,7 +344,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_THREES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.THREES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     dice_count = selected_option.points / 3
@@ -345,7 +354,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_FOURS is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOURS)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     dice_count = selected_option.points / 4
@@ -355,7 +364,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_FIVES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FIVES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     dice_count = selected_option.points / 5
@@ -365,7 +374,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_SIXES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.SIXES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     dice_count = selected_option.points / 6
@@ -375,7 +384,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_THREE_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.THREE_TIMES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     reward += self.reward_three_times(selected_option.points)
@@ -384,7 +393,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_FOUR_TIMES is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     reward += self.reward_four_times(selected_option.points)
@@ -393,7 +402,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_FULL_HOUSE is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.FULL_HOUSE)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += 25
                 else:
                     reward += self.get_config_param(
@@ -404,7 +413,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_SMALL_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.SMALL_STREET)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += 30
                 else:
                     reward += self.get_config_param(
@@ -415,7 +424,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_LARGE_STREET is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.LARGE_STREET)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += 40
                 else:
                     reward += self.get_config_param(
@@ -426,7 +435,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_KNIFFEL is enum_action:
                 self.kniffel.finish_turn(KniffelOptions.KNIFFEL)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += 50
                 else:
                     reward += self.get_config_param(
@@ -437,7 +446,7 @@ class KniffelEnvHelper:
             if EnumAction.FINISH_CHANCE is enum_action:
                 selected_option = self.kniffel.finish_turn(KniffelOptions.CHANCE)
 
-                if self.reward_simple:
+                if self.reward_mode == "kniffel":
                     reward += selected_option.points
                 else:
                     points = selected_option.points

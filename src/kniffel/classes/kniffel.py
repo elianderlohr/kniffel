@@ -29,12 +29,14 @@ class Kniffel:
         ex.SelectedOptionException: Exception when wrong option is selected
     """
 
-    turns: Attempt = list()
+    turns: Attempt = list() # type: ignore
     logging = False
 
-    def __init__(self, logging: bool = False, custom=False):
-        self.turns: Attempt = []
+    def __init__(self, logging: bool = False, custom=False, state_mode="binary"): # state_mode: binary, continuous
+        self.turns: Attempt = list() # type: ignore
         self.logging = logging
+        self.state_mode = state_mode
+        
         if not custom:
             self.start()
 
@@ -44,6 +46,8 @@ class Kniffel:
     def get(self, id: int) -> Attempt:
         if id < self.get_length():
             return self.turns[id]
+        else:
+            raise Exception("Attempt not found")
 
     def get_selected_option(self, status: list, id: int) -> list:
         """Return the selected option from the attempt with the defined id
@@ -160,14 +164,13 @@ class Kniffel:
         option: KniffelOptions,
         option_alternative: KniffelOptions,
         scaler: int,
-        use_points: bool = False,
     ) -> float:
         for id in range(self.get_length()):
             turn = self.get_turn(id)
 
             if turn.status is KniffelStatus.FINISHED:
                 if turn.selected_option.id is option.value:
-                    if use_points:
+                    if self.state_mode == "continuous":
                         return turn.selected_option.points / scaler
                     else:
                         return 1
@@ -243,44 +246,44 @@ class Kniffel:
         status.append(1 if self.is_bonus() else 0)
 
         status.append(
-            self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5, True)
+            self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10, True)
+            self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15, True)
+            self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20, True)
+            self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25, True)
+            self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30, True)
+            self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30,)
         )
 
         status.append(
-            self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30, True)
+            self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30, True)
+            self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30,)
         )
         status.append(
-            self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25, False)
+            self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25, )
         )
         status.append(
-            self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30, False)
+            self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30, )
         )
         status.append(
-            self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40, False)
+            self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40, )
         )
         status.append(
-            self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50, False)
+            self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50, )
         )
         status.append(
-            self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30, True)
+            self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30,)
         )
 
         return np.array([np.array(status)])
