@@ -122,8 +122,8 @@ class KniffelEnvHelper:
         logging=False,
         config_file_path="/Kniffel.CSV",
         custom_kniffel=False,
-        reward_mode="kniffel", # kniffel, custom
-        state_mode="binary", # binary, continuous
+        reward_mode="kniffel",  # kniffel, custom
+        state_mode="binary",  # binary, continuous
     ):
         # http://www.brefeld.homepage.t-online.de/kniffel.html
         # http://www.brefeld.homepage.t-online.de/kniffel-strategie.html
@@ -692,10 +692,12 @@ class KniffelEnvHelper:
             if e.args[0] == "Game finished!":
                 done = True
 
-                if self.kniffel.get_points() > self._reward_finish:
-                    reward += self.kniffel.get_points()
-                else:
-                    reward += self._reward_finish
+                # if self.kniffel.get_points() > self._reward_finish:
+                #    reward += self.kniffel.get_points()
+                # else:
+                #    reward += self._reward_finish
+
+                reward += self._reward_finish
 
                 info = {
                     "finished": True,
@@ -723,7 +725,20 @@ class KniffelEnvHelper:
                     print(f"   Error in game: {e}")
                     print("   " + str(info))
 
-        if not slashed and not done and finished_turn:
+        if (
+            not slashed
+            and not done
+            and finished_turn
+            and enum_action
+            in [
+                enum_action.FINISH_ONES,
+                enum_action.FINISH_TWOS,
+                enum_action.FINISH_THREES,
+                enum_action.FINISH_FOURS,
+                enum_action.FINISH_FIVES,
+                enum_action.FINISH_SIXES,
+            ]
+        ):
             # Add bonus to reward
             if self.kniffel.is_bonus():
                 reward += self._reward_bonus

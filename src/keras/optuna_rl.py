@@ -512,7 +512,7 @@ def objective(trial):
         "reward_finish": 25,
         "reward_bonus": 7,
         "reward_mode": "custom",
-        "state_mode": "binary",
+        "state_mode": "continuous",
     }
 
     rl = KniffelRL(

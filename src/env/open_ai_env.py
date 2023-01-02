@@ -35,7 +35,19 @@ class KniffelEnv(Env):
         reward_mode="kniffel", # kniffel, custom
         state_mode="binary", # binary, continuous
     ):
-        """Initialize Kniffel Envioronment"""
+        """
+        Kniffel environment
+        
+        Args:
+            env_config (dict): Environment config
+            config_file_path (str, optional): Path to config file. Defaults to "/Kniffel.CSV".
+            logging (bool, optional): Enable logging. Defaults to False.
+            env_action_space (int, optional): Action space. Defaults to 57.
+            env_observation_space (int, optional): Observation space. Defaults to 20.
+            reward_mode (str, optional): Reward mode: "kniffel" or "custom". Defaults to "kniffel".
+            state_mode (str, optional): State mode: "binary" or "continuous". Defaults to "binary".
+        """
+
         self.kniffel_helper = KniffelEnvHelper(
             env_config,
             logging=False,

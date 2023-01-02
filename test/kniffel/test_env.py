@@ -430,6 +430,8 @@ def apply_and_reset(env, action, dices, reset=True):
     return score
 
 
+
+
 def test_individual():
     env = KniffelEnv(
         env_config,
