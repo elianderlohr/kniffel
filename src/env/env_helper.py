@@ -692,12 +692,12 @@ class KniffelEnvHelper:
             if e.args[0] == "Game finished!":
                 done = True
 
-                # if self.kniffel.get_points() > self._reward_finish:
-                #    reward += self.kniffel.get_points()
-                # else:
-                #    reward += self._reward_finish
+                if self.kniffel.get_points() > self._reward_finish:
+                    reward += self.kniffel.get_points()
+                else:
+                    reward += self._reward_finish
 
-                reward += self._reward_finish
+                # reward += self._reward_finish
 
                 info = {
                     "finished": True,
