@@ -880,5 +880,5 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(load_dir_name="current-best-v2", nb_steps=20_000_000, load_weights=True)
+    rl.train(nb_steps=20_000_000, load_weights=False)
     # rl.play(dir_name="p_date=2023-01-02-10_36_56", episodes=1000, write=False)
