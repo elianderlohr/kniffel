@@ -104,7 +104,10 @@ class KniffelRL:
 
         # if env_config has reward_mode
         if "reward_mode" in env_config:
-            if env_config["reward_mode"] == "kniffel" or env_config["reward_mode"] == "custom":
+            if (
+                env_config["reward_mode"] == "kniffel"
+                or env_config["reward_mode"] == "custom"
+            ):
                 print("Reward mode set to '{}'".format(env_config["reward_mode"]))
                 self.reward_mode = env_config["reward_mode"]
             else:
@@ -119,7 +122,10 @@ class KniffelRL:
 
         # if env_config has state_mode
         if "state_mode" in env_config:
-            if env_config["state_mode"] == "binary" or env_config["state_mode"] == "continuous":
+            if (
+                env_config["state_mode"] == "binary"
+                or env_config["state_mode"] == "continuous"
+            ):
                 print("State mode set to '{}'".format(env_config["state_mode"]))
                 self.state_mode = env_config["state_mode"]
             else:
@@ -228,7 +234,7 @@ class KniffelRL:
 
             policy = BoltzmannQPolicy(
                 tau=self._trial.suggest_float("boltzmann_tau", 0.05, 1, step=0.05),
-                clip=(clip * -1, clip)
+                clip=(clip * -1, clip),
             )
 
         elif key == "MaxBoltzmannQPolicy":
@@ -238,7 +244,7 @@ class KniffelRL:
             policy = MaxBoltzmannQPolicy(
                 eps=self._trial.suggest_float("max_boltzmann_eps", 1e-5, 1),
                 tau=self._trial.suggest_float("max_boltzmann_tau", 0.05, 1, step=0.05),
-                clip=(clip * -1, clip)
+                clip=(clip * -1, clip),
             )
         elif key == "BoltzmannGumbelQPolicy":
 
@@ -267,16 +273,16 @@ class KniffelRL:
                 window_length=self.window_length,
             )
 
-            #dqn_target_model_update_float = self._trial.suggest_categorical(
+            # dqn_target_model_update_float = self._trial.suggest_categorical(
             #    "dqn_target_model_update_is_float", [True, False]
-            #)
+            # )
 
             dqn_target_model_update_float = False
-            
+
             dqn_target_model_update = 0
             if dqn_target_model_update_float:
                 dqn_target_model_update = self._trial.suggest_float(
-                    "dqn_target_model_update_float", 1e-6,1e-1
+                    "dqn_target_model_update_float", 1e-6, 1e-1
                 )
             else:
                 dqn_target_model_update = self._trial.suggest_int(
@@ -299,7 +305,9 @@ class KniffelRL:
                 else float(dqn_target_model_update),
                 batch_size=self._return_trial("batch_size"),
                 enable_double_dqn=bool(self._return_trial("dqn_enable_double_dqn")),
-                dueling_type="avg" if enable_dueling_network else str(self._return_trial("dqn_dueling_option")),
+                dueling_type="avg"
+                if enable_dueling_network
+                else str(self._return_trial("dqn_dueling_option")),
             )
 
         elif self._agent_value == "CEM":
@@ -341,14 +349,13 @@ class KniffelRL:
         nb_steps,
     ):
         model = self.build_model(actions)
-        
-        agent = self.build_agent(model, actions, nb_steps=nb_steps) 
-        
+
+        agent = self.build_agent(model, actions, nb_steps=nb_steps)
+
         if self._agent_value == "DQN" or self._agent_value == "SARSA":
             _learning_rate = self._trial.suggest_float(
-                "{}_adam_learning_rate".format(self._agent_value.lower()),
-                1e-6, 1e-2
-            )            
+                "{}_adam_learning_rate".format(self._agent_value.lower()), 1e-6, 1e-2
+            )
             _beta1 = self._trial.suggest_float(
                 "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
             )
@@ -358,15 +365,19 @@ class KniffelRL:
             _epsilon = self._trial.suggest_float(
                 "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
             )
-            _amsgrad = self._trial.suggest_categorical("{}_adam_amsgrad".format(self._agent_value.lower()), [False, True])
+            _amsgrad = self._trial.suggest_categorical(
+                "{}_adam_amsgrad".format(self._agent_value.lower()), [False, True]
+            )
 
-            agent.compile(Adam(
+            agent.compile(
+                Adam(
                     learning_rate=_learning_rate,
                     beta_1=_beta1,
                     beta_2=_beta2,
                     epsilon=_epsilon,
-                    amsgrad=bool(_amsgrad)
-                ),)
+                    amsgrad=bool(_amsgrad),
+                ),
+            )
         elif self._agent_value == "CEM":
             agent.compile()
 
@@ -510,7 +521,7 @@ def objective(trial):
         "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 7,
+        "reward_bonus": 25,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }
@@ -522,7 +533,7 @@ def objective(trial):
         trial=trial,
         env_observation_space=47,
         env_action_space=57,
-        env_config=env_config
+        env_config=env_config,
     )
 
     (
