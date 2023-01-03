@@ -1008,6 +1008,6 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(nb_steps=20_000_000, load_weights=True, load_dir_name="current-best-v2")
+    rl.train(nb_steps=20_000_000, load_weights=False, load_dir_name="current-best-v2")
     # rl.play(dir_name="current-best-v2", episodes=5, write=True)
     # rl.evaluate(dir_name="current-best-v2", episodes=1_000)

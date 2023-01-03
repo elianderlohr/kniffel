@@ -11,6 +11,7 @@ class DiceSet:
         if mock is None:
             self.roll()
         else:
+            mock = sorted(mock)
             self.dices = {
                 1: Dice(mock=mock[0]),
                 2: Dice(mock=mock[1]),
@@ -25,7 +26,11 @@ class DiceSet:
         """
         Roll the five dices
         """
-        self.dices = {1: Dice(), 2: Dice(), 3: Dice(), 4: Dice(), 5: Dice()}
+        dices = [Dice(), Dice(), Dice(), Dice(), Dice()]
+
+        dices = sorted(dices, key=lambda x: x.get())
+
+        self.dices = {key: value for key, value in enumerate(dices, start=1)}
 
     def get(self):
         """
