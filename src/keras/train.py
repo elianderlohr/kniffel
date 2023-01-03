@@ -491,6 +491,15 @@ class KniffelRL:
             f"{path}/configuration.json", json.dumps(self.agent_dict, indent=4)
         )
 
+        self._append_file(
+            f"{path}/env_config.txt",
+            json.dumps(
+                env_config,
+                indent=4,
+                sort_keys=True,
+            ),
+        )
+
         # 2. Save the weight from the model
         agent.save_weights(f"{path}/weights.h5f", overwrite=False)
 
@@ -704,9 +713,7 @@ class KniffelRL:
             config_file_path=self._config_path,
         )
 
-        model = agent.model
-
-        for e in range(1, episodes + 1):
+        for _ in range(1, episodes + 1):
             if write:
                 self._append_file(
                     path=f"{path}/game_log/log.txt",
@@ -831,6 +838,127 @@ class KniffelRL:
 
         return metrics
 
+    # Play model
+    def evaluate(
+        self,
+        dir_name: str,
+        episodes: int = 1_000,
+    ):
+        path = f"{self.base_path}output/weights/{dir_name}"
+
+        print(f"Play {episodes} games from model from path: {path}.")
+        print()
+
+        # Build Agent
+        agent = self.build_agent()
+
+        # Get optimizer
+        optimizer = self.build_adam()
+
+        # compile the agent
+        agent.compile(optimizer=optimizer, metrics=["mae"])
+
+        # load the weights
+        agent.load_weights(f"{path}/weights.h5f")
+
+        self.evaluate_model(agent, episodes)
+
+    def evaluate_model(
+        self,
+        agent: DQNAgent,
+        episodes: int,
+    ):
+        points = []
+        rounds = []
+        break_counter = 0
+
+        print("Start evaluating games...")
+
+        bar = IncrementalBar(
+            "Games played",
+            max=episodes,
+            suffix="%(index)d/%(max)d - %(eta)ds",
+        )
+
+        kniffel_env = KniffelEnvHelper(
+            env_config=self.env_config,
+            logging=self.logging,
+            config_file_path=self._config_path,
+        )
+
+        action_dict = {}
+        bonus_counter = 0  # count bonus
+
+        for _ in range(1, episodes + 1):
+            # reset values
+            agent.reset_states()
+            bar.next()
+            kniffel_env.reset_kniffel()
+            rounds_counter = 1
+            done = False
+
+            while not done:
+                # Get fresh state
+                state = kniffel_env.get_state()
+
+                # predict action
+                action = agent.forward(state)
+                enum_action = EnumAction(action)
+
+                # add enum action
+                action_dict[enum_action] = (
+                    action_dict[enum_action] + 1 if enum_action in action_dict else 1
+                )
+
+                # Apply action to model
+                reward, done, info = kniffel_env.predict_and_apply(action)
+
+                # Apply action to model
+                agent.backward(reward, done)
+
+                if not done:
+                    # if game not over increase round counter
+                    rounds_counter += 1
+                else:
+                    if not info["error"]:
+                        points.append(kniffel_env.kniffel.get_points())
+                        rounds.append(rounds_counter)
+                        rounds_counter = 1
+
+                        break
+                    else:
+                        points.append(kniffel_env.kniffel.get_points())
+                        rounds.append(rounds_counter)
+                        break_counter += 1
+                        rounds_counter = 1
+
+                        break
+
+            bonus_counter += 1 if kniffel_env.kniffel.is_bonus() else 0
+
+        bar.finish()
+
+        for i in range(0, 56):
+            if EnumAction(i) in action_dict:
+                print(f"{EnumAction(i).name}: {action_dict[EnumAction(i)]}")
+            else:
+                print(f"{EnumAction(i).name}: 0")
+
+        metrics = {
+            "bonus_counter": bonus_counter,
+            "finished_games": episodes - break_counter,
+            "error_games": break_counter,
+            "rounds_played": episodes,
+            "average_points": np.mean(points),
+            "max_points": max(points),
+            "min_points": min(points),
+            "average_rounds": np.mean(rounds),
+            "max_rounds": max(rounds),
+            "min_rounds": min(rounds),
+        }
+
+        print(json.dumps(metrics, indent=4, sort_keys=True))
+
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -848,25 +976,25 @@ if __name__ == "__main__":
         "activation": "linear",
         "agent": "DQN",
         "batch_size": 32,
-        "boltzmann_gumbel_C": 0.08490492399689675,
         "dqn_adam_amsgrad": True,
-        "dqn_adam_beta_1": 0.8603304246300448,
-        "dqn_adam_beta_2": 0.9945633743612863,
-        "dqn_adam_epsilon": 4.800024646425516e-05,
-        "dqn_adam_learning_rate": 0.0010524627761797874,
-        "dqn_dueling_option": "max",
+        "dqn_adam_beta_1": 0.8770788026018081,
+        "dqn_adam_beta_2": 0.8894717766504484,
+        "dqn_adam_epsilon": 7.579405338028617e-05,
+        "dqn_adam_learning_rate": 0.0029242299694621833,
+        "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 100000,
-        "dqn_target_model_update_int": 1116,
+        "dqn_memory_limit": 150000,
+        "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
+        "eps_greedy_eps": 0.22187387376395634,
         "layers": 3,
         "n_activation_l1": "relu",
         "n_activation_l2": "tanh",
         "n_activation_l3": "relu",
         "n_units_l1": 96,
         "n_units_l2": 128,
-        "n_units_l3": 224,
-        "train_policy": "BoltzmannGumbelQPolicy",
+        "n_units_l3": 256,
+        "train_policy": "EpsGreedyQPolicy",
         "windows_length": 1,
         "anneal_steps": 1000000,
     }
@@ -880,5 +1008,6 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(nb_steps=20_000_000, load_weights=False)
-    # rl.play(dir_name="p_date=2023-01-02-10_36_56", episodes=1000, write=False)
+    rl.train(nb_steps=20_000_000, load_weights=True, load_dir_name="current-best-v2")
+    # rl.play(dir_name="current-best-v2", episodes=5, write=True)
+    # rl.evaluate(dir_name="current-best-v2", episodes=1_000)

@@ -31,3 +31,13 @@ def test_get_dice():
     assert dice_set.get_dice(3).get() == 3
     assert dice_set.get_dice(4).get() == 4
     assert dice_set.get_dice(5).get() == 5
+
+
+def test_dict_sort():
+    dice_set = DiceSet()
+
+    assert dice_set.get_as_array() == sorted(dice_set.get_as_array())
+
+    mock_set = DiceSet(mock=[5, 4, 3, 2, 1])
+
+    assert mock_set.get_as_array() == [1, 2, 3, 4, 5]

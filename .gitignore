@@ -27,3 +27,5 @@
 */.py.amltmp
 
 run_optuna.sh
+
+src/jupyter/optuna-plot.ipynb
