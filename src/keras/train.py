@@ -975,7 +975,7 @@ if __name__ == "__main__":
     agent_dict = {
         "activation": "linear",
         "agent": "DQN",
-        "batch_size": 256,
+        "batch_size": 512,
         "dqn_adam_amsgrad": True,
         "dqn_adam_beta_1": 0.8770788026018081,
         "dqn_adam_beta_2": 0.8894717766504484,
