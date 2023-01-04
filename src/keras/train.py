@@ -254,7 +254,7 @@ class KniffelRL:
 
         elif key == "BoltzmannQPolicy":
 
-            clip = self.get_hyperparameter("max_boltzmann_clip")
+            clip = self.get_hyperparameter("boltzmann_clip")
 
             policy = BoltzmannQPolicy(
                 tau=self.get_hyperparameter("boltzmann_tau"), clip=(clip * -1, clip)
@@ -492,7 +492,7 @@ class KniffelRL:
         )
 
         self._append_file(
-            f"{path}/env_config.txt",
+            f"{path}/env_config.json",
             json.dumps(
                 env_config,
                 indent=4,
@@ -964,7 +964,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
-        "reward_roll_dice": 0,
+        "reward_roll_dice": 0.5,
         "reward_game_over": -25,
         "reward_finish": 25,
         "reward_bonus": 25,
@@ -975,7 +975,7 @@ if __name__ == "__main__":
     agent_dict = {
         "activation": "linear",
         "agent": "DQN",
-        "batch_size": 32,
+        "batch_size": 256,
         "dqn_adam_amsgrad": True,
         "dqn_adam_beta_1": 0.8770788026018081,
         "dqn_adam_beta_2": 0.8894717766504484,
@@ -1008,6 +1008,10 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(nb_steps=20_000_000, load_weights=False, load_dir_name="current-best-v2")
+    rl.train(
+        nb_steps=20_000_000,
+        load_weights=True,
+        load_dir_name="p_date=2023-01-04-14_42_34",
+    )
     # rl.play(dir_name="current-best-v2", episodes=5, write=True)
     # rl.evaluate(dir_name="current-best-v2", episodes=1_000)

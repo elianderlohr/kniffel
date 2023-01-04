@@ -1,0 +1,12 @@
+{
+    "average_points": 153.392,
+    "average_rounds": 32.51,
+    "custom_metric": 24432.922,
+    "error_games": 93,
+    "finished_games": 907,
+    "max_points": 233,
+    "max_rounds": 39,
+    "min_points": 45,
+    "min_rounds": 16,
+    "rounds_played": 1000
+}
