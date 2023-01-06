@@ -290,7 +290,7 @@ class KniffelRL:
                 )
 
             enable_dueling_network = self._trial.suggest_categorical(
-                "enable_dueling_network", [True, False]
+                "enable_dueling_network", [False]
             )
 
             agent = DQNAgent(
@@ -356,18 +356,23 @@ class KniffelRL:
             _learning_rate = self._trial.suggest_float(
                 "{}_adam_learning_rate".format(self._agent_value.lower()), 1e-6, 1e-2
             )
-            _beta1 = self._trial.suggest_float(
-                "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
-            )
-            _beta2 = self._trial.suggest_float(
-                "{}_adam_beta_2".format(self._agent_value.lower()), 0.6, 1
-            )
-            _epsilon = self._trial.suggest_float(
-                "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
-            )
-            _amsgrad = self._trial.suggest_categorical(
-                "{}_adam_amsgrad".format(self._agent_value.lower()), [False, True]
-            )
+
+            # _beta1 = self._trial.suggest_float(
+            #    "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
+            # )
+            # _beta2 = self._trial.suggest_float(
+            #    "{}_adam_beta_2".format(self._agent_value.lower()), 0.6, 1
+            # )
+            # _epsilon = self._trial.suggest_float(
+            #    "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
+            # )
+            # _amsgrad = self._trial.suggest_categorical(
+            #    "{}_adam_amsgrad".format(self._agent_value.lower()), [False, True]
+            # )
+            _beta1 = 0.8770788026018081
+            _beta2 = 0.8894717766504484
+            _epsilon = 7.579405338028617e-05
+            _amsgrad = True
 
             agent.compile(
                 Adam(
@@ -489,39 +494,20 @@ class KniffelRL:
 def objective(trial):
 
     base_hp = {
-        "windows_length": [1],
+        "windows_length": [1, 2, 3, 4, 5],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
-        "activation": ["linear", "relu", "sigmoid", "tanh"],
-        "dqn_enable_double_dqn": [True, False],
+        "activation": ["linear"],
+        "dqn_enable_double_dqn": [True],
         "agent": ["DQN"],
-        "linear_inner_policy": [
-            "EpsGreedyQPolicy",
-            "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-        ],
-        "train_policy": [
-            "LinearAnnealedPolicy",
-            "EpsGreedyQPolicy",
-            "GreedyQPolicy",
-            "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-            "BoltzmannGumbelQPolicy",
-        ],
-        "test_policy": [
-            "LinearAnnealedPolicy",
-            "EpsGreedyQPolicy",
-            "GreedyQPolicy",
-            "BoltzmannQPolicy",
-            "MaxBoltzmannQPolicy",
-        ],
+        "train_policy": ["EpsGreedyQPolicy"],
     }
 
     env_config = {
-        "reward_roll_dice": 0,
+        "reward_roll_dice": 0.5,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 25,
+        "reward_bonus": 35,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }
@@ -548,7 +534,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(nb_steps=250_000)
+    ) = rl.train(nb_steps=1_000_000)
 
     trial.set_user_attr("server", str(server))
     # trial.set_user_attr("custom_metric", float(custom_metric))
