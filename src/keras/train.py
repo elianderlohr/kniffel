@@ -1012,7 +1012,7 @@ if __name__ == "__main__":
         "n_units_l2": 128,
         "n_units_l3": 256,
         "train_policy": "EpsGreedyQPolicy",
-        "windows_length": 1,
+        "windows_length": 3,
         "anneal_steps": 1000000,
     }
 
