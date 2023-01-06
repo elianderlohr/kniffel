@@ -10,13 +10,13 @@ class KniffelCheck:
 
         base = [x for x in base_list if x not in blacklist]
 
-        dice_list = ds.to_list()
+        dice_list = ds.to_int_list()
         for v in base:
             if dice_list.count(v) >= n:
                 return True
 
     def what_occures_n_times(self, ds: DiceSet, n: int):
-        dice_list = ds.to_list()
+        dice_list = ds.to_int_list()
         if dice_list.count(1) >= n:
             return 1
         if dice_list.count(2) >= n:
@@ -38,7 +38,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(1)
+        c = ds.to_int_list().count(1)
         return KniffelOptionClass("ones", c, ds=ds, id=KniffelOptions.ONES)
 
     def check_2(self, ds: DiceSet):
@@ -47,7 +47,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(2)
+        c = ds.to_int_list().count(2)
         return KniffelOptionClass("twos", c * 2, ds=ds, id=KniffelOptions.TWOS)
 
     def check_3(self, ds: DiceSet):
@@ -56,7 +56,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(3)
+        c = ds.to_int_list().count(3)
         return KniffelOptionClass("threes", c * 3, ds=ds, id=KniffelOptions.THREES)
 
     def check_4(self, ds: DiceSet):
@@ -65,7 +65,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(4)
+        c = ds.to_int_list().count(4)
         return KniffelOptionClass("fours", c * 4, ds=ds, id=KniffelOptions.FOURS)
 
     def check_5(self, ds: DiceSet):
@@ -74,7 +74,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(5)
+        c = ds.to_int_list().count(5)
         return KniffelOptionClass("fives", c * 5, ds=ds, id=KniffelOptions.FIVES)
 
     def check_6(self, ds: DiceSet):
@@ -83,7 +83,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        c = ds.to_list().count(6)
+        c = ds.to_int_list().count(6)
         return KniffelOptionClass("sixes", c * 6, ds=ds, id=KniffelOptions.SIXES)
 
     def check_three_times(self, ds: DiceSet):
@@ -97,7 +97,7 @@ class KniffelCheck:
         if has_three_same == True:
             return KniffelOptionClass(
                 name="three-times",
-                points=sum(ds.to_list()),
+                points=sum(ds.to_int_list()),
                 is_possible=True,
                 ds=ds,
                 id=KniffelOptions.THREE_TIMES,
@@ -122,7 +122,7 @@ class KniffelCheck:
         if has_four_same == True:
             return KniffelOptionClass(
                 name="four-times",
-                points=sum(ds.to_list()),
+                points=sum(ds.to_int_list()),
                 is_possible=True,
                 ds=ds,
                 id=KniffelOptions.FOUR_TIMES,
@@ -172,7 +172,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        dice_list = ds.to_list()
+        dice_list = ds.to_int_list()
 
         has_small_street = False
 
@@ -221,7 +221,7 @@ class KniffelCheck:
 
         :param DiceSet ds: set of dices
         """
-        dice_list = ds.to_list()
+        dice_list = ds.to_int_list()
 
         has_large_street = False
 
@@ -290,7 +290,7 @@ class KniffelCheck:
         """
         return KniffelOptionClass(
             name="chance",
-            points=sum(ds.to_list()),
+            points=sum(ds.to_int_list()),
             is_possible=True,
             ds=ds,
             id=KniffelOptions.CHANCE,

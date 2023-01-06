@@ -660,6 +660,13 @@ class KniffelRL:
     ):
         path = f"{self.base_path}output/weights/{dir_name}"
 
+        agent_dict_play = {}
+        # read json file to dict
+        with open(f"{path}/configuration.json", "r") as f:
+            agent_dict_play = json.load(f)
+
+        self.agent_dict = agent_dict_play
+
         print(f"Play {episodes} games from model from path: {path}.")
         print()
 
@@ -732,6 +739,7 @@ class KniffelRL:
 
                 # Get fresh state
                 state = kniffel_env.get_state()
+                dices = kniffel_env.kniffel.get_last().get_latest().to_int_list()
 
                 # predict action
                 action = agent.forward(state)
@@ -753,7 +761,8 @@ class KniffelRL:
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
                 log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
-                log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
+
+                # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
                 if not done:
                     # if game not over increase round counter
@@ -765,7 +774,11 @@ class KniffelRL:
                         rounds_counter = 1
 
                         log_csv.append(
-                            "####################################################################################\n"
+                            "\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel)
+                        )
+
+                        log_csv.append(
+                            "\n\n####################################################################################\n"
                         )
                         log_csv.append(
                             "####################################################################################\n"
@@ -786,6 +799,10 @@ class KniffelRL:
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
+
+                        log_csv.append(
+                            "\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel)
+                        )
 
                         log_csv.append(
                             "\n\n####################################################################################"
@@ -967,7 +984,7 @@ if __name__ == "__main__":
         "reward_roll_dice": 0.5,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 25,
+        "reward_bonus": 35,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }
@@ -975,15 +992,15 @@ if __name__ == "__main__":
     agent_dict = {
         "activation": "linear",
         "agent": "DQN",
-        "batch_size": 256,
+        "batch_size": 32,
         "dqn_adam_amsgrad": True,
         "dqn_adam_beta_1": 0.8770788026018081,
         "dqn_adam_beta_2": 0.8894717766504484,
         "dqn_adam_epsilon": 7.579405338028617e-05,
-        "dqn_adam_learning_rate": 0.0029242299694621833,
+        "dqn_adam_learning_rate": 0.0015,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 150000,
+        "dqn_memory_limit": 1500000,
         "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
         "eps_greedy_eps": 0.22187387376395634,
@@ -995,7 +1012,7 @@ if __name__ == "__main__":
         "n_units_l2": 128,
         "n_units_l3": 256,
         "train_policy": "EpsGreedyQPolicy",
-        "windows_length": 1,
+        "windows_length": 3,
         "anneal_steps": 1000000,
     }
 
@@ -1008,10 +1025,10 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(
-        nb_steps=20_000_000,
-        load_weights=False,
-        load_dir_name="p_date=2023-01-04-14_42_34",
-    )
-    # rl.play(dir_name="current-best-v2", episodes=5, write=True)
-    # rl.evaluate(dir_name="current-best-v2", episodes=1_000)
+    # rl.train(
+    #    nb_steps=20_000_000,
+    #    load_weights=False,
+    #    load_dir_name="current-best-v3",
+    # )
+    rl.play(dir_name="current-best-v3", episodes=5, write=True)
+    # rl.evaluate(dir_name="current-best-v2", episodes=10_000)

@@ -1,8 +1,0 @@
-{
-    "reward_bonus": 25,
-    "reward_finish": 25,
-    "reward_game_over": -25,
-    "reward_mode": "custom",
-    "reward_roll_dice": 0,
-    "state_mode": "continuous"
-}

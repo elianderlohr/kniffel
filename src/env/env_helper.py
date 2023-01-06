@@ -318,8 +318,6 @@ class KniffelEnvHelper:
         # Apply action
         enum_action = EnumAction(action)
 
-        dices = self.kniffel.get_last().get_latest().get_as_array()
-
         try:
             # Finish Actions
             if EnumAction.FINISH_ONES is enum_action:

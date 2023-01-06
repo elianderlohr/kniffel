@@ -29,14 +29,16 @@ class Kniffel:
         ex.SelectedOptionException: Exception when wrong option is selected
     """
 
-    turns: Attempt = list() # type: ignore
+    turns: list = []
     logging = False
 
-    def __init__(self, logging: bool = False, custom=False, state_mode="binary"): # state_mode: binary, continuous
-        self.turns: Attempt = list() # type: ignore
+    def __init__(
+        self, logging: bool = False, custom=False, state_mode="binary"
+    ):  # state_mode: binary, continuous
+        self.turns: list = []
         self.logging = logging
         self.state_mode = state_mode
-        
+
         if not custom:
             self.start()
 
@@ -89,33 +91,33 @@ class Kniffel:
         attempt1 = None
         attempt2 = None
         attempt3 = None
-        selected_option = None
+        selected_option: list = []
 
         if 0 <= id < self.get_length():
             attempt1 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
-                if len(self.turns[id].attempts) <= 0
-                else np.array(self.turns[id].attempts[0].get_as_array(), dtype=np.int8)
+                if len(self.get(id).attempts) <= 0
+                else np.array(self.get(id).get_attempt(0).to_dice_list(), dtype=np.int8)
             )
 
             attempt2 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
-                if len(self.turns[id].attempts) <= 1
-                else np.array(self.turns[id].attempts[1].get_as_array(), dtype=np.int8)
+                if len(self.get(id).attempts) <= 1
+                else np.array(self.get(id).get_attempt(1).to_dice_list(), dtype=np.int8)
             )
 
             attempt3 = (
                 np.array([0, 0, 0, 0, 0], dtype=np.int8)
-                if len(self.turns[id].attempts) <= 2
-                else np.array(self.turns[id].attempts[2].get_as_array(), dtype=np.int8)
+                if len(self.get(id).attempts) <= 2
+                else np.array(self.get(id).get_attempt(2).to_dice_list(), dtype=np.int8)
             )
 
             if with_option:
                 selected_option = (
                     np.array([0], dtype=np.int8)
-                    if self.turns[id].selected_option is None
+                    if self.get(id).get_selected_option() is None
                     else np.array(
-                        [self.turns[id].selected_option.get_id()], dtype=np.int8
+                        [self.get(id).get_selected_option().get_id()], dtype=np.int8
                     )
                 )
         else:
@@ -148,13 +150,13 @@ class Kniffel:
     def get_last_id(self) -> int:
         latest_turn_id = len(self.turns) - 1
 
-        if self.turns[latest_turn_id].status == KniffelStatus.FINISHED:
+        if self.get_turn(latest_turn_id).status == KniffelStatus.FINISHED:
             latest_turn_id += 1
 
         return latest_turn_id
 
     def get_last(self) -> Attempt:
-        return self.turns[-1]
+        return self.get_turn(-1)
 
     def get_turn(self, id: int) -> Attempt:
         return self.turns[id]
@@ -169,12 +171,12 @@ class Kniffel:
             turn = self.get_turn(id)
 
             if turn.status is KniffelStatus.FINISHED:
-                if turn.selected_option.id is option.value:
+                if turn.get_selected_option().id is option.value:
                     if self.state_mode == "continuous":
-                        return turn.selected_option.points / scaler
+                        return turn.get_selected_option().points / scaler
                     else:
                         return 1
-                elif turn.selected_option.id is option_alternative.value:
+                elif turn.get_selected_option().id is option_alternative.value:
                     return 0
 
         return -1
@@ -186,9 +188,9 @@ class Kniffel:
             turn = self.get_turn(id)
 
             if turn.status is KniffelStatus.FINISHED:
-                if turn.selected_option.id is option.value:
-                    return turn.selected_option.points
-                elif turn.selected_option.id is option_alternative.value:
+                if turn.get_selected_option().id is option.value:
+                    return turn.get_selected_option().points
+                elif turn.get_selected_option().id is option_alternative.value:
                     return -10
 
         return 0
@@ -211,19 +213,19 @@ class Kniffel:
 
         status = list()
         status = self.create_one_hot_dice_encoding(
-            status, turn.get_latest().get_as_array()[0]
+            status, turn.get_latest().to_dice_list()[0]
         )
         status = self.create_one_hot_dice_encoding(
-            status, turn.get_latest().get_as_array()[1]
+            status, turn.get_latest().to_dice_list()[1]
         )
         status = self.create_one_hot_dice_encoding(
-            status, turn.get_latest().get_as_array()[2]
+            status, turn.get_latest().to_dice_list()[2]
         )
         status = self.create_one_hot_dice_encoding(
-            status, turn.get_latest().get_as_array()[3]
+            status, turn.get_latest().to_dice_list()[3]
         )
         status = self.create_one_hot_dice_encoding(
-            status, turn.get_latest().get_as_array()[4]
+            status, turn.get_latest().to_dice_list()[4]
         )
 
         # Tries played
@@ -246,44 +248,96 @@ class Kniffel:
         status.append(1 if self.is_bonus() else 0)
 
         status.append(
-            self.get_option_point(KniffelOptions(1), KniffelOptions(14), 5,)
+            self.get_option_point(
+                KniffelOptions(1),
+                KniffelOptions(14),
+                5,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(2), KniffelOptions(15), 10,)
+            self.get_option_point(
+                KniffelOptions(2),
+                KniffelOptions(15),
+                10,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(3), KniffelOptions(16), 15,)
+            self.get_option_point(
+                KniffelOptions(3),
+                KniffelOptions(16),
+                15,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(4), KniffelOptions(17), 20,)
+            self.get_option_point(
+                KniffelOptions(4),
+                KniffelOptions(17),
+                20,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(5), KniffelOptions(18), 25,)
+            self.get_option_point(
+                KniffelOptions(5),
+                KniffelOptions(18),
+                25,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(6), KniffelOptions(19), 30,)
+            self.get_option_point(
+                KniffelOptions(6),
+                KniffelOptions(19),
+                30,
+            )
         )
 
         status.append(
-            self.get_option_point(KniffelOptions(7), KniffelOptions(20), 30,)
+            self.get_option_point(
+                KniffelOptions(7),
+                KniffelOptions(20),
+                30,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(8), KniffelOptions(21), 30,)
+            self.get_option_point(
+                KniffelOptions(8),
+                KniffelOptions(21),
+                30,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(9), KniffelOptions(22), 25, )
+            self.get_option_point(
+                KniffelOptions(9),
+                KniffelOptions(22),
+                25,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(10), KniffelOptions(23), 30, )
+            self.get_option_point(
+                KniffelOptions(10),
+                KniffelOptions(23),
+                30,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(11), KniffelOptions(24), 40, )
+            self.get_option_point(
+                KniffelOptions(11),
+                KniffelOptions(24),
+                40,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(12), KniffelOptions(25), 50, )
+            self.get_option_point(
+                KniffelOptions(12),
+                KniffelOptions(25),
+                50,
+            )
         )
         status.append(
-            self.get_option_point(KniffelOptions(13), KniffelOptions(26), 30,)
+            self.get_option_point(
+                KniffelOptions(13),
+                KniffelOptions(26),
+                30,
+            )
         )
 
         return np.array([np.array(status)])
@@ -303,7 +357,6 @@ class Kniffel:
         if self.turns_left() > 0:
             if self.is_new_game() or self.is_turn_finished():
                 self.turns.append(Attempt())
-
             try:
                 self.get_last().add_attempt(keep)
             except Exception as e:
@@ -334,6 +387,8 @@ class Kniffel:
                 raise ex.TurnFinishedException()
         else:
             raise ex.SelectedOptionException()
+
+        return None  # type: ignore
 
     def get_points(self):
         """

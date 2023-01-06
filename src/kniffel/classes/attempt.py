@@ -11,11 +11,23 @@ class Attempt:
     status = KniffelStatus.INIT
     option = KniffelOptions.DEFAULT
     logging = False
-    selected_option = None
+    selected_option: KniffelOptionClass = None
 
     def __init__(self, logging: bool = False):
         self.attempts = []
         self.logging = logging
+
+    def get_attempt(self, index: int) -> DiceSet:
+        """
+        Get attempts
+        """
+        return self.attempts[index]
+
+    def get_selected_option(self) -> KniffelOptionClass:
+        """
+        Get selected option
+        """
+        return self.selected_option
 
     def is_active(self):
         """
@@ -45,27 +57,29 @@ class Attempt:
         """
         return 3 - self.count()
 
-    def add_attempt(self, keep: list = None, dice_set: DiceSet = None):
+    def add_attempt(self, keep: list = [], dice_set: DiceSet = None):
         """
         Add new attempt.
         Optionally keep selected dices
 
         :param list keep: hot encoded array which dices to keep. (1 = keep, 0 = re-roll)
+        :param DiceSet dice_set: dice set to use for the attempt
         """
         self.status = KniffelStatus.ATTEMPTING
 
         if dice_set is None:
             dice_set = DiceSet()
+            assert sorted(dice_set.to_int_list()) == dice_set.to_int_list()
 
         if self.count() >= 3:
             raise ex.TurnFinishedException()
         else:
             if self.is_active() and self.count() > 0 and keep is not None:
-                old_set = self.attempts[-1]
+                old_set = self.get_latest()
 
                 for i in range(1, len(keep) + 1):
                     if keep[i - 1] == 1:
-                        dice_set.set_dice(index=i, value=old_set.get_dice(i))
+                        dice_set.set_dice(index=i, dice=old_set.get_dice(i))
 
             self.attempts.append(dice_set)
 
@@ -265,14 +279,11 @@ class Attempt:
         """
         self.add_attempt(dice_set=mock)
 
-    def to_list(self):
+    def to_int_list(self):
         """
         Transform list of dice objects to simple int array list
         """
-        values = []
-        for v in self.attempts:
-            values.append(v.to_list())
-        return values
+        return [v.get_values() for v in self.attempts]
 
     def print(self):
         """
@@ -283,9 +294,9 @@ class Attempt:
                 "Turn (finished): "
                 + str(len(self.attempts))
                 + " - "
-                + str(self.to_list())
+                + str(self.to_int_list())
                 + " - "
                 + str(self.selected_option)
             )
         else:
-            print("Turn: " + str(len(self.attempts)) + " - " + str(self.to_list()))
+            print("Turn: " + str(len(self.attempts)) + " - " + str(self.to_int_list()))

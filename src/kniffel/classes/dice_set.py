@@ -2,23 +2,28 @@ from src.kniffel.classes.dice import Dice
 
 
 class DiceSet:
-    dices = {}
-    logging = False
+    dices: dict = {}
+    logging: bool = False
 
-    def __init__(self, mock: list = None, logging: bool = False):
-        self.dices = {}
+    def __init__(self, mock: list = [], logging: bool = False):
+        """Initialize DiceSet
 
-        if mock is None:
+        :param mock: list, defaults to []
+        :param logging: bool, defaults to False
+        """
+        self.dices: dict = {}
+
+        if len(mock) == 0:
             self.roll()
         else:
             mock = sorted(mock)
-            self.dices = {
-                1: Dice(mock=mock[0]),
-                2: Dice(mock=mock[1]),
-                3: Dice(mock=mock[2]),
-                4: Dice(mock=mock[3]),
-                5: Dice(mock=mock[4]),
-            }
+
+            print("Len of mock: ", len(mock))
+            self.dices[1] = Dice(mock=mock[0])
+            self.dices[2] = Dice(mock=mock[1])
+            self.dices[3] = Dice(mock=mock[2])
+            self.dices[4] = Dice(mock=mock[3])
+            self.dices[5] = Dice(mock=mock[4])
 
         self.logging = logging
 
@@ -26,11 +31,24 @@ class DiceSet:
         """
         Roll the five dices
         """
-        dices = [Dice(), Dice(), Dice(), Dice(), Dice()]
+        self.dices[1] = Dice()
+        self.dices[2] = Dice()
+        self.dices[3] = Dice()
+        self.dices[4] = Dice()
+        self.dices[5] = Dice()
 
-        dices = sorted(dices, key=lambda x: x.get())
+        self.sort()
 
-        self.dices = {key: value for key, value in enumerate(dices, start=1)}
+    def sort(self):
+        """
+        Sort the dice set
+
+        :param dict dice_set: dice set to sort
+        """
+        self.dices = dict(sorted(self.dices.items(), key=lambda item: item[1].value))
+
+        # Make sure the dices are sorted
+        assert sorted(self.to_int_list()) == self.to_int_list()
 
     def get(self):
         """
@@ -38,7 +56,12 @@ class DiceSet:
         """
         return self.dices
 
-    def get_as_array(self):
+    def to_dice_list(self):
+        """
+        Get dice values as list of Dice objects
+
+        :return: list of Dice objects
+        """
         return [v.get() for _, v in self.dices.items()]
 
     def get_dice(self, index: int):
@@ -49,26 +72,27 @@ class DiceSet:
         """
         return self.dices[index]
 
-    def set_dice(self, index: int, value: int):
+    def set_dice(self, index: int, dice: Dice):
         """
         Set the value of a dice in the set
 
         :param int index: index of dice to set value
-        :param int value: value to set
+        :param Dice dice: new dice to set
         """
-        self.dices[index] = value
+        self.dices[index] = dice
 
-    def to_list(self):
+        self.sort()
+
+    def to_int_list(self):
         """
-        Transform list of dice objects to simple int array list
+        Get dice values as list of integers
+
+        :return: list of integers
         """
-        values = []
-        for v in self.dices.values():
-            values.append(v.get())
-        return values
+        return [v.get() for v in self.dices.values()]
 
     def print(self):
         """
         Print dice array
         """
-        print(self.to_list())
+        print(self.to_int_list())
