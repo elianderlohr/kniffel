@@ -1012,7 +1012,7 @@ if __name__ == "__main__":
         "n_units_l2": 128,
         "n_units_l3": 256,
         "train_policy": "EpsGreedyQPolicy",
-        "windows_length": 3,
+        "windows_length": 1,
         "anneal_steps": 1000000,
     }
 
@@ -1025,10 +1025,10 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    # rl.train(
-    #    nb_steps=20_000_000,
-    #    load_weights=False,
-    #    load_dir_name="current-best-v3",
-    # )
-    rl.play(dir_name="current-best-v3", episodes=5, write=True)
+    rl.train(
+        nb_steps=20_000_000,
+        load_weights=True,
+        load_dir_name="current-best-v3",
+    )
+    # rl.play(dir_name="current-best-v3", episodes=5, write=False)
     # rl.evaluate(dir_name="current-best-v2", episodes=10_000)
