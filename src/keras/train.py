@@ -1027,7 +1027,7 @@ if __name__ == "__main__":
 
     rl.train(
         nb_steps=20_000_000,
-        load_weights=True,
+        load_weights=False,
         load_dir_name="current-best-v3",
     )
     # rl.play(dir_name="current-best-v3", episodes=5, write=False)
