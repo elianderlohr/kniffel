@@ -878,12 +878,13 @@ class KniffelRL:
         # load the weights
         agent.load_weights(f"{path}/weights.h5f")
 
-        self.evaluate_model(agent, episodes)
+        self.evaluate_model(agent, episodes, path=path)
 
     def evaluate_model(
         self,
         agent: DQNAgent,
         episodes: int,
+        path: str = "",
     ):
         points = []
         rounds = []
@@ -903,10 +904,10 @@ class KniffelRL:
             config_file_path=self._config_path,
         )
 
-        action_dict = {}
+        actions = []
         bonus_counter = 0  # count bonus
 
-        for _ in range(1, episodes + 1):
+        for game_id in range(1, episodes + 1):
             # reset values
             agent.reset_states()
             bar.next()
@@ -922,13 +923,22 @@ class KniffelRL:
                 action = agent.forward(state)
                 enum_action = EnumAction(action)
 
-                # add enum action
-                action_dict[enum_action] = (
-                    action_dict[enum_action] + 1 if enum_action in action_dict else 1
-                )
-
                 # Apply action to model
                 reward, done, info = kniffel_env.predict_and_apply(action)
+
+                # add action infos to list
+                action_dict = {
+                    "game_id": game_id,
+                    "round": rounds_counter,
+                    "action": enum_action.name,
+                    "points": kniffel_env.kniffel.get_turn(-2)
+                    .get_selected_option()
+                    .points
+                    if action >= 0 and action <= 12
+                    else 0,
+                }
+
+                actions.append(action_dict)
 
                 # Apply action to model
                 agent.backward(reward, done)
@@ -955,13 +965,8 @@ class KniffelRL:
 
         bar.finish()
 
-        for i in range(0, 56):
-            if EnumAction(i) in action_dict:
-                print(f"{EnumAction(i).name}: {action_dict[EnumAction(i)]}")
-            else:
-                print(f"{EnumAction(i).name}: 0")
-
         metrics = {
+            "games": episodes,
             "bonus_counter": bonus_counter,
             "finished_games": episodes - break_counter,
             "error_games": break_counter,
@@ -975,6 +980,15 @@ class KniffelRL:
         }
 
         print(json.dumps(metrics, indent=4, sort_keys=True))
+
+        # create evaluate dir in path if not exists
+        if not os.path.exists(f"{path}/evaluate"):
+            os.makedirs(f"{path}/evaluate")
+
+        metrics["actions"] = actions
+
+        with open(f"{path}/evaluate/metrics.json", "w") as final:
+            json.dump(metrics, final, indent=4)
 
 
 if __name__ == "__main__":
@@ -997,10 +1011,10 @@ if __name__ == "__main__":
         "dqn_adam_beta_1": 0.8770788026018081,
         "dqn_adam_beta_2": 0.8894717766504484,
         "dqn_adam_epsilon": 7.579405338028617e-05,
-        "dqn_adam_learning_rate": 0.0015,
+        "dqn_adam_learning_rate": 0.0029242299694621833,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 1500000,
+        "dqn_memory_limit": 150000,
         "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
         "eps_greedy_eps": 0.22187387376395634,
@@ -1012,7 +1026,7 @@ if __name__ == "__main__":
         "n_units_l2": 128,
         "n_units_l3": 256,
         "train_policy": "EpsGreedyQPolicy",
-        "windows_length": 3,
+        "windows_length": 1,
         "anneal_steps": 1000000,
     }
 
@@ -1030,5 +1044,5 @@ if __name__ == "__main__":
         load_weights=False,
         load_dir_name="current-best-v3",
     )
-    # rl.play(dir_name="current-best-v3", episodes=5, write=False)
-    # rl.evaluate(dir_name="current-best-v2", episodes=10_000)
+    # rl.play(dir_name="current-best-v3", episodes=5, write=True)
+    # rl.evaluate(dir_name="current-best-v3", episodes=1000)

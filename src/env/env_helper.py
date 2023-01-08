@@ -313,6 +313,9 @@ class KniffelEnvHelper:
         reward = 0.0
         finished_turn = False
 
+        # bonus
+        bonus = self.kniffel.is_bonus()
+
         info = {"finished": False, "error": False}
 
         # Apply action
@@ -723,22 +726,29 @@ class KniffelEnvHelper:
                     print(f"   Error in game: {e}")
                     print("   " + str(info))
 
-        if (
-            not slashed
-            and not done
-            and finished_turn
-            and enum_action
-            in [
-                enum_action.FINISH_ONES,
-                enum_action.FINISH_TWOS,
-                enum_action.FINISH_THREES,
-                enum_action.FINISH_FOURS,
-                enum_action.FINISH_FIVES,
-                enum_action.FINISH_SIXES,
-            ]
-        ):
-            # Add bonus to reward
-            if self.kniffel.is_bonus():
+        if self.reward_mode == "kniffel":
+            if (
+                not slashed
+                and not done
+                and finished_turn
+                and enum_action
+                in [
+                    enum_action.FINISH_ONES,
+                    enum_action.FINISH_TWOS,
+                    enum_action.FINISH_THREES,
+                    enum_action.FINISH_FOURS,
+                    enum_action.FINISH_FIVES,
+                    enum_action.FINISH_SIXES,
+                ]
+                and self.kniffel.is_bonus()
+            ):
+                # Add bonus to reward
+                print("Bonus reached for kniffel reward mode.")
+                reward += self._reward_bonus
+        elif self.reward_mode == "custom":
+            if not bonus and self.kniffel.is_bonus():
+                # Add bonus to reward
+                print("Bonus reached for custom reward mode.")
                 reward += self._reward_bonus
 
         return reward, done, info
