@@ -995,10 +995,10 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
-        "reward_roll_dice": 0.5,
+        "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 250,
+        "reward_bonus": 100,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }

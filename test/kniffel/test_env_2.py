@@ -18,7 +18,7 @@ def test_bonus():
         "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 25,
+        "reward_bonus": 250,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }
@@ -33,32 +33,34 @@ def test_bonus():
 
     # Ones
     score = send_step([1, 1, 1, 1, 1], env, EnumAction.FINISH_ONES, 0)
-    assert score == 10
+    assert score == 25  # 5
 
     # Twos
     score = send_step([2, 2, 2, 2, 2], env, EnumAction.FINISH_TWOS, score)
-    assert score == 13 + (10)  # = 23
+    assert score == 25 + (25)  # 10 + 5 = 15
 
     # Threes
     score = send_step([3, 3, 3, 3, 3], env, EnumAction.FINISH_THREES, score)
-    assert score == 16 + (10 + 13)  # = 39
+    assert score == 25 + (25 + 25)  # = 5 * 3 + 15 = 30
 
     # Fours
     score = send_step([4, 4, 4, 4, 4], env, EnumAction.FINISH_FOURS, score)
-    assert score == 19 + (10 + 13 + 16)  # = 58
+    assert score == 25 + (25 + 25 + 25)  # = 5 * 4 + 30 = 45
 
     # Fives
     score = send_step([5, 5, 5, 5, 5], env, EnumAction.FINISH_FIVES, score)
-    assert score == 22 + env_config["reward_bonus"] + (
-        10 + 13 + 16 + 19
-    )  # = 80 + 25 (bonus)
+    assert score == 25 + env_config["reward_bonus"] + (
+        25 + 25 + 25 + 25
+    )  # = 5 * 5 + 45 = 70 > bonus should apply
 
     # Sixes
     score = send_step([6, 6, 6, 6, 6], env, EnumAction.FINISH_SIXES, score)
-    assert score == 25 + env_config["reward_bonus"] + (
-        10 + 13 + 16 + 19 + 22 + env_config["reward_bonus"]
+    assert score == 25 + (
+        25 + 25 + 25 + 25 + 25 + env_config["reward_bonus"]
     )  # = 130 + 25 (bonus)
 
     # Three of a kind
     score = send_step([6, 6, 6, 6, 6], env, EnumAction.FINISH_THREE_TIMES, score)
-    assert score == 23 + (155)  # = 183
+    assert score == 23 + (
+        25 + 25 + 25 + 25 + 25 + 25 + env_config["reward_bonus"]
+    )  # = 183
