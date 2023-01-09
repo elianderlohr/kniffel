@@ -89,7 +89,7 @@ class KniffelDraw:
     |================|========|==========|    |================|========|==========|
     | SIXES          |   {self.get_float(state[39], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.SIXES, KniffelOptions.SIXES_SLASH))}    |    | KNIFFEL        |   {self.get_float(state[45], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.KNIFFEL, KniffelOptions.KNIFFEL_SLASH))}    |
     |################|########|##########|    |================|========|==========|
-    |  BONUS         |   {self.get_float(state[33], state=True)}   |    {self.get_float(35 if kniffel.is_bonus() else 0)}    |    | CHANCE         |   {self.get_float(state[46], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.CHANCE, KniffelOptions.CHANCE_SLASH))}    |
+    |  BONUS         |   {self.get_float(state[35], state=True)}   |    {self.get_float(35 if kniffel.is_bonus() else 0)}    |    | CHANCE         |   {self.get_float(state[46], state=True)}   |    {self.get_float(kniffel.get_option_kniffel_points(KniffelOptions.CHANCE, KniffelOptions.CHANCE_SLASH))}    |
     |================|========|==========|    |################|########|##########|
     |  TOP POINTS    |        |   {self.get_long_float(kniffel.get_points_top())}    |    |  BOTTOM POINTS |        |   {self.get_long_float(kniffel.get_points_bottom())}    |
     |################|########|##########|    |================|========|==========|

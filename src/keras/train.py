@@ -1008,13 +1008,13 @@ if __name__ == "__main__":
         "agent": "DQN",
         "batch_size": 32,
         "dqn_adam_amsgrad": True,
-        "dqn_adam_beta_1": 0.8770788026018081,
-        "dqn_adam_beta_2": 0.8894717766504484,
+        "dqn_adam_beta_1": 0.9,
+        "dqn_adam_beta_2": 0.999,
         "dqn_adam_epsilon": 7.579405338028617e-05,
-        "dqn_adam_learning_rate": 0.0029242299694621833,
+        "dqn_adam_learning_rate": 0.000375,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 150000,
+        "dqn_memory_limit": 2000000,
         "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
         "eps_greedy_eps": 0.22187387376395634,
@@ -1035,14 +1035,13 @@ if __name__ == "__main__":
         base_path=str(Path(__file__).parents[2]) + "/",
         env_config=env_config,
         config_path="src/config/config.csv",
-        env_observation_space=47,
+        env_observation_space=42,
         env_action_space=57,
     )
 
     rl.train(
         nb_steps=20_000_000,
         load_weights=False,
-        load_dir_name="current-best-v3",
     )
-    # rl.play(dir_name="current-best-v3", episodes=5, write=True)
-    # rl.evaluate(dir_name="current-best-v3", episodes=1000)
+    # rl.play(dir_name="p_date=2023-01-09-12_50_05", episodes=5, write=True)
+    # rl.evaluate(dir_name="p_date=2023-01-09-12_50_05", episodes=1000)
