@@ -494,7 +494,7 @@ class KniffelRL:
 def objective(trial):
 
     base_hp = {
-        "windows_length": [1, 2, 3, 4, 5],
+        "windows_length": [1],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear"],
@@ -504,10 +504,10 @@ def objective(trial):
     }
 
     env_config = {
-        "reward_roll_dice": 0.5,
+        "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 35,
+        "reward_bonus": 100,
         "reward_mode": "custom",
         "state_mode": "continuous",
     }
