@@ -57,9 +57,6 @@ class KniffelRL:
     # path prefix
     base_path = ""
 
-    # Path to config csv
-    _config_path = ""
-
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
 
@@ -81,7 +78,6 @@ class KniffelRL:
         agent_dict: dict,
         base_path: str = "",
         env_config={},
-        config_path="src/ai/Kniffel.CSV",
         env_action_space=57,
         env_observation_space=47,
         logging=False,
@@ -91,13 +87,10 @@ class KniffelRL:
         :param agent_path: Path to agent json file, defaults to ""
         :param base_path: base path of project, defaults to ""
         :param env_config: env dict, defaults to {}
-        :param config_path: path to config file, defaults to "src/ai/Kniffel.CSV"
         :param env_action_space: Action space, defaults to 57
         :param env_observation_space: Observation space, defaults to 47
         :param logging: use logging, defaults to False
         """
-
-        self._config_path = config_path
 
         # Set env action space and observation space
         self._env_action_space = env_action_space
@@ -382,7 +375,6 @@ class KniffelRL:
         env = KniffelEnv(
             self.env_config,
             logging=self.logging,
-            config_file_path=self._config_path,
             env_observation_space=self._env_observation_space,
             env_action_space=self._env_action_space,
             reward_mode=self.reward_mode,
@@ -509,7 +501,7 @@ class KniffelRL:
         self.validate_model(agent)
 
         # play
-        metrics = self.play(dir_name, episodes)
+        metrics = self.evaluate(dir_name, episodes)
 
         self._append_file(
             path=f"{path}/info.txt",
@@ -717,7 +709,6 @@ class KniffelRL:
         kniffel_env = KniffelEnvHelper(
             env_config=self.env_config,
             logging=self.logging,
-            config_file_path=self._config_path,
         )
 
         for _ in range(1, episodes + 1):
@@ -760,7 +751,7 @@ class KniffelRL:
                     f"##  Attempts left: {kniffel_env.kniffel.get_last().count()}/3\n"
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
-                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
+                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:24]))
 
                 # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
@@ -878,7 +869,7 @@ class KniffelRL:
         # load the weights
         agent.load_weights(f"{path}/weights.h5f")
 
-        self.evaluate_model(agent, episodes, path=path)
+        return self.evaluate_model(agent, episodes, path=path)
 
     def evaluate_model(
         self,
@@ -901,7 +892,6 @@ class KniffelRL:
         kniffel_env = KniffelEnvHelper(
             env_config=self.env_config,
             logging=self.logging,
-            config_file_path=self._config_path,
         )
 
         actions = []
@@ -926,31 +916,45 @@ class KniffelRL:
                 # Apply action to model
                 reward, done, info = kniffel_env.predict_and_apply(action)
 
-                # add action infos to list
-                action_dict = {
-                    "game_id": game_id,
-                    "round": rounds_counter,
-                    "action": enum_action.name,
-                    "points": kniffel_env.kniffel.get_turn(-2)
-                    .get_selected_option()
-                    .points
-                    if action >= 0 and action <= 12
-                    else 0,
-                }
-
-                actions.append(action_dict)
-
                 # Apply action to model
                 agent.backward(reward, done)
 
                 if not done:
                     # if game not over increase round counter
                     rounds_counter += 1
+
+                    # add action infos to list
+                    action_dict = {
+                        "game_id": game_id,
+                        "round": rounds_counter,
+                        "action": enum_action.name,
+                        "points": kniffel_env.kniffel.get_turn(-2)
+                        .get_selected_option()
+                        .points
+                        if action >= 0 and action <= 12
+                        else 0,
+                    }
+
+                    actions.append(action_dict)
                 else:
                     if not info["error"]:
                         points.append(kniffel_env.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
+
+                        # add action infos to list
+                        action_dict = {
+                            "game_id": game_id,
+                            "round": rounds_counter,
+                            "action": enum_action.name,
+                            "points": kniffel_env.kniffel.get_turn(-1)
+                            .get_selected_option()
+                            .points
+                            if action >= 0 and action <= 12
+                            else 0,
+                        }
+
+                        actions.append(action_dict)
 
                         break
                     else:
@@ -979,6 +983,8 @@ class KniffelRL:
             "min_rounds": min(rounds),
         }
 
+        return_dict = metrics.copy()
+
         print(json.dumps(metrics, indent=4, sort_keys=True))
 
         # create evaluate dir in path if not exists
@@ -990,17 +996,125 @@ class KniffelRL:
         with open(f"{path}/evaluate/metrics.json", "w") as final:
             json.dump(metrics, final, indent=4)
 
+        return return_dict
+
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -25,
+        "reward_game_over": -0,
         "reward_finish": 25,
         "reward_bonus": 100,
-        "reward_mode": "custom",
-        "state_mode": "continuous",
+        "reward_mode": "custom",  # custom or kniffel
+        "state_mode": "binary",  # binary or continuous
+        "reward_kniffel": {
+            "reward_ones": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4.0,
+                "reward_three_dices": 2.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -1,
+                "reward_slash": -2,
+            },
+            "reward_twos": {
+                "reward_five_dices": 10.0,
+                "reward_four_dices": 8.0,
+                "reward_three_dices": 6.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -3,
+                "reward_slash": -4,
+            },
+            "reward_threes": {
+                "reward_five_dices": 15.0,
+                "reward_four_dices": 12.0,
+                "reward_three_dices": 9.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -4.5,
+                "reward_slash": -6,
+            },
+            "reward_fours": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 16.0,
+                "reward_three_dices": 12.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -6,
+                "reward_slash": -8,
+            },
+            "reward_fives": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": 20.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -7.5,
+                "reward_slash": -10,
+            },
+            "reward_sixes": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -9,
+                "reward_slash": -12,
+            },
+            "reward_three_times": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": 9.0,
+                "reward_one_dice": 0.9,
+                "reward_slash": -0,
+            },
+            "reward_four_times": {
+                "reward_five_dices": 50.0,
+                "reward_four_dices": 40.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": 5,
+                "reward_one_dice": 0.7,
+                "reward_slash": -12,
+            },
+            "reward_full_house": {
+                "reward_five_dices": 50.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_small_street": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": 25.0,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 60.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 100.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -25,
+            },
+            "reward_chance": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": 9.0,
+                "reward_one_dice": 0.9,
+                "reward_slash": -0,
+            },
+        },
     }
 
     agent_dict = {
@@ -1008,13 +1122,13 @@ if __name__ == "__main__":
         "agent": "DQN",
         "batch_size": 32,
         "dqn_adam_amsgrad": True,
-        "dqn_adam_beta_1": 0.9,
-        "dqn_adam_beta_2": 0.999,
+        "dqn_adam_beta_1": 0.8770788026018081,
+        "dqn_adam_beta_2": 0.8894717766504484,
         "dqn_adam_epsilon": 7.579405338028617e-05,
-        "dqn_adam_learning_rate": 0.000375,
+        "dqn_adam_learning_rate": 0.0029242299694621833,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 2000000,
+        "dqn_memory_limit": 150000,
         "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
         "eps_greedy_eps": 0.22187387376395634,
@@ -1034,7 +1148,6 @@ if __name__ == "__main__":
         agent_dict=agent_dict,
         base_path=str(Path(__file__).parents[2]) + "/",
         env_config=env_config,
-        config_path="src/config/config.csv",
         env_observation_space=42,
         env_action_space=57,
     )
@@ -1042,6 +1155,7 @@ if __name__ == "__main__":
     rl.train(
         nb_steps=20_000_000,
         load_weights=False,
+        load_dir_name="p_date=2023-01-11-12_08_11",
     )
-    # rl.play(dir_name="p_date=2023-01-09-12_50_05", episodes=5, write=True)
-    # rl.evaluate(dir_name="p_date=2023-01-09-12_50_05", episodes=1000)
+    # rl.play(dir_name="p_date=2023-01-11-12_08_11", episodes=20_000, write=False)
+    # rl.evaluate(dir_name="p_date=2023-01-11-08_05_26", episodes=1000)

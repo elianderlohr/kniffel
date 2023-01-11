@@ -91,36 +91,39 @@ class KniffelConfig(Enum):
     Kniffel Option Enum
     """
 
-    ONES = "ONES"
-    TWOS = "TWOS"
-    THREES = "THREES"
-    FOURS = "FOURS"
-    FIVES = "FIVES"
-    SIXES = "SIXES"
-    THREE_TIMES = "THREE_TIMES"
-    FOUR_TIMES = "FOUR_TIMES"
-    FULL_HOUSE = "FULL_HOUSE"
-    SMALL_STREET = "SMALL_STREET"
-    LARGE_STREET = "LARGE_STREET"
-    KNIFFEL = "KNIFFEL"
-    CHANCE = "CHANCE"
+    ONES = "reward_ones"
+    TWOS = "reward_twos"
+    THREES = "reward_threes"
+    FOURS = "reward_fours"
+    FIVES = "reward_fives"
+    SIXES = "reward_sixes"
+    THREE_TIMES = "reward_three_times"
+    FOUR_TIMES = "reward_four_times"
+    FULL_HOUSE = "reward_full_house"
+    SMALL_STREET = "reward_small_street"
+    LARGE_STREET = "reward_large_street"
+    KNIFFEL = "reward_kniffel"
+    CHANCE = "reward_chance"
 
-    COLUMN_5 = "Prop5Dice"
-    COLUMN_4 = "Prop4Dice"
-    COLUMN_3 = "Prop3Dice"
-    COLUMN_2 = "Prop2Dice"
-    COLUMN_1 = "Prop1Dice"
-    COLUMN_0 = "Slash"
+    FIVE_DICES = "reward_five_dices"
+    FOUR_DICES = "reward_four_dices"
+    THREE_DICES = "reward_three_dices"
+    TWO_DICES = "reward_two_dices"
+    ONE_DICES = "reward_one_dice"
+    SLASH = "reward_slash"
 
 
 class KniffelEnvHelper:
+    # kniffel instance
     kniffel: Kniffel
+
+    # env_config
+    config: dict
 
     def __init__(
         self,
         env_config,
         logging=False,
-        config_file_path="/Kniffel.CSV",
         custom_kniffel=False,
         reward_mode="kniffel",  # kniffel, custom
         state_mode="binary",  # binary, continuous
@@ -132,32 +135,10 @@ class KniffelEnvHelper:
 
         self.logging = logging
 
-        with open(config_file_path, "r") as file:
-            reader = csv.reader(file, delimiter=";")
-            d = {v[0]: v[1:] for v in reader}
-
-            header_row = d["Categories"]
-
-            if "Categories" in d:
-                del d["Categories"]
-
-            if "Ergebnis" in d:
-                del d["Ergebnis"]
-
-            self.config = {
-                k: {
-                    header_row[i]: float(
-                        0
-                        if len(v) == 0
-                        else v1.replace(",", ".").replace("#ZAHL!", "-1")
-                    )
-                    for i, v1 in enumerate(v)
-                }
-                for k, v in d.items()
-            }
-
         self.reward_mode = reward_mode
         self.state_mode = state_mode
+
+        self.config = env_config["reward_kniffel"]
 
         if "reward_roll_dice" in env_config:
             self._reward_roll_dice = env_config["reward_roll_dice"]
@@ -226,55 +207,69 @@ class KniffelEnvHelper:
         :return: reward
         """
         if dice_count == 0:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_0)
+            return self.get_config_param(kniffel_type, KniffelConfig.SLASH)
         elif dice_count == 1:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_1)
+            return self.get_config_param(kniffel_type, KniffelConfig.ONE_DICES)
         elif dice_count == 2:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_2)
+            return self.get_config_param(kniffel_type, KniffelConfig.TWO_DICES)
         elif dice_count == 3:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_3)
+            return self.get_config_param(kniffel_type, KniffelConfig.THREE_DICES)
         elif dice_count == 4:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_4)
+            return self.get_config_param(kniffel_type, KniffelConfig.FOUR_DICES)
         else:
-            return self.get_config_param(kniffel_type, KniffelConfig.COLUMN_5)
+            return self.get_config_param(kniffel_type, KniffelConfig.FIVE_DICES)
 
     def reward_chance(self, score) -> float:
         reward = 0
         if score >= 5:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_1)
+            reward = self.get_config_param(
+                KniffelConfig.CHANCE, KniffelConfig.ONE_DICES
+            )
         if score >= 10:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_2)
+            reward = self.get_config_param(
+                KniffelConfig.CHANCE, KniffelConfig.TWO_DICES
+            )
         if score >= 15:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_3)
+            reward = self.get_config_param(
+                KniffelConfig.CHANCE, KniffelConfig.THREE_DICES
+            )
         if score >= 20:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_4)
+            reward = self.get_config_param(
+                KniffelConfig.CHANCE, KniffelConfig.FOUR_DICES
+            )
         if score >= 25:
-            reward = self.get_config_param(KniffelConfig.CHANCE, KniffelConfig.COLUMN_5)
+            reward = self.get_config_param(
+                KniffelConfig.CHANCE, KniffelConfig.FIVE_DICES
+            )
 
         return reward
 
     def reward_three_times(self, score: int) -> float:
         reward = 0
 
-        if score >= 5:
-            reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_1
-            )
-        if score >= 10:
-            reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_2
-            )
-        if score >= 15:
-            reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_3
-            )
-        if score >= 20:
-            reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_4
-            )
         if score >= 25:
             reward = self.get_config_param(
-                KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_5
+                KniffelConfig.THREE_TIMES, KniffelConfig.FIVE_DICES
+            )
+
+        elif score >= 20:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.FOUR_DICES
+            )
+
+        elif score >= 15:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.THREE_DICES
+            )
+
+        elif score >= 10:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.TWO_DICES
+            )
+
+        elif score >= 5:
+            reward = self.get_config_param(
+                KniffelConfig.THREE_TIMES, KniffelConfig.ONE_DICES
             )
 
         return reward
@@ -282,25 +277,29 @@ class KniffelEnvHelper:
     def reward_four_times(self, score) -> float:
         reward = 0
 
-        if score >= 5:
-            reward = self.get_config_param(
-                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_1
-            )
-        if score >= 10:
-            reward = self.get_config_param(
-                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_2
-            )
-        if score >= 15:
-            reward = self.get_config_param(
-                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_3
-            )
-        if score >= 20:
-            reward = self.get_config_param(
-                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_4
-            )
         if score >= 25:
             reward = self.get_config_param(
-                KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_5
+                KniffelConfig.FOUR_TIMES, KniffelConfig.FIVE_DICES
+            )
+
+        elif score >= 20:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.FOUR_DICES
+            )
+
+        elif score >= 15:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.THREE_DICES
+            )
+
+        elif score >= 10:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.TWO_DICES
+            )
+
+        elif score >= 5:
+            reward = self.get_config_param(
+                KniffelConfig.FOUR_TIMES, KniffelConfig.ONE_DICES
             )
 
         return reward
@@ -407,7 +406,7 @@ class KniffelEnvHelper:
                     reward += 25
                 else:
                     reward += self.get_config_param(
-                        KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_5
+                        KniffelConfig.FULL_HOUSE, KniffelConfig.FIVE_DICES
                     )
 
                 finished_turn = True
@@ -418,7 +417,7 @@ class KniffelEnvHelper:
                     reward += 30
                 else:
                     reward += self.get_config_param(
-                        KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_5
+                        KniffelConfig.SMALL_STREET, KniffelConfig.FIVE_DICES
                     )
 
                 finished_turn = True
@@ -429,7 +428,7 @@ class KniffelEnvHelper:
                     reward += 40
                 else:
                     reward += self.get_config_param(
-                        KniffelConfig.LARGE_STREET, KniffelConfig.COLUMN_5
+                        KniffelConfig.LARGE_STREET, KniffelConfig.FIVE_DICES
                     )
 
                 finished_turn = True
@@ -440,7 +439,7 @@ class KniffelEnvHelper:
                     reward += 50
                 else:
                     reward += self.get_config_param(
-                        KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_5
+                        KniffelConfig.KNIFFEL, KniffelConfig.FIVE_DICES
                     )
 
                 finished_turn = True
@@ -461,7 +460,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.ONES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.ONES, KniffelConfig.COLUMN_0
+                        KniffelConfig.ONES, KniffelConfig.SLASH
                     )
                 slashed = True
                 finished_turn = True
@@ -470,7 +469,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.TWOS_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.TWOS, KniffelConfig.COLUMN_0
+                        KniffelConfig.TWOS, KniffelConfig.SLASH
                     )
 
                 finished_turn = True
@@ -479,7 +478,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.THREES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.THREES, KniffelConfig.COLUMN_0
+                        KniffelConfig.THREES, KniffelConfig.SLASH
                     )
                 slashed = True
                 finished_turn = True
@@ -488,7 +487,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.FOURS_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.FOURS, KniffelConfig.COLUMN_0
+                        KniffelConfig.FOURS, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -498,7 +497,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.FIVES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.FIVES, KniffelConfig.COLUMN_0
+                        KniffelConfig.FIVES, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -508,7 +507,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.SIXES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.SIXES, KniffelConfig.COLUMN_0
+                        KniffelConfig.SIXES, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -520,7 +519,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.THREE_TIMES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.THREE_TIMES, KniffelConfig.COLUMN_0
+                        KniffelConfig.THREE_TIMES, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -532,7 +531,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.FOUR_TIMES_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.FOUR_TIMES, KniffelConfig.COLUMN_0
+                        KniffelConfig.FOUR_TIMES, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -544,7 +543,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.FULL_HOUSE_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.FULL_HOUSE, KniffelConfig.COLUMN_0
+                        KniffelConfig.FULL_HOUSE, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -556,7 +555,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.SMALL_STREET_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.SMALL_STREET, KniffelConfig.COLUMN_0
+                        KniffelConfig.SMALL_STREET, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -568,7 +567,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.LARGE_STREET_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.LARGE_STREET, KniffelConfig.COLUMN_0
+                        KniffelConfig.LARGE_STREET, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -578,7 +577,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.KNIFFEL_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.KNIFFEL, KniffelConfig.COLUMN_0
+                        KniffelConfig.KNIFFEL, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -588,7 +587,7 @@ class KniffelEnvHelper:
 
                 if selected_option.id == KniffelOptions.CHANCE_SLASH.value:
                     reward += self.get_config_param(
-                        KniffelConfig.CHANCE, KniffelConfig.COLUMN_0
+                        KniffelConfig.CHANCE, KniffelConfig.SLASH
                     )
 
                 slashed = True
@@ -693,12 +692,12 @@ class KniffelEnvHelper:
             if e.args[0] == "Game finished!":
                 done = True
 
-                if self.kniffel.get_points() > self._reward_finish:
-                    reward += self.kniffel.get_points()
-                else:
-                    reward += self._reward_finish
+                # if self.kniffel.get_points() > self._reward_finish:
+                #    reward += self.kniffel.get_points()
+                # else:
+                #    reward += self._reward_finish
 
-                # reward += self._reward_finish
+                reward += self._reward_finish
 
                 info = {
                     "finished": True,
@@ -745,8 +744,10 @@ class KniffelEnvHelper:
                 # Add bonus to reward
                 print("Bonus reached for kniffel reward mode.")
                 reward += self._reward_bonus
+
         elif self.reward_mode == "custom":
             if not bonus and self.kniffel.is_bonus():
+
                 # Add bonus to reward
                 print("Bonus reached for custom reward mode.")
                 reward += self._reward_bonus

@@ -403,7 +403,7 @@ class Kniffel:
                 ):
                     total += turn.selected_option.points
 
-            if self.is_bonus() and self.is_finished():
+            if self.is_bonus():  #  and self.is_finished():
                 total += 35
 
         return total

@@ -28,7 +28,6 @@ class KniffelEnv(Env):
     def __init__(
         self,
         env_config,
-        config_file_path="/Kniffel.CSV",
         logging=False,
         env_action_space=57,
         env_observation_space=20,
@@ -40,7 +39,6 @@ class KniffelEnv(Env):
         
         Args:
             env_config (dict): Environment config
-            config_file_path (str, optional): Path to config file. Defaults to "/Kniffel.CSV".
             logging (bool, optional): Enable logging. Defaults to False.
             env_action_space (int, optional): Action space. Defaults to 57.
             env_observation_space (int, optional): Observation space. Defaults to 20.
@@ -51,7 +49,6 @@ class KniffelEnv(Env):
         self.kniffel_helper = KniffelEnvHelper(
             env_config,
             logging=False,
-            config_file_path=config_file_path,
             reward_mode=reward_mode,
             state_mode=state_mode,
         )

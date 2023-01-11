@@ -18,7 +18,6 @@ class DiceSet:
         else:
             mock = sorted(mock)
 
-            print("Len of mock: ", len(mock))
             self.dices[1] = Dice(mock=mock[0])
             self.dices[2] = Dice(mock=mock[1])
             self.dices[3] = Dice(mock=mock[2])

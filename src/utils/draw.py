@@ -161,11 +161,11 @@ class KniffelDraw:
         lines[4] = []
 
         dices = [
-            self.get_dice(dice_array[0:6]),
-            self.get_dice(dice_array[6:12]),
-            self.get_dice(dice_array[12:18]),
-            self.get_dice(dice_array[18:24]),
-            self.get_dice(dice_array[24:30]),
+            self.get_dice(dice_array[0:4]),
+            self.get_dice(dice_array[5:9]),
+            self.get_dice(dice_array[10:14]),
+            self.get_dice(dice_array[15:19]),
+            self.get_dice(dice_array[20:25]),
         ]
 
         for dice_scaled in dices:
