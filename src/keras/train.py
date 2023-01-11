@@ -1083,7 +1083,7 @@ if __name__ == "__main__":
                 "reward_slash": -0,
             },
             "reward_small_street": {
-                "reward_five_dices": 25.0,
+                "reward_five_dices": 20.0,
                 "reward_four_dices": 25.0,
                 "reward_three_dices": None,
                 "reward_two_dices": None,
