@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 import itertools
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # type: ignore
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 

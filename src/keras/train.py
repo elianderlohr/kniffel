@@ -1008,7 +1008,7 @@ if __name__ == "__main__":
         "reward_finish": 25,
         "reward_bonus": 100,
         "reward_mode": "custom",  # custom or kniffel
-        "state_mode": "binary",  # binary or continuous
+        "state_mode": "continuous",  # binary or continuous
         "reward_kniffel": {
             "reward_ones": {
                 "reward_five_dices": 5,

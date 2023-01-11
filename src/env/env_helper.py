@@ -11,7 +11,7 @@ from sqlalchemy import false
 sys.path.insert(
     0,
     os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # type: ignore
     ),
 )
 
@@ -131,9 +131,13 @@ class KniffelEnvHelper:
         # http://www.brefeld.homepage.t-online.de/kniffel.html
         # http://www.brefeld.homepage.t-online.de/kniffel-strategie.html
 
-        self.kniffel = Kniffel(logging=logging, custom=custom_kniffel)
+        self.kniffel = Kniffel(
+            logging=logging, custom=custom_kniffel, state_mode=state_mode
+        )
 
         self.logging = logging
+
+        self.custom_kniffel = custom_kniffel
 
         self.reward_mode = reward_mode
         self.state_mode = state_mode
@@ -165,7 +169,9 @@ class KniffelEnvHelper:
             print("reward_finish not in env_config, set to default '5'")
 
     def reset_kniffel(self):
-        self.kniffel = Kniffel()
+        self.kniffel = Kniffel(
+            logging=self.logging, custom=self.custom_kniffel, state_mode=self.state_mode
+        )
 
     def get_state(self):
         return self.kniffel.get_state()
@@ -692,12 +698,12 @@ class KniffelEnvHelper:
             if e.args[0] == "Game finished!":
                 done = True
 
-                # if self.kniffel.get_points() > self._reward_finish:
-                #    reward += self.kniffel.get_points()
-                # else:
-                #    reward += self._reward_finish
+                if self.kniffel.get_points() > self._reward_finish:
+                    reward += self.kniffel.get_points()
+                else:
+                    reward += self._reward_finish
 
-                reward += self._reward_finish
+                # reward += self._reward_finish
 
                 info = {
                     "finished": True,

@@ -20,7 +20,6 @@ def play():
         kniffel.finish_turn(KniffelOptions.THREE_TIMES)
 
         kniffel.mock(DiceSet([6, 6, 6, 6, 5]))
-        print(kniffel.get_state())
         kniffel.finish_turn(KniffelOptions.FOUR_TIMES)
 
         kniffel.mock(DiceSet([6, 6, 6, 5, 5]))
