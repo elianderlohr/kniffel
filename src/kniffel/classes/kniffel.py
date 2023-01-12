@@ -196,7 +196,7 @@ class Kniffel:
         return 0
 
     def create_one_hot_dice_encoding(self, status: list, dice: int):
-        for i in range(1, 6):
+        for i in range(1, 6 + 1):  # loop from 1 to 6 inclusive
             if i == dice:
                 status.append(1)
             else:

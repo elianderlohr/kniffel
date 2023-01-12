@@ -10,7 +10,7 @@ import csv
 sys.path.insert(
     0,
     os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # type: ignore
     ),
 )
 
@@ -22,7 +22,7 @@ from src.env.env_helper import KniffelEnvHelper
 
 class KniffelEnv(Env):
 
-    kniffel_helper: KniffelEnvHelper = None
+    kniffel_helper: KniffelEnvHelper = None  # type: ignore
     logging = False
 
     def __init__(
@@ -31,12 +31,12 @@ class KniffelEnv(Env):
         logging=False,
         env_action_space=57,
         env_observation_space=20,
-        reward_mode="kniffel", # kniffel, custom
-        state_mode="binary", # binary, continuous
+        reward_mode="kniffel",  # kniffel, custom
+        state_mode="binary",  # binary, continuous
     ):
         """
         Kniffel environment
-        
+
         Args:
             env_config (dict): Environment config
             logging (bool, optional): Enable logging. Defaults to False.
@@ -46,7 +46,7 @@ class KniffelEnv(Env):
             state_mode (str, optional): State mode: "binary" or "continuous". Defaults to "binary".
         """
 
-        self.kniffel_helper = KniffelEnvHelper(
+        self.kniffel_helper: KniffelEnvHelper = KniffelEnvHelper(
             env_config,
             logging=False,
             reward_mode=reward_mode,

@@ -145,6 +145,7 @@ class KniffelDraw:
             if val == 1:
                 dice = counter
                 break
+
         return dice
 
     def draw_dices(self, dice_array: list) -> str:
@@ -160,12 +161,15 @@ class KniffelDraw:
         lines[3] = []
         lines[4] = []
 
+        # Dice Value:  1 2 3 4 5 6 | 7 8 9 10 11 12 | 13 14 15 16 17 18 | 19 20 21 22 23 24 | 25 26 27 28 29 30
+        # Index:       0 1 2 3 4 5 | 6 7 8 9  10 11 | 12 13 14 15 16 17 | 18 19 20 21 22 23 | 24 25 26 27 28 29
+        # State:      [0 1 0 0 0 0 | 0 0 1 0  0  0  | 0  0  0  1  0  0  | 0  0  0  0  0  1  | 0  0  0  0  0  1 ]
         dices = [
-            self.get_dice(dice_array[0:4]),
-            self.get_dice(dice_array[5:9]),
-            self.get_dice(dice_array[10:14]),
-            self.get_dice(dice_array[15:19]),
-            self.get_dice(dice_array[20:25]),
+            self.get_dice(dice_array[0:6]),
+            self.get_dice(dice_array[6:12]),
+            self.get_dice(dice_array[12:18]),
+            self.get_dice(dice_array[18:24]),
+            self.get_dice(dice_array[24:30]),
         ]
 
         for dice_scaled in dices:

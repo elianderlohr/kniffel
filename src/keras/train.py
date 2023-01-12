@@ -751,7 +751,7 @@ class KniffelRL:
                     f"##  Attempts left: {kniffel_env.kniffel.get_last().count()}/3\n"
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
-                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:24]))
+                log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
 
                 # log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
@@ -1148,7 +1148,7 @@ if __name__ == "__main__":
         agent_dict=agent_dict,
         base_path=str(Path(__file__).parents[2]) + "/",
         env_config=env_config,
-        env_observation_space=42,
+        env_observation_space=47,
         env_action_space=57,
     )
 

@@ -5,7 +5,9 @@ class DiceSet:
     dices: dict = {}
     logging: bool = False
 
-    def __init__(self, mock: list = [], logging: bool = False):
+    def __init__(
+        self, mock: list = [], logging: bool = False, should_sort: bool = True
+    ):
         """Initialize DiceSet
 
         :param mock: list, defaults to []
@@ -13,10 +15,13 @@ class DiceSet:
         """
         self.dices: dict = {}
 
+        self.should_sort = should_sort
+
         if len(mock) == 0:
             self.roll()
         else:
-            mock = sorted(mock)
+            if should_sort:
+                mock = sorted(mock)
 
             self.dices[1] = Dice(mock=mock[0])
             self.dices[2] = Dice(mock=mock[1])
@@ -44,10 +49,16 @@ class DiceSet:
 
         :param dict dice_set: dice set to sort
         """
-        self.dices = dict(sorted(self.dices.items(), key=lambda item: item[1].value))
 
-        # Make sure the dices are sorted
-        assert sorted(self.to_int_list()) == self.to_int_list()
+        if self.should_sort:
+            self.dices = dict(
+                sorted(self.dices.items(), key=lambda item: item[1].value)
+            )
+
+            # Make sure the dices are sorted
+            assert sorted(self.to_int_list()) == self.to_int_list()
+        else:
+            pass
 
     def get(self):
         """

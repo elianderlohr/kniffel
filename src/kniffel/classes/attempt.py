@@ -69,7 +69,7 @@ class Attempt:
 
         if dice_set is None:
             dice_set = DiceSet()
-            assert sorted(dice_set.to_int_list()) == dice_set.to_int_list()
+            # assert sorted(dice_set.to_int_list()) == dice_set.to_int_list()
 
         if self.count() >= 3:
             raise ex.TurnFinishedException()
