@@ -47,9 +47,6 @@ class KniffelRL:
     # Test episodes
     _test_episodes = 100
 
-    # path prefix
-    _path_prefix = ""
-
     # Path to config csv
     _config_path = ""
 
@@ -68,9 +65,7 @@ class KniffelRL:
     def __init__(
         self,
         test_episodes=100,
-        path_prefix="",
         hyperparater_base={},
-        config_path="src/config/config.csv",
         trial: optuna.trial.Trial = None,
         env_action_space=57,
         env_observation_space=20,
@@ -80,7 +75,6 @@ class KniffelRL:
 
         self._hyperparater_base = hyperparater_base
         self._test_episodes = test_episodes
-        self._config_path = config_path
         self._trial = trial
         self._agent_value = self._return_trial("agent")
 
@@ -91,16 +85,6 @@ class KniffelRL:
 
         self._env_action_space = env_action_space
         self._env_observation_space = env_observation_space
-
-        if path_prefix == "":
-            try:
-                import google.colab
-
-                self._path_prefix = "/"
-            except:
-                self._path_prefix = ""
-        else:
-            self._path_prefix = path_prefix
 
         # if env_config has reward_mode
         if "reward_mode" in env_config:
@@ -186,7 +170,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=250_000,
+                nb_steps=500_000,
             )
 
         elif key == "BoltzmannQPolicy":
@@ -197,7 +181,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=250_000,
+                nb_steps=500_000,
             )
 
         if key == "MaxBoltzmannQPolicy":
@@ -207,7 +191,7 @@ class KniffelRL:
                 value_max=1,
                 value_min=0.1,
                 value_test=0.05,
-                nb_steps=250_000,
+                nb_steps=500_000,
             )
 
         return policy
@@ -325,7 +309,7 @@ class KniffelRL:
                 memory=memory,
                 nb_actions=actions,
                 nb_steps_warmup=25,
-                batch_size=self._return_trial("batch_size"),
+                batch_size=int(self._return_trial("batch_size")),
                 memory_interval=memory_interval,
             )
 
@@ -357,22 +341,18 @@ class KniffelRL:
                 "{}_adam_learning_rate".format(self._agent_value.lower()), 1e-6, 1e-2
             )
 
-            # _beta1 = self._trial.suggest_float(
-            #    "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
-            # )
-            # _beta2 = self._trial.suggest_float(
-            #    "{}_adam_beta_2".format(self._agent_value.lower()), 0.6, 1
-            # )
-            # _epsilon = self._trial.suggest_float(
-            #    "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
-            # )
-            # _amsgrad = self._trial.suggest_categorical(
-            #    "{}_adam_amsgrad".format(self._agent_value.lower()), [False, True]
-            # )
-            _beta1 = 0.8770788026018081
-            _beta2 = 0.8894717766504484
-            _epsilon = 7.579405338028617e-05
-            _amsgrad = True
+            _beta1 = self._trial.suggest_float(
+                "{}_adam_beta_1".format(self._agent_value.lower()), 0.6, 1
+            )
+            _beta2 = self._trial.suggest_float(
+                "{}_adam_beta_2".format(self._agent_value.lower()), 0.6, 1
+            )
+            _epsilon = self._trial.suggest_float(
+                "{}_adam_epsilon".format(self._agent_value.lower()), 1e-8, 1e-4
+            )
+            _amsgrad = self._trial.suggest_categorical(
+                "{}_adam_amsgrad".format(self._agent_value.lower()), [False, True]
+            )
 
             agent.compile(
                 Adam(
@@ -449,7 +429,6 @@ class KniffelRL:
     def train(self, nb_steps=10_000):
         env = KniffelEnv(
             self.env_config,
-            config_file_path=self._config_path,
             env_action_space=self._env_action_space,
             env_observation_space=self._env_observation_space,
             reward_mode=self.reward_mode,
@@ -497,29 +476,153 @@ def objective(trial):
         "windows_length": [1],
         "batch_size": [32],
         "dqn_dueling_option": ["avg", "max"],
-        "activation": ["linear"],
-        "dqn_enable_double_dqn": [True],
+        "activation": ["linear", "softmax"],
+        "dqn_enable_double_dqn": [True, False],
         "agent": ["DQN"],
-        "train_policy": ["EpsGreedyQPolicy"],
+        "linear_inner_policy": [
+            "EpsGreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+        ],
+        "train_policy": [
+            "LinearAnnealedPolicy",
+            "EpsGreedyQPolicy",
+            "GreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+            "BoltzmannGumbelQPolicy",
+        ],
+        "test_policy": [
+            "LinearAnnealedPolicy",
+            "EpsGreedyQPolicy",
+            "GreedyQPolicy",
+            "BoltzmannQPolicy",
+            "MaxBoltzmannQPolicy",
+        ],
     }
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -25,
+        "reward_game_over": -0,
         "reward_finish": 25,
         "reward_bonus": 100,
-        "reward_mode": "custom",
-        "state_mode": "continuous",
+        "reward_mode": "custom",  # custom or kniffel
+        "state_mode": "continuous",  # binary or continuous
+        "reward_kniffel": {
+            "reward_ones": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4.0,
+                "reward_three_dices": 2.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -1,
+                "reward_slash": -2,
+            },
+            "reward_twos": {
+                "reward_five_dices": 10.0,
+                "reward_four_dices": 8.0,
+                "reward_three_dices": 6.0,
+                "reward_two_dices": -2,
+                "reward_one_dice": -3,
+                "reward_slash": -4,
+            },
+            "reward_threes": {
+                "reward_five_dices": 15.0,
+                "reward_four_dices": 12.0,
+                "reward_three_dices": 9.0,
+                "reward_two_dices": -3,
+                "reward_one_dice": -4.5,
+                "reward_slash": -6,
+            },
+            "reward_fours": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 16.0,
+                "reward_three_dices": 12.0,
+                "reward_two_dices": -4,
+                "reward_one_dice": -6,
+                "reward_slash": -8,
+            },
+            "reward_fives": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": 20.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": -5,
+                "reward_one_dice": -7.5,
+                "reward_slash": -10,
+            },
+            "reward_sixes": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": -6,
+                "reward_one_dice": -9,
+                "reward_slash": -12,
+            },
+            "reward_three_times": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": 9.0,
+                "reward_one_dice": 0.9,
+                "reward_slash": -0,
+            },
+            "reward_four_times": {
+                "reward_five_dices": 35.0,
+                "reward_four_dices": 40.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": 5,
+                "reward_one_dice": 0.7,
+                "reward_slash": -12,
+            },
+            "reward_full_house": {
+                "reward_five_dices": 50.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_small_street": {
+                "reward_five_dices": 1.0,
+                "reward_four_dices": 25.0,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 60.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 100.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -25,
+            },
+            "reward_chance": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4,
+                "reward_three_dices": 3,
+                "reward_two_dices": 2,
+                "reward_one_dice": 1,
+                "reward_slash": -0,
+            },
+        },
     }
 
     rl = KniffelRL(
+        test_episodes=100,
         hyperparater_base=base_hp,
-        config_path="src/config/config.csv",
-        path_prefix="",
         trial=trial,
+        env_config=env_config,
         env_observation_space=47,
         env_action_space=57,
-        env_config=env_config,
     )
 
     (
@@ -534,7 +637,7 @@ def objective(trial):
         nb_steps_mean,
         nb_steps_custom,
         custom_metric,
-    ) = rl.train(nb_steps=1_000_000)
+    ) = rl.train(nb_steps=500_000)
 
     trial.set_user_attr("server", str(server))
     # trial.set_user_attr("custom_metric", float(custom_metric))
