@@ -11,7 +11,7 @@ class Attempt:
     status = KniffelStatus.INIT
     option = KniffelOptions.DEFAULT
     logging = False
-    selected_option: KniffelOptionClass = None
+    selected_option: KniffelOptionClass = None  # type: ignore
 
     def __init__(self, logging: bool = False):
         self.attempts = []
@@ -57,7 +57,7 @@ class Attempt:
         """
         return 3 - self.count()
 
-    def add_attempt(self, keep: list = [], dice_set: DiceSet = None):
+    def add_attempt(self, keep: list = [], dice_set: DiceSet = None):  # type: ignore
         """
         Add new attempt.
         Optionally keep selected dices
@@ -137,7 +137,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "ones_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.ONES_SLASH,
                     is_possible=True,
                 )
@@ -147,7 +147,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "twos_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.TWOS_SLASH,
                     is_possible=True,
                 )
@@ -157,7 +157,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "threes_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.THREES_SLASH,
                     is_possible=True,
                 )
@@ -167,7 +167,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "fours_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.FOURS_SLASH,
                     is_possible=True,
                 )
@@ -177,7 +177,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "fives_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.FIVES_SLASH,
                     is_possible=True,
                 )
@@ -187,7 +187,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "sixes_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.SIXES_SLASH,
                     is_possible=True,
                 )
@@ -198,7 +198,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "three_times_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.THREE_TIMES_SLASH,
                     is_possible=True,
                 )
@@ -208,7 +208,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "four_times_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.FOUR_TIMES_SLASH,
                     is_possible=True,
                 )
@@ -218,7 +218,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "full_house_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.FULL_HOUSE_SLASH,
                     is_possible=True,
                 )
@@ -228,7 +228,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "small_street_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.SMALL_STREET_SLASH,
                     is_possible=True,
                 )
@@ -238,7 +238,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "large_street_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.LARGE_STREET_SLASH,
                     is_possible=True,
                 )
@@ -248,7 +248,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "kniffel_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.KNIFFEL_SLASH,
                     is_possible=True,
                 )
@@ -258,7 +258,7 @@ class Attempt:
                 self.selected_option = KniffelOptionClass(
                     "chance_slash",
                     0,
-                    ds=None,
+                    ds=None,  # type: ignore
                     id=KniffelOptions.CHANCE_SLASH,
                     is_possible=True,
                 )
