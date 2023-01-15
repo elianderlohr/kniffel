@@ -364,6 +364,40 @@ class Kniffel:
         else:
             raise ex.GameFinishedException()
 
+    def get_alternative_action(self, option: KniffelOptions):
+        """Get alternative action
+        :param option: option
+        :return: alternative action
+        """
+        if option == KniffelOptions.ONES:
+            return KniffelOptions.ONES_SLASH
+        elif option == KniffelOptions.TWOS:
+            return KniffelOptions.TWOS_SLASH
+        elif option == KniffelOptions.THREES:
+            return KniffelOptions.THREES_SLASH
+        elif option == KniffelOptions.FOURS:
+            return KniffelOptions.FOURS_SLASH
+        elif option == KniffelOptions.FIVES:
+            return KniffelOptions.FIVES_SLASH
+        elif option == KniffelOptions.SIXES:
+            return KniffelOptions.SIXES_SLASH
+        elif option == KniffelOptions.THREE_TIMES:
+            return KniffelOptions.THREE_TIMES_SLASH
+        elif option == KniffelOptions.FOUR_TIMES:
+            return KniffelOptions.FOUR_TIMES_SLASH
+        elif option == KniffelOptions.FULL_HOUSE:
+            return KniffelOptions.FULL_HOUSE_SLASH
+        elif option == KniffelOptions.SMALL_STREET:
+            return KniffelOptions.SMALL_STREET_SLASH
+        elif option == KniffelOptions.LARGE_STREET:
+            return KniffelOptions.LARGE_STREET_SLASH
+        elif option == KniffelOptions.KNIFFEL:
+            return KniffelOptions.KNIFFEL_SLASH
+        elif option == KniffelOptions.CHANCE:
+            return KniffelOptions.CHANCE_SLASH
+        else:
+            return option
+
     def finish_turn(self, option: KniffelOptions) -> KniffelOptionClass:
         """
         Finish turn
@@ -456,17 +490,17 @@ class Kniffel:
         if option.value in check.keys():
             if check[option.value]:
                 for turn in self.turns:
-                    if option.value <= 13:
-                        if option.value == turn.option.value:
-                            return False
-                        if option.value + 13 == turn.option.value:
-                            return False
-                    else:
-                        if option.value - 13 == turn.option.value:
-                            return False
-                        if option.value == turn.option.value:
-                            return False
+                    # check if option or alternative option is already selected
+                    if (
+                        turn.option.value == option.value
+                        or turn.option.value
+                        == self.get_alternative_action(option).value
+                    ):
+                        return False
+
+                # if option is not already selected, return true
                 return True
+
         return False
 
     def is_bonus(self):
@@ -536,9 +570,9 @@ class Kniffel:
         """
         Check latest dice set for possible points
         """
-        latest_turn = self.turns[-1]
+        latest_turn = self.get_last()
 
-        ds = latest_turn.attempts[-1]
+        ds = latest_turn.get_latest()
 
         check = dict()
 

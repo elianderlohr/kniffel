@@ -257,11 +257,9 @@ class KniffelRL:
                 window_length=self.window_length,
             )
 
-            # dqn_target_model_update_float = self._trial.suggest_categorical(
-            #    "dqn_target_model_update_is_float", [True, False]
-            # )
-
-            dqn_target_model_update_float = False
+            dqn_target_model_update_float = self._trial.suggest_categorical(
+                "dqn_target_model_update_is_float", [True, False]
+            )
 
             dqn_target_model_update = 0
             if dqn_target_model_update_float:
@@ -270,11 +268,11 @@ class KniffelRL:
                 )
             else:
                 dqn_target_model_update = self._trial.suggest_int(
-                    "dqn_target_model_update_int", 1, 10_000
+                    "dqn_target_model_update_int", 1, 20_000
                 )
 
             enable_dueling_network = self._trial.suggest_categorical(
-                "enable_dueling_network", [False]
+                "enable_dueling_network", [False, True]
             )
 
             agent = DQNAgent(
@@ -284,13 +282,11 @@ class KniffelRL:
                 nb_actions=actions,
                 nb_steps_warmup=39,
                 enable_dueling_network=bool(enable_dueling_network),
-                target_model_update=int(round(dqn_target_model_update))
-                if dqn_target_model_update > 0
-                else float(dqn_target_model_update),
+                target_model_update=dqn_target_model_update,
                 batch_size=self._return_trial("batch_size"),
                 enable_double_dqn=bool(self._return_trial("dqn_enable_double_dqn")),
                 dueling_type="avg"
-                if enable_dueling_network
+                if not enable_dueling_network
                 else str(self._return_trial("dqn_dueling_option")),
             )
 

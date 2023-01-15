@@ -310,13 +310,11 @@ class KniffelRL:
             nb_actions=self._env_action_space,
             nb_steps_warmup=39,
             enable_dueling_network=bool(enable_dueling_network),
-            target_model_update=int(round(dqn_target_model_update))
-            if dqn_target_model_update > 0
-            else float(dqn_target_model_update),
+            target_model_update=dqn_target_model_update,
             batch_size=self.get_hyperparameter("batch_size"),
             enable_double_dqn=bool(self.get_hyperparameter("dqn_enable_double_dqn")),
             dueling_type="avg"
-            if enable_dueling_network
+            if not enable_dueling_network
             else str(self.get_hyperparameter("dqn_dueling_option")),
         )
 
@@ -1122,26 +1120,26 @@ if __name__ == "__main__":
         "agent": "DQN",
         "batch_size": 32,
         "dqn_adam_amsgrad": True,
-        "dqn_adam_beta_1": 0.976705475293701,
-        "dqn_adam_beta_2": 0.9783448288471879,
-        "dqn_adam_epsilon": 3.622159601537823e-05,
-        "dqn_adam_learning_rate": 0.0057854463076883154,
+        "dqn_adam_beta_1": 0.8770788026018081,
+        "dqn_adam_beta_2": 0.8894717766504484,
+        "dqn_adam_epsilon": 7.579405338028617e-05,
+        "dqn_adam_learning_rate": 0.0015,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 1800000,
-        "dqn_target_model_update_int": 3519,
+        "dqn_memory_limit": 1500000,
+        "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
-        "eps_greedy_eps": 0.09853291026934924,
+        "eps_greedy_eps": 0.22187387376395634,
         "layers": 3,
-        "n_activation_l1": "tanh",
-        "n_activation_l2": "relu",
-        "n_activation_l3": "tanh",
-        "n_units_l1": 256,
-        "n_units_l2": 32,
-        "n_units_l3": 224,
+        "n_activation_l1": "relu",
+        "n_activation_l2": "tanh",
+        "n_activation_l3": "relu",
+        "n_units_l1": 96,
+        "n_units_l2": 128,
+        "n_units_l3": 256,
         "train_policy": "EpsGreedyQPolicy",
         "windows_length": 1,
-        "anneal_steps": 1_000_000,
+        "anneal_steps": 1000000,
     }
 
     rl = KniffelRL(
