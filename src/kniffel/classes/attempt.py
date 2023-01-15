@@ -283,7 +283,7 @@ class Attempt:
         """
         Transform list of dice objects to simple int array list
         """
-        return [v.get_values() for v in self.attempts]
+        return [v.to_int_list() for v in self.attempts]
 
     def print(self):
         """
