@@ -807,7 +807,7 @@ if __name__ == "__main__":
         study = optuna.create_study(
             study_name=args.study_name,
             direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
         )
     else:
         print(
@@ -815,7 +815,7 @@ if __name__ == "__main__":
         )
         study = optuna.load_study(
             study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3",
+            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
         )
 
     study.optimize(
