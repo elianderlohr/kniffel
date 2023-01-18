@@ -594,7 +594,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             agent="ppo",
             environment=environment,
             batch_size=32,
-            network=ppo_layer,
+            policy=dict(network=ppo_layer),
             use_beta_distribution=trial.suggest_categorical(
                 f"{prefix}_use_beta_distribution", [True, False]
             ),
@@ -608,9 +608,9 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
 
         layers = trial.suggest_int(f"{prefix}_layers", 2, 4)
 
-        ppo_layer = []
+        trpo_layer = []
         for i in range(1, layers + 1):
-            ppo_layer.append(
+            trpo_layer.append(
                 dict(
                     type="dense",
                     size=trial.suggest_int(f"{prefix}_n_units_l{i}", 32, 256),
@@ -624,7 +624,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             agent="trpo",
             environment=environment,
             batch_size=32,
-            network=ppo_layer,
+            policy=dict(network=trpo_layer),
             use_beta_distribution=trial.suggest_categorical(
                 f"{prefix}_use_beta_distribution", [True, False]
             ),
