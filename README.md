@@ -145,9 +145,9 @@ The AI model can be used by running the game.py script in the src/console folder
 
 | Name / ID       | Date       | Train Episodes | Train Duration | Avg Score | Max score | Avg Rounds | % Rounds finished | Path                                                          |
 |-----------------|------------|-------------------|----------|-----------|-----------|------------|----------------------|------------------------------------------------------------------|
-| current-best-v1 | 01.01.2023 | ~2.500.000        | ~1d      | ~163.73   | 216       | ~34        | 100%                   | [output/weights/current-best-v1](output/weights/current-best-v1)       |
-| current-best-v2 | 05.01.2023 | ~2.500.000        | ~1d      | ~162.78   | 221       | ~32        | 92%               | [output/weights/current-best-v2](output/weights/current-best-v2) |
-| current-best-v3 | 06.01.2023 | ~2.500.000        | ~1d      | ~169.46   | 244       | ~32        | 90%               | [output/weights/current-best-v3](output/weights/current-best-v3) |
+| current-best-v1 | 01.01.2023 | ~2.500.000        | ~1d      | ~163.73   | 216       | ~34        | 100%                   | [output/weights/current-best-v1](output/weights/keras-current-best-v1)       |
+| current-best-v2 | 05.01.2023 | ~2.500.000        | ~1d      | ~162.78   | 221       | ~32        | 92%               | [output/weights/current-best-v2](output/weights/keras-current-best-v2) |
+| current-best-v3 | 06.01.2023 | ~2.500.000        | ~1d      | ~169.46   | 244       | ~32        | 90%               | [output/weights/current-best-v3](output/weights/keras-current-best-v3) |
 
 *tbc*
 

@@ -14,7 +14,7 @@ import argparse
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# Stable Baselines imports
+# Tensorforce imports
 from tensorforce import Runner, Agent, Environment
 import tensorflow as tf
 
@@ -34,10 +34,14 @@ from src.env.env_helper import KniffelEnvHelper
 from src.env.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
 
+
 class KniffelOptunaRL:
 
     # OpenAI Gym environment
-    environment : Environment = None # type: ignore
+    environment: Environment = None  # type: ignore
+
+    # Agent
+    agent: Agent = None  # type: ignore
 
     # Test episodes
     _test_episodes = 100
@@ -65,18 +69,17 @@ class KniffelOptunaRL:
     _env_action_space: int = 57
 
     def __init__(
-        self,#
+        self,  #
         trial: optuna.trial.Trial,
         agent,
         environment,
-        base_path:str="",
+        base_path: str = "",
         env_config={},
-        config_path="src/ai/Kniffel.CSV",
         env_action_space=57,
         env_observation_space=47,
         logging=False,
     ):
-        """ Init the class
+        """Init the class
 
         :param trial: optuna trial
         :param agent: Agent, defaults to None
@@ -91,8 +94,6 @@ class KniffelOptunaRL:
 
         self.trial = trial
 
-        self._config_path = config_path
-
         # Set env action space and observation space
         self._env_action_space = env_action_space
         self._env_observation_space = env_observation_space
@@ -100,9 +101,45 @@ class KniffelOptunaRL:
         # Set env config
         self.env_config = env_config
 
-        self.base_path = base_path            
+        self.base_path = base_path
 
         self.logging = logging
+
+        # if env_config has reward_mode
+        if "reward_mode" in env_config:
+            if (
+                env_config["reward_mode"] == "kniffel"
+                or env_config["reward_mode"] == "custom"
+            ):
+                print("Reward mode set to '{}'".format(env_config["reward_mode"]))
+                self.reward_mode = env_config["reward_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'kniffel' or 'custom'".format(
+                        env_config["reward_mode"]
+                    )
+                )
+        else:
+            self.reward_mode = "kniffel"
+            print("No reward mode set, using default 'kniffel'")
+
+        # if env_config has state_mode
+        if "state_mode" in env_config:
+            if (
+                env_config["state_mode"] == "binary"
+                or env_config["state_mode"] == "continuous"
+            ):
+                print("State mode set to '{}'".format(env_config["state_mode"]))
+                self.state_mode = env_config["state_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'binary' or 'continuous'".format(
+                        env_config["state_mode"]
+                    )
+                )
+        else:
+            self.state_mode = "binary"
+            print("No state mode set, using default 'binary'")
 
         self.environment = environment
 
@@ -137,22 +174,13 @@ class KniffelOptunaRL:
     ):
         episodes = 1_000
 
-        reward_simple = self.env_config["reward_simple"]
-
         dir_name = "p_date={}/".format(self.datetime)
 
-        path = os.path.join(
-            self.base_path, "output/weights/", dir_name
-        )
+        path = os.path.join(self.base_path, "output/weights/", dir_name)
 
         # Create dir
         print(f"Create subdir: {path}")
         os.makedirs(path, exist_ok=True)
-
-        if reward_simple:
-            print("Use simple reward system!")
-        else:
-            print("Use complex reward system!")
 
         runner = Runner(agent=self.agent, environment=self.environment)
 
@@ -313,12 +341,11 @@ class KniffelOptunaRL:
         print(f"Play {episodes} games from model {dir_name}.")
         print()
 
-        metrics  = self.use_model(
+        metrics = self.use_model(
             dir_name,
             episodes,
             write=write,
-            )
-            
+        )
 
         return metrics
 
@@ -335,7 +362,7 @@ class KniffelOptunaRL:
         if logging:
             print(f"Load weights {path}/{weights_name}.h5f")
 
-        agent = Agent.load(directory=path, format='checkpoint', environment=env)
+        agent = Agent.load(directory=path, format="checkpoint", environment=env)
 
         return agent
 
@@ -346,7 +373,7 @@ class KniffelOptunaRL:
     # Unbatch outputs
     def unbatch(self, x):
         if isinstance(x, tf.Tensor):  # TF tensor to NumPy array
-            x = x.numpy()
+            x = x.numpy()  # type: ignore
         if x.shape == (1,):  # Singleton array to Python value
             return x.item()
         else:
@@ -358,7 +385,7 @@ class KniffelOptunaRL:
         :param l: list of values
         :return: second moment with negative values
         """
-        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]
+        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]  # type: ignore
         return np.mean(sm_list)
 
     def use_model(
@@ -384,12 +411,13 @@ class KniffelOptunaRL:
         )
 
         kniffel_env = KniffelEnvHelper(
-            env_config=self.env_config,
-            logging=self.logging,
-            config_file_path=self._config_path,
+            self.env_config,
+            logging=False,
+            reward_mode=self.reward_mode,
+            state_mode=self.state_mode,
         )
 
-        agent = tf.saved_model.load(export_dir=path)
+        agent: tf.keras.Model = tf.saved_model.load(export_dir=path)
 
         for e in range(1, episodes + 1):
             bar.next()
@@ -506,7 +534,7 @@ class KniffelOptunaRL:
         metrics = {
             "finished_games": episodes - break_counter,
             "error_games": break_counter,
-            "rounds_played": episodes, 
+            "rounds_played": episodes,
             "average_points": np.mean(points),
             "max_points": max(points),
             "min_points": min(points),
@@ -520,17 +548,21 @@ class KniffelOptunaRL:
 
         return metrics
 
-def get_kniffel_environment(env_config, config_path, env_observation_space, env_action_space, logging=False) -> Environment:
-    """ Get the environment for the agent
+
+def get_kniffel_environment(
+    env_config, env_observation_space, env_action_space, logging=False
+) -> Environment:
+    """Get the environment for the agent
 
     :return: OpenAI Gym environment
     """
     env = KniffelEnvTF(
         env_config,
         logging=logging,
-        config_file_path=config_path,
         env_observation_space=env_observation_space,
         env_action_space=env_action_space,
+        reward_mode=env_config["reward_mode"],
+        state_mode=env_config["state_mode"],
     )
 
     environment = Environment.create(
@@ -539,63 +571,208 @@ def get_kniffel_environment(env_config, config_path, env_observation_space, env_
 
     return environment
 
+
+def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
+    if agent == "ppo":
+        prefix = "ppo"
+
+        layers = trial.suggest_int(f"{prefix}_layers", 2, 4)
+
+        ppo_layer = []
+        for i in range(1, layers + 1):
+            ppo_layer.append(
+                dict(
+                    type="dense",
+                    size=trial.suggest_int(f"{prefix}_n_units_l{i}", 32, 256),
+                    activation=trial.suggest_categorical(
+                        f"{prefix}_activation_l{i}", ["relu", "tanh"]
+                    ),
+                )
+            )
+
+        return Agent.create(
+            agent="ppo",
+            environment=environment,
+            batch_size=32,
+            network=ppo_layer,
+            use_beta_distribution=trial.suggest_categorical(
+                f"{prefix}_use_beta_distribution", [True, False]
+            ),
+            learning_rate=trial.suggest_loguniform(
+                f"{prefix}_learning_rate", 1e-6, 1e-1
+            ),
+            discount=trial.suggest_uniform(f"{prefix}_discount", 0.9, 0.999),
+        )
+    elif agent == "trpo":
+        prefix = "trpo"
+
+        layers = trial.suggest_int(f"{prefix}_layers", 2, 4)
+
+        ppo_layer = []
+        for i in range(1, layers + 1):
+            ppo_layer.append(
+                dict(
+                    type="dense",
+                    size=trial.suggest_int(f"{prefix}_n_units_l{i}", 32, 256),
+                    activation=trial.suggest_categorical(
+                        f"{prefix}_activation_l{i}", ["relu", "tanh"]
+                    ),
+                )
+            )
+
+        return Agent.create(
+            agent="trpo",
+            environment=environment,
+            batch_size=32,
+            network=ppo_layer,
+            use_beta_distribution=trial.suggest_categorical(
+                f"{prefix}_use_beta_distribution", [True, False]
+            ),
+            learning_rate=trial.suggest_loguniform(
+                f"{prefix}_learning_rate", 1e-6, 1e-1
+            ),
+            discount=trial.suggest_uniform(f"{prefix}_discount", 0.9, 0.999),
+        )
+
+
 def objective(trial):
     nb_steps = 50_000
 
     # CONFIG PARAM
-    config_path = "src/config/config.csv"
     base_path = str(Path(__file__).parents[2]) + "/"
-    
-    env_observation_space=47
-    env_action_space=57
+
+    env_observation_space = 47
+    env_action_space = 57
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -40,
-        "reward_finish": 15,
-        "reward_bonus": 5,
-        "reward_simple": False,
+        "reward_game_over": -0,
+        "reward_finish": 25,
+        "reward_bonus": 100,
+        "reward_mode": "custom",  # custom or kniffel
+        "state_mode": "continuous",  # binary or continuous
+        "reward_kniffel": {
+            "reward_ones": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4.0,
+                "reward_three_dices": 2.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -1,
+                "reward_slash": -2,
+            },
+            "reward_twos": {
+                "reward_five_dices": 10.0,
+                "reward_four_dices": 8.0,
+                "reward_three_dices": 6.0,
+                "reward_two_dices": -2,
+                "reward_one_dice": -3,
+                "reward_slash": -4,
+            },
+            "reward_threes": {
+                "reward_five_dices": 15.0,
+                "reward_four_dices": 12.0,
+                "reward_three_dices": 9.0,
+                "reward_two_dices": -3,
+                "reward_one_dice": -4.5,
+                "reward_slash": -6,
+            },
+            "reward_fours": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 16.0,
+                "reward_three_dices": 12.0,
+                "reward_two_dices": -4,
+                "reward_one_dice": -6,
+                "reward_slash": -8,
+            },
+            "reward_fives": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": 20.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": -5,
+                "reward_one_dice": -7.5,
+                "reward_slash": -10,
+            },
+            "reward_sixes": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": -6,
+                "reward_one_dice": -9,
+                "reward_slash": -12,
+            },
+            "reward_three_times": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": 9.0,
+                "reward_one_dice": 0.9,
+                "reward_slash": -0,
+            },
+            "reward_four_times": {
+                "reward_five_dices": 35.0,
+                "reward_four_dices": 40.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": 5,
+                "reward_one_dice": 0.7,
+                "reward_slash": -12,
+            },
+            "reward_full_house": {
+                "reward_five_dices": 50.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_small_street": {
+                "reward_five_dices": 1.0,
+                "reward_four_dices": 25.0,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 60.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 100.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -25,
+            },
+            "reward_chance": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4,
+                "reward_three_dices": 3,
+                "reward_two_dices": 2,
+                "reward_one_dice": 1,
+                "reward_slash": -0,
+            },
+        },
     }
 
-    config = {
-        "batch_size": trial.suggest_int("batch_size", 1, 20),
-        "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1e-1),
-        "multi_step": trial.suggest_int("multi_step", 1, 20, log=True),
-        "horizon": trial.suggest_int("horizon", 1, 100, log=True),
-        "discount": trial.suggest_loguniform("discount", 0.8, 1),
-        "importance_sampling": trial.suggest_categorical("importance_sampling", ["no", "yes"]),
-        "clipping_value": trial.suggest_loguniform("clipping_value", 5e-2, 1.3),
-        "baseine": trial.suggest_categorical("baseline", ["no", "same", "yes"]),
-        "baseline_weight": trial.suggest_loguniform("baseline_weight", 1e-2, 1e2),
-        "estimate_advantage": trial.suggest_categorical("estimate_advantage", ["no", "yes"]),
-        "entropy_regularization": trial.suggest_loguniform("entropy_regularization", 3e-6, 1.0),
-    }
+    environment = get_kniffel_environment(
+        env_config, env_observation_space, env_action_space, logging=False
+    )
 
-    
-    environment = get_kniffel_environment(env_config, config_path, env_observation_space, env_action_space, logging=False)
+    agent_str = trial.suggest_categorical("agent", ["ppo", "trpo"])
 
-    agent = trial.suggest_categorical("agent", ["dqn"])
-
-    agent = Agent.create(
-        environment=environment,
-        agent=agent,
-        memory=trial.suggest_int("{}_memory".format(agent), 1000, 10000),
-        batch_size=32,
-        # update_frequency=0.25*32,
-        start_updating=1000,
-        learning_rate=trial.suggest_loguniform("{}_learning_rate".format(agent), 1e-5, 1e-1),
-        huber_loss=trial.suggest_loguniform("{}_huber_loss".format(agent), 1e-3, 1e-1),
-        discount=trial.suggest_uniform("{}_discount".format(agent), 0.9, 0.99),
-        target_update_weight=trial.suggest_uniform("{}_target_update_weight".format(agent), 0.1, 1),
-        )
+    agent = build_agent(agent_str, trial, environment)
 
     rl = KniffelOptunaRL(
         trial=trial,
-        agent = agent,
+        agent=agent,
         environment=environment,
         base_path=base_path,
         env_config=env_config,
-        config_path=config_path,
         env_observation_space=env_observation_space,
         env_action_space=env_action_space,
     )
@@ -603,7 +780,6 @@ def objective(trial):
     metrics = rl.train(nb_steps)
 
     return metrics["custom_metric"]
-
 
 
 if __name__ == "__main__":

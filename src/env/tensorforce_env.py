@@ -5,7 +5,7 @@ import inspect
 sys.path.insert(
     0,
     os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # type: ignore
     ),
 )
 
@@ -18,7 +18,7 @@ from src.env.env_helper import KniffelEnvHelper
 
 class KniffelEnvTF(Environment):
 
-    kniffel_helper: KniffelEnvHelper = None
+    kniffel_helper: KniffelEnvHelper = None  # type: ignore
     logging = False
 
     state_shape = None
@@ -27,30 +27,27 @@ class KniffelEnvTF(Environment):
     def __init__(
         self,
         env_config,
-        config_file_path="/Kniffel.CSV",
         logging=False,
-        reward_roll_dice=0,
-        reward_game_over=-200,
-        reward_bonus=5,
-        reward_finish=10,
         env_action_space=57,
-        env_observation_space=47,
-        reward_simple=True,
+        env_observation_space=20,
+        reward_mode="kniffel",  # kniffel, custom
+        state_mode="binary",  # binary, continuous
     ):
         """Initialize Kniffel Envioronment"""
-        self.kniffel_helper = KniffelEnvHelper(
+        self.kniffel_helper: KniffelEnvHelper = KniffelEnvHelper(
             env_config,
             logging=False,
-            config_file_path=config_file_path,
-            reward_roll_dice=reward_roll_dice,
-            reward_game_over=reward_game_over,
-            reward_bonus=reward_bonus,
-            reward_finish=reward_finish,
-            reward_simple=reward_simple,
+            reward_mode=reward_mode,
+            state_mode=state_mode,
         )
 
         self.action_shape = dict(type="int", num_values=env_action_space)
-        self.observation_shape = dict(type="float", shape=(1,env_observation_space))
+        self.observation_shape = dict(
+            type="float",
+            shape=(1, env_observation_space),
+            min_value=-1.0,
+            max_value=1.0,
+        )
 
         self.logging = logging
 
@@ -66,14 +63,14 @@ class KniffelEnvTF(Environment):
 
     def actions(self):
         """Return the action space of the environment
-        
+
         :return: shape of the action space
         """
         return self.action_shape
 
     def max_episode_timesteps(self):
         """Return the maximum number of timesteps per episode
-        
+
         :return: maximum number of timesteps per episode
         """
         return 1000
@@ -91,7 +88,7 @@ class KniffelEnvTF(Environment):
     def execute(self, actions):
         """
         Execute action
-        
+
         :param actions: action to execute
         :return: state, reward, done, info
         """

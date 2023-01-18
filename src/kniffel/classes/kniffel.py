@@ -249,93 +249,93 @@ class Kniffel:
 
         status.append(
             self.get_option_point(
-                KniffelOptions(1),
-                KniffelOptions(14),
+                KniffelOptions.ONES,
+                KniffelOptions.ONES_SLASH,
                 5,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(2),
-                KniffelOptions(15),
+                KniffelOptions.TWOS,
+                KniffelOptions.TWOS_SLASH,
                 10,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(3),
-                KniffelOptions(16),
+                KniffelOptions.THREES,
+                KniffelOptions.THREES_SLASH,
                 15,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(4),
-                KniffelOptions(17),
+                KniffelOptions.FOURS,
+                KniffelOptions.FOURS_SLASH,
                 20,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(5),
-                KniffelOptions(18),
+                KniffelOptions.FIVES,
+                KniffelOptions.FIVES_SLASH,
                 25,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(6),
-                KniffelOptions(19),
+                KniffelOptions.SIXES,
+                KniffelOptions.SIXES_SLASH,
                 30,
             )
         )
 
         status.append(
             self.get_option_point(
-                KniffelOptions(7),
-                KniffelOptions(20),
+                KniffelOptions.THREE_TIMES,
+                KniffelOptions.THREE_TIMES_SLASH,
                 30,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(8),
-                KniffelOptions(21),
+                KniffelOptions.FOUR_TIMES,
+                KniffelOptions.FOUR_TIMES_SLASH,
                 30,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(9),
-                KniffelOptions(22),
+                KniffelOptions.FULL_HOUSE,
+                KniffelOptions.FULL_HOUSE_SLASH,
                 25,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(10),
-                KniffelOptions(23),
+                KniffelOptions.SMALL_STREET,
+                KniffelOptions.SMALL_STREET_SLASH,
                 30,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(11),
-                KniffelOptions(24),
+                KniffelOptions.LARGE_STREET,
+                KniffelOptions.LARGE_STREET_SLASH,
                 40,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(12),
-                KniffelOptions(25),
+                KniffelOptions.KNIFFEL,
+                KniffelOptions.KNIFFEL_SLASH,
                 50,
             )
         )
         status.append(
             self.get_option_point(
-                KniffelOptions(13),
-                KniffelOptions(26),
+                KniffelOptions.CHANCE,
+                KniffelOptions.CHANCE_SLASH,
                 30,
             )
         )

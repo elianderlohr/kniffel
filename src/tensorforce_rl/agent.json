@@ -1,0 +1,8 @@
+{
+    "agent": "ppo",
+    "network": {
+        "type": "auto",
+        "rnn": false
+    },
+    "batch_size": 32
+}

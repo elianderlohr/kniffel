@@ -6,7 +6,7 @@ class DiceSet:
     logging: bool = False
 
     def __init__(
-        self, mock: list = [], logging: bool = False, should_sort: bool = True
+        self, mock: list = [], logging: bool = False, should_sort: bool = False
     ):
         """Initialize DiceSet
 

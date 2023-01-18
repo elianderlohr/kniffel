@@ -11,10 +11,9 @@ from progress.bar import IncrementalBar
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-# Stable Baselines imports
+# Tensorforce imports
 from tensorforce import Runner, Agent, Environment
 import tensorflow as tf
-
 
 # Project imports
 path_root = Path(__file__).parents[2]
@@ -29,10 +28,14 @@ from src.env.env_helper import KniffelEnvHelper
 from src.env.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
 
+
 class KniffelRL:
 
     # OpenAI Gym environment
-    environment : Environment = None
+    environment: Environment = None  # type: ignore
+
+    # Agent
+    agent: Agent = None  # type: ignore
 
     # Test episodes
     _test_episodes = 100
@@ -58,26 +61,22 @@ class KniffelRL:
 
     def __init__(
         self,
-        agent_path: str="",
-        base_path:str="",
+        agent_path: str = "",
+        base_path: str = "",
         env_config={},
-        config_path="src/ai/Kniffel.CSV",
         env_action_space=57,
         env_observation_space=47,
         logging=False,
     ):
-        """ Init the class
+        """Init the class
 
         :param agent_path: Path to agent json file, defaults to ""
         :param base_path: base path of project, defaults to ""
         :param env_config: env dict, defaults to {}
-        :param config_path: path to config file, defaults to "src/ai/Kniffel.CSV"
         :param env_action_space: Action space, defaults to 57
         :param env_observation_space: Observation space, defaults to 47
         :param logging: use logging, defaults to False
         """
-
-        self._config_path = config_path
 
         # Set env action space and observation space
         self._env_action_space = env_action_space
@@ -86,35 +85,82 @@ class KniffelRL:
         # Set env config
         self.env_config = env_config
 
-        self.base_path = base_path            
+        self.base_path = base_path
+
+        # Create train dir and define path
+        self.train_dir_name = "p_date={}/".format(self.datetime)
+        self.train_path = os.path.join(
+            self.base_path, "output/weights/", self.train_dir_name
+        )
 
         self.logging = logging
 
+        # if env_config has reward_mode
+        if "reward_mode" in env_config:
+            if (
+                env_config["reward_mode"] == "kniffel"
+                or env_config["reward_mode"] == "custom"
+            ):
+                print("Reward mode set to '{}'".format(env_config["reward_mode"]))
+                self.reward_mode = env_config["reward_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'kniffel' or 'custom'".format(
+                        env_config["reward_mode"]
+                    )
+                )
+        else:
+            self.reward_mode = "kniffel"
+            print("No reward mode set, using default 'kniffel'")
+
+        # if env_config has state_mode
+        if "state_mode" in env_config:
+            if (
+                env_config["state_mode"] == "binary"
+                or env_config["state_mode"] == "continuous"
+            ):
+                print("State mode set to '{}'".format(env_config["state_mode"]))
+                self.state_mode = env_config["state_mode"]
+            else:
+                raise Exception(
+                    "Reward mode {} is not supported. Please use 'binary' or 'continuous'".format(
+                        env_config["state_mode"]
+                    )
+                )
+        else:
+            self.state_mode = "binary"
+            print("No state mode set, using default 'binary'")
+
+        # Create environment
         self.environment = self.get_kniffel_environment()
 
         if agent_path != "":
-            self.agent = Agent.create(agent=agent_path, 
-                environment=self.environment, 
-                saver=dict(directory=self.base_path,
-                    frequency=1000, 
-                    max_checkpoints=5), 
-                summarizer=dict(directory = os.path.join(self.base_path, "_summaries"), summaries="all")
-            )
+            self.agent = Agent.create(
+                agent=agent_path,
+                environment=self.environment,
+                saver=dict(
+                    directory=self.train_path, frequency=1000, max_checkpoints=5
+                ),
+                summarizer=dict(
+                    directory=os.path.join(self.train_path, "_summaries"),
+                    summaries="all",
+                ),
+            )  # type: ignore
         else:
             raise Exception("Agent not defined")
 
-
     def get_kniffel_environment(self) -> Environment:
-        """ Get the environment for the agent
+        """Get the environment for the agent
 
         :return: OpenAI Gym environment
         """
         env = KniffelEnvTF(
             self.env_config,
             logging=self.logging,
-            config_file_path=self._config_path,
             env_observation_space=self._env_observation_space,
             env_action_space=self._env_action_space,
+            reward_mode=self.reward_mode,
+            state_mode=self.state_mode,
         )
 
         environment = Environment.create(
@@ -149,36 +195,28 @@ class KniffelRL:
     ):
         episodes = 1_000
 
-        reward_simple = self.env_config["reward_simple"]
+        # Create dir
+        print(f"Create subdir: {self.train_path}")
+        os.makedirs(self.train_path, exist_ok=True)
 
-        dir_name = "p_date={}/".format(self.datetime)
-
-        path = os.path.join(
-            self.base_path, "output/weights/", dir_name
+        # Create runner
+        runner = Runner(agent=self.agent, environment=self.environment)
+        runner.run(
+            num_episodes=nb_steps, save_best_agent=self.train_path, evaluation=True
         )
 
-        # Create dir
-        print(f"Create subdir: {path}")
-        os.makedirs(path, exist_ok=True)
+        # Save agent
+        self.agent.save(directory=self.train_path, format="saved-model")
 
-        if reward_simple:
-            print("Use simple reward system!")
-        else:
-            print("Use complex reward system!")
-
-        runner = Runner(agent=self.agent, environment=self.environment)
-
-        runner.run(num_episodes=nb_steps, save_best_agent=path, evaluation=True)
-
-        self.agent.save(directory=path, format="saved-model")
-
+        # Close runner
         runner.close()
 
-        metrics = self.play(dir_name, episodes)
+        # Get metrics
+        metrics = self.play(self.train_dir_name, episodes)
 
+        # Save metrics
         result = json.dumps(metrics, indent=4, sort_keys=True)
-
-        self._append_file(path=f"{path}/info.txt", content=result)
+        self._append_file(path=f"{self.train_path}/info.txt", content=result)
 
         return metrics
 
@@ -329,8 +367,7 @@ class KniffelRL:
             dir_name,
             episodes,
             write=write,
-            )
-            
+        )
 
         return metrics
 
@@ -347,7 +384,7 @@ class KniffelRL:
         if logging:
             print(f"Load weights {path}/{weights_name}.h5f")
 
-        agent = Agent.load(directory=path, format='checkpoint', environment=env)
+        agent = Agent.load(directory=path, format="checkpoint", environment=env)
 
         return agent
 
@@ -358,11 +395,15 @@ class KniffelRL:
     # Unbatch outputs
     def unbatch(self, x):
         if isinstance(x, tf.Tensor):  # TF tensor to NumPy array
-            x = x.numpy()
+            x = x.numpy()  # type: ignore
         if x.shape == (1,):  # Singleton array to Python value
             return x.item()
         else:
             return np.squeeze(x, axis=0)
+
+    def calculate_custom_metric(self, l: list):
+        sm_list = [np.power(v, 2) if v > 0 else -1 * np.power(v, 2) for v in l]  # type: ignore
+        return np.mean(sm_list)
 
     def use_model(
         self,
@@ -373,6 +414,8 @@ class KniffelRL:
         points = []
         rounds = []
         break_counter = 0
+
+        print("Start playing games...")
 
         path = os.path.join("output", "weights", dir_name)
 
@@ -386,13 +429,14 @@ class KniffelRL:
             suffix="%(index)d/%(max)d - %(eta)ds",
         )
 
-        kniffel_env = KniffelEnvHelper(
-            env_config=self.env_config,
-            logging=self.logging,
-            config_file_path=self._config_path,
+        kniffel_env: KniffelEnvHelper = KniffelEnvHelper(
+            self.env_config,
+            logging=False,
+            reward_mode=self.reward_mode,
+            state_mode=self.state_mode,
         )
 
-        agent = tf.saved_model.load(export_dir=path)
+        agent: tf.keras.Model = tf.saved_model.load(export_dir=path)
 
         for e in range(1, episodes + 1):
             bar.next()
@@ -411,32 +455,41 @@ class KniffelRL:
             while not done:
                 log_csv = []
 
+                # Get current state
                 state = kniffel_env.get_state()
 
+                # Get action from state
                 states = self.environment.reset()
                 states = self.batch(states)
                 auxiliaries = dict(mask=np.ones(shape=(1, 57), dtype=bool))
                 deterministic = True
 
+                # Get action
                 action = agent.act(states, auxiliaries, deterministic)
+
+                # Unbatch action
+                actions = self.unbatch(action)
+
+                # Convert action to EnumAction
+                enum_action = EnumAction(actions)
+
+                # Apply action
+                reward, done, info = kniffel_env.predict_and_apply(action)
+
+                # LOG
 
                 log_csv.append(
                     f"\n####################################################################################\n"
                 )
 
-                actions = self.unbatch(action)
-
-                enum_action = EnumAction(actions)
-
                 log_csv.append(f"##  Try: {rounds_counter}\n")
+
                 log_csv.append(
                     f"##  Attempts left: {kniffel_env.kniffel.get_last().attempts_left()}/3\n"
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
 
                 log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
-
-                reward, done, info = kniffel_env.predict_and_apply(action)
 
                 log_csv.append("\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel))
 
@@ -448,6 +501,8 @@ class KniffelRL:
                         points.append(kniffel_env.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
+
+                        # LOG
 
                         log_csv.append(
                             "####################################################################################\n"
@@ -471,6 +526,8 @@ class KniffelRL:
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
+
+                        # LOG
 
                         log_csv.append(
                             "\n\n####################################################################################"
@@ -509,7 +566,7 @@ class KniffelRL:
         metrics = {
             "finished_games": episodes - break_counter,
             "error_games": break_counter,
-            "rounds_played": episodes, 
+            "rounds_played": episodes,
             "average_points": np.mean(points),
             "max_points": max(points),
             "min_points": min(points),
@@ -523,15 +580,123 @@ class KniffelRL:
 
         return metrics
 
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -40,
-        "reward_finish": 15,
-        "reward_bonus": 5,
-        "reward_simple": False,
+        "reward_game_over": -0,
+        "reward_finish": 25,
+        "reward_bonus": 100,
+        "reward_mode": "custom",  # custom or kniffel
+        "state_mode": "continuous",  # binary or continuous
+        "reward_kniffel": {
+            "reward_ones": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4.0,
+                "reward_three_dices": 2.0,
+                "reward_two_dices": -0,
+                "reward_one_dice": -1,
+                "reward_slash": -2,
+            },
+            "reward_twos": {
+                "reward_five_dices": 10.0,
+                "reward_four_dices": 8.0,
+                "reward_three_dices": 6.0,
+                "reward_two_dices": -2,
+                "reward_one_dice": -3,
+                "reward_slash": -4,
+            },
+            "reward_threes": {
+                "reward_five_dices": 15.0,
+                "reward_four_dices": 12.0,
+                "reward_three_dices": 9.0,
+                "reward_two_dices": -3,
+                "reward_one_dice": -4.5,
+                "reward_slash": -6,
+            },
+            "reward_fours": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 16.0,
+                "reward_three_dices": 12.0,
+                "reward_two_dices": -4,
+                "reward_one_dice": -6,
+                "reward_slash": -8,
+            },
+            "reward_fives": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": 20.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": -5,
+                "reward_one_dice": -7.5,
+                "reward_slash": -10,
+            },
+            "reward_sixes": {
+                "reward_five_dices": 30.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": -6,
+                "reward_one_dice": -9,
+                "reward_slash": -12,
+            },
+            "reward_three_times": {
+                "reward_five_dices": 20.0,
+                "reward_four_dices": 24.0,
+                "reward_three_dices": 18.0,
+                "reward_two_dices": 9.0,
+                "reward_one_dice": 0.9,
+                "reward_slash": -0,
+            },
+            "reward_four_times": {
+                "reward_five_dices": 35.0,
+                "reward_four_dices": 40.0,
+                "reward_three_dices": 15.0,
+                "reward_two_dices": 5,
+                "reward_one_dice": 0.7,
+                "reward_slash": -12,
+            },
+            "reward_full_house": {
+                "reward_five_dices": 50.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_small_street": {
+                "reward_five_dices": 1.0,
+                "reward_four_dices": 25.0,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 60.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -0,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 100.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -25,
+            },
+            "reward_chance": {
+                "reward_five_dices": 5,
+                "reward_four_dices": 4,
+                "reward_three_dices": 3,
+                "reward_two_dices": 2,
+                "reward_one_dice": 1,
+                "reward_slash": -0,
+            },
+        },
     }
 
     agent_path = "src/tensorforce/agent.json"
@@ -540,10 +705,9 @@ if __name__ == "__main__":
         agent_path=agent_path,
         base_path=str(Path(__file__).parents[2]) + "/",
         env_config=env_config,
-        config_path="src/config/config.csv",
         env_observation_space=47,
         env_action_space=57,
     )
 
-    rl.train(250_000)
+    rl.train(10_000)
     # rl.play(dir_name="p_date=2022-12-19-22_11_30", episodes=5, write=True)
