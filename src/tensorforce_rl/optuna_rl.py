@@ -565,9 +565,7 @@ def get_kniffel_environment(
         state_mode=env_config["state_mode"],
     )
 
-    environment = Environment.create(
-        environment=env,
-    )
+    environment = Environment.create(environment=env)
 
     return environment
 
@@ -590,11 +588,32 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
                 )
             )
 
+        ppo_update_frequency_use_float = trial.suggest_categorical(
+            f"{prefix}_update_frequency_use_float", [True, False]
+        )
+
+        if ppo_update_frequency_use_float:
+            ppo_update_frequency = trial.suggest_float(
+                f"{prefix}_update_frequency_float", 0.01, 0.1
+            )
+        else:
+            ppo_update_frequency = trial.suggest_int(
+                f"{prefix}_update_frequency_int", 1, 100
+            )
+
         return Agent.create(
             agent="ppo",
             environment=environment,
             batch_size=32,
-            network="auto",
+            update_frequency=ppo_update_frequency,
+            network=ppo_layer,
+            multi_step=trial.suggest_int(f"{prefix}_multi_step", 1, 25),
+            subsampling_fraction=trial.suggest_float(
+                f"{prefix}_subsampling_fraction", 0.1, 1.0
+            ),
+            likelihood_ratio_clipping=trial.suggest_float(
+                f"{prefix}_likelihood_ratio_clipping", 0.1, 1.0
+            ),
             use_beta_distribution=trial.suggest_categorical(
                 f"{prefix}_use_beta_distribution", [True, False]
             ),
@@ -602,6 +621,17 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
                 f"{prefix}_learning_rate", 1e-6, 1e-1
             ),
             discount=trial.suggest_uniform(f"{prefix}_discount", 0.9, 0.999),
+            predict_terminal_values=trial.suggest_categorical(
+                f"{prefix}_predict_terminal_values", [True, False]
+            ),
+            baseline=dict(type="auto", size=32, depth=1),
+            baseline_optimizer=dict(
+                optimizer="adam",
+                learning_rate=trial.suggest_float(
+                    f"{prefix}_baseline_learning_rate", 1e-6, 1e-1
+                ),
+                multi_step=trial.suggest_int(f"{prefix}_baseline_multi_step", 1, 25),
+            ),
         )
     elif agent == "trpo":
         prefix = "trpo"
@@ -636,7 +666,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
 
 
 def objective(trial):
-    nb_steps = 50_000
+    nb_steps = 5_000
 
     # CONFIG PARAM
     base_path = str(Path(__file__).parents[2]) + "/"
@@ -800,23 +830,28 @@ if __name__ == "__main__":
 
     server = args.server
 
-    if args.new == "true":
-        print(
-            f"Create new study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
-        )
-        study = optuna.create_study(
-            study_name=args.study_name,
-            direction="maximize",
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
-        )
-    else:
-        print(
-            f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
-        )
-        study = optuna.load_study(
-            study_name=args.study_name,
-            storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
-        )
+    # if args.new == "true":
+    #    print(
+    #        f"Create new study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
+    #    )
+    #    study = optuna.create_study(
+    #        study_name=args.study_name,
+    #        direction="maximize",
+    #        storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
+    #    )
+    # else:
+    #    print(
+    #        f"Load study with name '{args.study_name}' and {args.jobs} parallel jobs. Run on server {args.server}"
+    #    )
+    #    study = optuna.load_study(
+    #        study_name=args.study_name,
+    #        storage=f"mysql+pymysql://kniffeluser:{args.pw}@kniffel.mysql.database.azure.com:3306/optuna3_new",
+    #    )
+
+    study = optuna.create_study(
+        study_name=args.study_name,
+        direction="maximize",
+    )
 
     study.optimize(
         objective,
