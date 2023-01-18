@@ -594,7 +594,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             agent="ppo",
             environment=environment,
             batch_size=32,
-            network=ppo_layer,
+            network="auto",
             use_beta_distribution=trial.suggest_categorical(
                 f"{prefix}_use_beta_distribution", [True, False]
             ),
@@ -624,7 +624,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             agent="trpo",
             environment=environment,
             batch_size=32,
-            network=trpo_layer,
+            network="auto",
             use_beta_distribution=trial.suggest_categorical(
                 f"{prefix}_use_beta_distribution", [True, False]
             ),
