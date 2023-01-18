@@ -291,12 +291,10 @@ class KniffelRL:
             )
 
         elif self._agent_value == "CEM":
-            memory_interval = self._trial.suggest_int(
-                "cem_memory_limit", 1_000, 750_000, step=50_000
-            )
-
             memory = EpisodeParameterMemory(
-                limit=memory_interval,
+                limit=self._trial.suggest_int(
+                    "cem_memory_limit", 1_000, 2_000_000, step=50_000
+                ),
                 window_length=self.window_length,
             )
 
@@ -304,9 +302,11 @@ class KniffelRL:
                 model=model,
                 memory=memory,
                 nb_actions=actions,
-                nb_steps_warmup=25,
+                nb_steps_warmup=1000,
                 batch_size=int(self._return_trial("batch_size")),
-                memory_interval=memory_interval,
+                memory_interval=self._trial.suggest_int("cem_memory_interval", 1, 1000),
+                train_interval=self._trial.suggest_int("cem_train_interval", 1, 1000),
+                elite_frac=self._trial.suggest_float("cem_elite_frac", 0.01, 0.99),
             )
 
         elif self._agent_value == "SARSA":
@@ -474,7 +474,7 @@ def objective(trial):
         "dqn_dueling_option": ["avg", "max"],
         "activation": ["linear", "softmax"],
         "dqn_enable_double_dqn": [True, False],
-        "agent": ["DQN"],
+        "agent": ["CEM"],
         "linear_inner_policy": [
             "EpsGreedyQPolicy",
             "BoltzmannQPolicy",

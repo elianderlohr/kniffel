@@ -574,6 +574,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
     if agent == "ppo":
         prefix = "ppo"
 
+        """
         layers = trial.suggest_int(f"{prefix}_layers", 2, 4)
 
         ppo_layer = []
@@ -587,7 +588,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
                     ),
                 )
             )
-
+        """
         ppo_update_frequency_use_float = trial.suggest_categorical(
             f"{prefix}_update_frequency_use_float", [True, False]
         )
@@ -606,7 +607,8 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             environment=environment,
             batch_size=32,
             update_frequency=ppo_update_frequency,
-            network=ppo_layer,
+            # network=ppo_layer,
+            network="auto",
             multi_step=trial.suggest_int(f"{prefix}_multi_step", 1, 25),
             subsampling_fraction=trial.suggest_float(
                 f"{prefix}_subsampling_fraction", 0.1, 1.0
@@ -624,18 +626,11 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
             predict_terminal_values=trial.suggest_categorical(
                 f"{prefix}_predict_terminal_values", [True, False]
             ),
-            baseline=dict(type="auto", size=32, depth=1),
-            baseline_optimizer=dict(
-                optimizer="adam",
-                learning_rate=trial.suggest_float(
-                    f"{prefix}_baseline_learning_rate", 1e-6, 1e-1
-                ),
-                multi_step=trial.suggest_int(f"{prefix}_baseline_multi_step", 1, 25),
-            ),
         )
     elif agent == "trpo":
         prefix = "trpo"
 
+        """
         layers = trial.suggest_int(f"{prefix}_layers", 2, 4)
 
         trpo_layer = []
@@ -649,7 +644,7 @@ def build_agent(agent: str, trial: optuna.Trial, environment: Environment):
                     ),
                 )
             )
-
+        """
         return Agent.create(
             agent="trpo",
             environment=environment,
@@ -793,7 +788,7 @@ def objective(trial):
         env_config, env_observation_space, env_action_space, logging=False
     )
 
-    agent_str = trial.suggest_categorical("agent", ["ppo", "trpo"])
+    agent_str = trial.suggest_categorical("agent", ["ppo", ])# "trpo"])
 
     agent = build_agent(agent_str, trial, environment)
 
