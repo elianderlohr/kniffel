@@ -634,7 +634,7 @@ def objective(trial):
         nb_steps_custom,
         custom_metric,
     ) = rl.train(
-        nb_steps=500_000
+        nb_steps=250_000
     )  # todo
 
     trial.set_user_attr("server", str(server))
