@@ -140,9 +140,7 @@ class KniffelRL:
                 gae_lambda=self._trial.suggest_uniform(
                     f"{prefix}_gae_lambda", 0.9, 0.999
                 ),
-                use_sde=self._trial.suggest_categorical(
-                    f"{prefix}_use_sde", [True, False]
-                ),
+                use_sde=False,
                 normalize_advantage=self._trial.suggest_categorical(
                     f"{prefix}_normalize_advantage", [True, False]
                 ),
@@ -178,9 +176,7 @@ class KniffelRL:
                 max_grad_norm=self._trial.suggest_loguniform(
                     f"{prefix}_max_grad_norm", 1e-1, 1e1
                 ),
-                use_sde=self._trial.suggest_categorical(
-                    f"{prefix}_use_sde", [True, False]
-                ),
+                use_sde=False,
                 target_kl=self._trial.suggest_loguniform(
                     f"{prefix}_target_kl", 1e-3, 1e-1
                 ),
