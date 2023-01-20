@@ -412,7 +412,7 @@ def objective(trial):
         env_action_space=57,
     )
 
-    metrics = rl.train(nb_steps=1000)  # todo
+    metrics = rl.train(nb_steps=250_000)  # todo
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("param", trial.params)
