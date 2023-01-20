@@ -277,7 +277,7 @@ class KniffelRL:
             "average_points": np.mean(points),
             "max_points": max(points),
             "min_points": min(points),
-            "activate a": np.mean(rounds),
+            "average_rounds": np.mean(rounds),
             "max_rounds": max(rounds),
             "min_rounds": min(rounds),
             "custom_metric": self.calculate_custom_metric(points),
