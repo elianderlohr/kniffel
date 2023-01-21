@@ -936,17 +936,17 @@ if __name__ == "__main__":
 
     agent_dict = {
         "agent": "TRPO",
-        "learning_rate": 2.2014688619906553e-05,
-        "TRPO_cg_damping": 0.001564386711531052,
-        "TRPO_cg_max_steps": 26,
-        "TRPO_gae_lambda": 0.9172616710049907,
-        "TRPO_gamma": 0.9709792044395,
-        "TRPO_line_search_max_iter": 94,
-        "TRPO_line_search_shrinking_factor": 0.6667001270723952,
+        "learning_rate": 0.045596393554676144,
+        "TRPO_cg_damping": 0.07035336901085272,
+        "TRPO_cg_max_steps": 36,
+        "TRPO_gae_lambda": 0.9300498564577707,
+        "TRPO_gamma": 0.9019176493023834,
+        "TRPO_line_search_max_iter": 88,
+        "TRPO_line_search_shrinking_factor": 0.6418643642549521,
         "TRPO_normalize_advantage": False,
-        "TRPO_n_critic_updates": 25,
+        "TRPO_n_critic_updates": 21,
         "TRPO_policy": "MlpPolicy",
-        "TRPO_target_kl": 0.018444744392165206,
+        "TRPO_target_kl": 0.09722377148109375,
     }
 
     rl = KniffelRL(
@@ -957,7 +957,7 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "evaluate"
+    TASK = "train"
 
     if TASK == "train":
 
