@@ -14,10 +14,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten
 
 # SB3
 from sb3_contrib import TRPO
+from stable_baselines3 import PPO
+from stable_baselines3.common.evaluation import evaluate_policy
 
 # Project imports
 path_root = Path(__file__).parents[2]
@@ -199,9 +200,73 @@ class KniffelRL:
                 print(e)
 
     def build_sb_agent(self):
-        model = TRPO(self.get_hyperparameter("policy"), self.env, verbose=1)
-
-        return model
+        if self.get_hyperparameter("agent") == "TRPO":
+            prefix = "TRPO"
+            return TRPO(
+                policy=self.get_hyperparameter(f"{prefix}_policy"),
+                env=self.get_kniffel_env(),
+                batch_size=128,
+                learning_rate=self.get_hyperparameter("learning_rate"),
+                gamma=self.get_hyperparameter(f"{prefix}_gamma"),
+                cg_max_steps=self.get_hyperparameter(f"{prefix}_cg_max_steps"),
+                cg_damping=self.get_hyperparameter(f"{prefix}_cg_damping"),
+                line_search_shrinking_factor=self.get_hyperparameter(
+                    f"{prefix}_line_search_shrinking_factor"
+                ),
+                line_search_max_iter=self.get_hyperparameter(
+                    f"{prefix}_line_search_max_iter",
+                ),
+                n_critic_updates=self.get_hyperparameter(
+                    f"{prefix}_n_critic_updates",
+                ),
+                gae_lambda=self.get_hyperparameter(
+                    f"{prefix}_gae_lambda",
+                ),
+                use_sde=False,
+                normalize_advantage=self.get_hyperparameter(
+                    f"{prefix}_normalize_advantage",
+                ),
+                target_kl=self.get_hyperparameter(
+                    f"{prefix}_target_kl",
+                ),
+            )
+        elif self.get_hyperparameter("agent") == "PPO":
+            prefix = "PPO"
+            return PPO(
+                policy=self.get_hyperparameter(
+                    f"{prefix}_policy",
+                ),
+                env=self.get_kniffel_env(),
+                batch_size=128,
+                learning_rate=self.get_hyperparameter(
+                    f"{prefix}_learning_rate",
+                ),
+                gamma=self.get_hyperparameter(
+                    f"{prefix}_gamma",
+                ),
+                gae_lambda=self.get_hyperparameter(
+                    f"{prefix}_gae_lambda",
+                ),
+                clip_range=self.get_hyperparameter(
+                    f"{prefix}_clip_range",
+                ),
+                normalize_advantage=self.get_hyperparameter(
+                    f"{prefix}_normalize_advantage",
+                ),
+                ent_coef=self.get_hyperparameter(
+                    f"{prefix}_ent_coef",
+                ),
+                vf_coef=self.get_hyperparameter(
+                    f"{prefix}_vf_coef",
+                ),
+                max_grad_norm=self.get_hyperparameter(
+                    f"{prefix}_max_grad_norm",
+                ),
+                use_sde=False,
+                target_kl=self.get_hyperparameter(
+                    f"{prefix}_target_kl",
+                ),
+            )
 
     def train(
         self,
@@ -240,7 +305,7 @@ class KniffelRL:
             # )
 
         # fit the agent
-        agent.learn(total_timesteps=nb_steps, log_interval=10)
+        agent.learn(total_timesteps=nb_steps, log_interval=10, progress_bar=True)  # type: ignore
 
         # SAVE
 
@@ -259,7 +324,7 @@ class KniffelRL:
         )
 
         # 2. Save the weight from the model
-        agent.save(f"{path}/kniffel_model")
+        agent.save(f"{path}/kniffel_model")  # type: ignore
 
         # TEST AND PLAY
 
@@ -617,7 +682,13 @@ class KniffelRL:
         agent = self.build_sb_agent()
 
         # load the weights
-        agent.load(f"{path}/kniffel_model")
+        agent.load(f"{path}/kniffel_model", env=self.get_kniffel_env())  # type: ignore
+
+        mean_reward, std_reward = evaluate_policy(
+            agent, agent.get_env(), n_eval_episodes=100  # type: ignore
+        )
+
+        print(f"mean_reward={mean_reward:.2f} +/- {std_reward}")
 
         return self.evaluate_model(agent, episodes, path=path)
 
@@ -864,11 +935,18 @@ if __name__ == "__main__":
     }
 
     agent_dict = {
-        "policy": "MlpPolicy",
         "agent": "TRPO",
-        "learning_rate": 0.0001,
-        "gamma": 0.99,
-        "batch_size": 64,
+        "learning_rate": 2.2014688619906553e-05,
+        "TRPO_cg_damping": 0.001564386711531052,
+        "TRPO_cg_max_steps": 26,
+        "TRPO_gae_lambda": 0.9172616710049907,
+        "TRPO_gamma": 0.9709792044395,
+        "TRPO_line_search_max_iter": 94,
+        "TRPO_line_search_shrinking_factor": 0.6667001270723952,
+        "TRPO_normalize_advantage": False,
+        "TRPO_n_critic_updates": 25,
+        "TRPO_policy": "MlpPolicy",
+        "TRPO_target_kl": 0.018444744392165206,
     }
 
     rl = KniffelRL(
@@ -879,10 +957,16 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(
-        nb_steps=250_000,
-        load_weights=False,
-        load_dir_name="current-best-v3",
-    )
-    # rl.play(dir_name="current-best-v3", episodes=20_000, write=False)
-    # rl.evaluate(dir_name="p_date=2023-01-11-08_05_26", episodes=1000)
+    TASK = "evaluate"
+
+    if TASK == "train":
+
+        rl.train(
+            nb_steps=1_000_000,
+            load_weights=False,
+            load_dir_name="current-best-v3",
+        )
+    elif TASK == "play":
+        rl.play(dir_name="current-best-v3", episodes=20_000, write=False)
+    elif TASK == "evaluate":
+        rl.evaluate(dir_name="p_date=2023-01-21-09_41_01", episodes=1000)

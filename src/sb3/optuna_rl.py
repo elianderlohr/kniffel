@@ -15,6 +15,7 @@ import tensorflow as tf
 # Import SB3
 from sb3_contrib import TRPO
 from stable_baselines3 import PPO, A2C, DQN
+from stable_baselines3.common.evaluation import evaluate_policy
 
 # Kniffel
 
@@ -266,6 +267,11 @@ class KniffelRL:
 
                         break
 
+        # Get policy mean and std
+        policy_mean_reward, policy_std_reward = evaluate_policy(
+            agent, agent.get_env(), n_eval_episodes=episodes  # type: ignore
+        )
+
         metrics = {
             "finished_games": episodes - break_counter,
             "error_games": break_counter,
@@ -277,6 +283,8 @@ class KniffelRL:
             "max_rounds": max(rounds),
             "min_rounds": min(rounds),
             "custom_metric": self.calculate_custom_metric(points),
+            "policy_mean_reward": policy_mean_reward,
+            "policy_std_reward": policy_std_reward,
         }
 
         return metrics
@@ -412,7 +420,7 @@ def objective(trial):
         env_action_space=57,
     )
 
-    metrics = rl.train(nb_steps=250_000)  # todo
+    metrics = rl.train(nb_steps=500_000)  # todo
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("param", trial.params)
@@ -425,7 +433,10 @@ def objective(trial):
     trial.set_user_attr("min_rounds", float(metrics["min_rounds"]))
     trial.set_user_attr("average_rounds", float(metrics["average_rounds"]))
 
-    return float(metrics["custom_metric"])
+    trial.set_user_attr("policy_mean_reward", float(metrics["policy_mean_reward"]))
+    trial.set_user_attr("policy_std_reward", float(metrics["policy_std_reward"]))
+
+    return float(metrics["policy_mean_reward"])
 
 
 server = ""
