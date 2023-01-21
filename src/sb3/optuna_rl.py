@@ -121,15 +121,15 @@ class KniffelRL:
                 ),
                 env=env,
                 batch_size=128,
-                learning_rate=self._trial.suggest_loguniform(
+                learning_rate=self._trial.suggest_float(
                     "learning_rate", 1e-5, 1e-1
                 ),
-                gamma=self._trial.suggest_uniform(f"{prefix}_gamma", 0.9, 0.999),
+                gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
                 cg_max_steps=self._trial.suggest_int(f"{prefix}_cg_max_steps", 10, 100),
-                cg_damping=self._trial.suggest_loguniform(
+                cg_damping=self._trial.suggest_float(
                     f"{prefix}_cg_damping", 1e-3, 1e-1
                 ),
-                line_search_shrinking_factor=self._trial.suggest_uniform(
+                line_search_shrinking_factor=self._trial.suggest_float(
                     f"{prefix}_line_search_shrinking_factor", 0.1, 0.9
                 ),
                 line_search_max_iter=self._trial.suggest_int(
@@ -138,14 +138,14 @@ class KniffelRL:
                 n_critic_updates=self._trial.suggest_int(
                     f"{prefix}_n_critic_updates", 10, 100
                 ),
-                gae_lambda=self._trial.suggest_uniform(
+                gae_lambda=self._trial.suggest_float(
                     f"{prefix}_gae_lambda", 0.9, 0.999
                 ),
                 use_sde=False,
                 normalize_advantage=self._trial.suggest_categorical(
                     f"{prefix}_normalize_advantage", [True, False]
                 ),
-                target_kl=self._trial.suggest_loguniform(
+                target_kl=self._trial.suggest_float(
                     f"{prefix}_target_kl", 1e-3, 1e-1
                 ),
             )
@@ -157,28 +157,28 @@ class KniffelRL:
                 ),
                 env=env,
                 batch_size=128,
-                learning_rate=self._trial.suggest_loguniform(
+                learning_rate=self._trial.suggest_float(
                     f"{prefix}_learning_rate", 1e-5, 1e-1
                 ),
-                gamma=self._trial.suggest_uniform(f"{prefix}_gamma", 0.9, 0.999),
-                gae_lambda=self._trial.suggest_uniform(
+                gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
+                gae_lambda=self._trial.suggest_float(
                     f"{prefix}_gae_lambda", 0.9, 0.999
                 ),
-                clip_range=self._trial.suggest_uniform(
+                clip_range=self._trial.suggest_float(
                     f"{prefix}_clip_range", 0.1, 0.4
                 ),
                 normalize_advantage=self._trial.suggest_categorical(
                     f"{prefix}_normalize_advantage", [True, False]
                 ),
-                ent_coef=self._trial.suggest_loguniform(
+                ent_coef=self._trial.suggest_float(
                     f"{prefix}_ent_coef", 1e-8, 1e-1
                 ),
-                vf_coef=self._trial.suggest_loguniform(f"{prefix}_vf_coef", 1e-8, 1e-1),
-                max_grad_norm=self._trial.suggest_loguniform(
+                vf_coef=self._trial.suggest_float(f"{prefix}_vf_coef", 1e-8, 1e-1),
+                max_grad_norm=self._trial.suggest_float(
                     f"{prefix}_max_grad_norm", 1e-1, 1e1
                 ),
                 use_sde=False,
-                target_kl=self._trial.suggest_loguniform(
+                target_kl=self._trial.suggest_float(
                     f"{prefix}_target_kl", 1e-3, 1e-1
                 ),
             )
