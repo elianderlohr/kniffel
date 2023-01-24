@@ -395,15 +395,16 @@ class KniffelRL:
 
 def objective(trial):
 
+    # Define hyperparameters
     base_hp = {
-        "agent": ["TRPO", "PPO"],
+        "agent": ["TRPO", "ARS", "QRDQN", "PPO", "A2C", "DQN"],
     }
 
     env_config = {
         "reward_roll_dice": 0,
-        "reward_game_over": -0,
-        "reward_finish": 25,
-        "reward_bonus": 100,
+        "reward_game_over": -10,
+        "reward_finish": 30,
+        "reward_bonus": 50,
         "reward_mode": "custom",  # custom or kniffel
         "state_mode": "continuous",  # binary or continuous
         "reward_kniffel": {
