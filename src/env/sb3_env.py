@@ -5,7 +5,6 @@ from enum import Enum
 import os
 import sys
 import inspect
-import csv
 
 sys.path.insert(
     0,
@@ -20,7 +19,7 @@ from src.kniffel.classes.dice_set import DiceSet
 from src.env.env_helper import KniffelEnvHelper
 
 
-class KniffelEnv(Env):
+class KniffelEnvSB3(Env):
 
     kniffel_helper: KniffelEnvHelper = None  # type: ignore
     logging = False
@@ -41,7 +40,7 @@ class KniffelEnv(Env):
             env_config (dict): Environment config
             logging (bool, optional): Enable logging. Defaults to False.
             env_action_space (int, optional): Action space. Defaults to 57.
-            env_observation_space (int, optional): Observation space. Defaults to 20.
+            env_observation_space (int, optional): Observation space. Defaults to 47.
             reward_mode (str, optional): Reward mode: "kniffel" or "custom". Defaults to "kniffel".
             state_mode (str, optional): State mode: "binary" or "continuous". Defaults to "binary".
         """
@@ -64,14 +63,13 @@ class KniffelEnv(Env):
         """
 
         self.observation_space = spaces.Box(
-            low=-1, high=1, shape=(1, env_observation_space), dtype=np.float16
+            low=-1.0, high=1.0, shape=(1, env_observation_space), dtype=np.float16
         )
 
         self.logging = logging
 
         # Set start
         self.state = self.kniffel_helper.get_state()
-        print(np.shape(self.state))
 
     def mock(self, dices: list):
         # print(f"Mock dice: {dices}")
@@ -93,7 +91,7 @@ class KniffelEnv(Env):
 
         done = False
 
-        reward, done, _ = self.kniffel_helper.predict_and_apply(action)
+        reward, done, info = self.kniffel_helper.predict_and_apply(action)
 
         if self.logging:
             print()
@@ -104,7 +102,7 @@ class KniffelEnv(Env):
         self.state = self.kniffel_helper.get_state()
 
         # Return step information
-        return self.state, reward, done, {}  # info
+        return self.state, reward, done, info  # info
 
     def render(self):
         """
@@ -112,7 +110,7 @@ class KniffelEnv(Env):
         """
         pass
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         """
         Reset state
         """

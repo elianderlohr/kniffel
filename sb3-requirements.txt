@@ -4,3 +4,5 @@ progress=1.6
 tensorflow
 pymysql==1.0.2
 sqlalchemy
+stable-baselines3[extra]
+optuna

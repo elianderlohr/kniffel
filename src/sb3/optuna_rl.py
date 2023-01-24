@@ -13,7 +13,7 @@ import optuna
 import tensorflow as tf
 
 # Import SB3
-from sb3_contrib import TRPO
+from sb3_contrib import TRPO, ARS, QRDQN
 from stable_baselines3 import PPO, A2C, DQN
 from stable_baselines3.common.evaluation import evaluate_policy
 
@@ -121,9 +121,7 @@ class KniffelRL:
                 ),
                 env=env,
                 batch_size=128,
-                learning_rate=self._trial.suggest_float(
-                    "learning_rate", 1e-5, 1e-1
-                ),
+                learning_rate=self._trial.suggest_float("learning_rate", 1e-5, 1e-1),
                 gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
                 cg_max_steps=self._trial.suggest_int(f"{prefix}_cg_max_steps", 10, 100),
                 cg_damping=self._trial.suggest_float(
@@ -145,9 +143,7 @@ class KniffelRL:
                 normalize_advantage=self._trial.suggest_categorical(
                     f"{prefix}_normalize_advantage", [True, False]
                 ),
-                target_kl=self._trial.suggest_float(
-                    f"{prefix}_target_kl", 1e-3, 1e-1
-                ),
+                target_kl=self._trial.suggest_float(f"{prefix}_target_kl", 1e-3, 1e-1),
             )
         elif self._agent_value == "PPO":
             prefix = "PPO"
@@ -164,22 +160,129 @@ class KniffelRL:
                 gae_lambda=self._trial.suggest_float(
                     f"{prefix}_gae_lambda", 0.9, 0.999
                 ),
-                clip_range=self._trial.suggest_float(
-                    f"{prefix}_clip_range", 0.1, 0.4
-                ),
+                clip_range=self._trial.suggest_float(f"{prefix}_clip_range", 0.1, 0.4),
                 normalize_advantage=self._trial.suggest_categorical(
                     f"{prefix}_normalize_advantage", [True, False]
                 ),
-                ent_coef=self._trial.suggest_float(
-                    f"{prefix}_ent_coef", 1e-8, 1e-1
-                ),
+                ent_coef=self._trial.suggest_float(f"{prefix}_ent_coef", 1e-8, 1e-1),
                 vf_coef=self._trial.suggest_float(f"{prefix}_vf_coef", 1e-8, 1e-1),
                 max_grad_norm=self._trial.suggest_float(
                     f"{prefix}_max_grad_norm", 1e-1, 1e1
                 ),
                 use_sde=False,
-                target_kl=self._trial.suggest_float(
-                    f"{prefix}_target_kl", 1e-3, 1e-1
+                target_kl=self._trial.suggest_float(f"{prefix}_target_kl", 1e-3, 1e-1),
+            )
+        elif self._agent_value == "ARS":
+            prefix = "ARS"
+            return ARS(
+                policy=self._trial.suggest_categorical(
+                    f"{prefix}_policy", ["MlpPolicy", "LinearPolicy"]
+                ),
+                env=env,
+                n_delta=self._trial.suggest_int(f"{prefix}_n_delta", 1, 100),
+                learning_rate=self._trial.suggest_float(
+                    f"{prefix}_learning_rate", 1e-5, 1e-1
+                ),
+                delta_std=self._trial.suggest_float(f"{prefix}_delta_std", 1e-5, 1e-1),
+                n_top=self._trial.suggest_int(f"{prefix}_n_top", 1, 100),
+                zero_policy=self._trial.suggest_categorical(
+                    f"{prefix}_zero_policy", [True, False]
+                ),
+            )
+        elif self._agent_value == "QRDQN":
+            prefix = "QRDQN"
+            return QRDQN(
+                policy=self._trial.suggest_categorical(
+                    f"{prefix}_policy", ["MlpPolicy"]
+                ),
+                env=env,
+                batch_size=32,
+                learning_rate=self._trial.suggest_float(
+                    f"{prefix}_learning_rate", 1e-7, 1e-1
+                ),
+                buffer_size=self._trial.suggest_int(
+                    f"{prefix}_buffer_size", 100_000, 2_000_000, step=100_000
+                ),
+                learning_starts=self._trial.suggest_int(
+                    f"{prefix}_learning_starts", 100, 50_000, step=100
+                ),
+                tau=self._trial.suggest_float(f"{prefix}_tau", 0.1, 1.0),
+                gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
+                train_freq=self._trial.suggest_int(f"{prefix}_train_freq", 1, 100),
+                gradient_steps=self._trial.suggest_int(
+                    f"{prefix}_gradient_steps", 1, 100
+                ),
+                target_update_interval=self._trial.suggest_int(
+                    f"{prefix}_target_update_interval", 30, 20_000
+                ),
+                exploration_fraction=self._trial.suggest_float(
+                    f"{prefix}_exploration_fraction", 0.001, 0.05
+                ),
+                exploration_final_eps=self._trial.suggest_float(
+                    f"{prefix}_exploration_final_eps", 0.01, 1.0
+                ),
+                exploration_initial_eps=self._trial.suggest_float(
+                    f"{prefix}_exploration_initial_eps", 0.01, 1.0
+                ),
+            )
+        elif self._agent_value == "A2C":
+            prefix = "A2C"
+            return A2C(
+                policy=self._trial.suggest_categorical(
+                    f"{prefix}_policy", ["MlpPolicy"]
+                ),
+                env=env,
+                learning_rate=self._trial.suggest_float(
+                    f"{prefix}_learning_rate", 1e-7, 1e-1
+                ),
+                gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
+                gae_lambda=self._trial.suggest_float(f"{prefix}_gae_lambda", 0.9, 1),
+                vf_coef=self._trial.suggest_float(f"{prefix}_vf_coef", 0.001, 0.5),
+                max_grad_norm=self._trial.suggest_float(
+                    f"{prefix}_max_grad_norm", 0.1, 1
+                ),
+                use_rms_prop=self._trial.suggest_categorical(
+                    f"{prefix}_use_rms_prop", [True, False]
+                ),
+                use_sde=False,
+            )
+        elif self._agent_value == "DQN":
+            prefix = "DQN"
+            return DQN(
+                policy=self._trial.suggest_categorical(
+                    f"{prefix}_policy", ["MlpPolicy"]
+                ),
+                env=env,
+                batch_size=32,
+                learning_rate=self._trial.suggest_float(
+                    f"{prefix}_learning_rate", 1e-7, 1e-1
+                ),
+                buffer_size=self._trial.suggest_int(
+                    f"{prefix}_buffer_size", 100_000, 2_000_000, step=100_000
+                ),
+                learning_starts=self._trial.suggest_int(
+                    f"{prefix}_learning_starts", 100, 50_000, step=100
+                ),
+                tau=self._trial.suggest_float(f"{prefix}_tau", 0.1, 1.0),
+                gamma=self._trial.suggest_float(f"{prefix}_gamma", 0.9, 0.999),
+                train_freq=self._trial.suggest_int(f"{prefix}_train_freq", 1, 100),
+                gradient_steps=self._trial.suggest_int(
+                    f"{prefix}_gradient_steps", 1, 100
+                ),
+                target_update_interval=self._trial.suggest_int(
+                    f"{prefix}_target_update_interval", 30, 20_000
+                ),
+                exploration_fraction=self._trial.suggest_float(
+                    f"{prefix}_exploration_fraction", 0.001, 0.05
+                ),
+                exploration_final_eps=self._trial.suggest_float(
+                    f"{prefix}_exploration_final_eps", 0.01, 1.0
+                ),
+                exploration_initial_eps=self._trial.suggest_float(
+                    f"{prefix}_exploration_initial_eps", 0.01, 1.0
+                ),
+                max_grad_norm=self._trial.suggest_float(
+                    f"{prefix}_max_grad_norm", 0.1, 1
                 ),
             )
 
@@ -190,7 +293,7 @@ class KniffelRL:
     ):
         agent = self.build_agent(env)
 
-        agent.learn(total_timesteps=nb_steps, log_interval=10)  # type: ignore
+        agent.learn(total_timesteps=nb_steps, log_interval=2)  # type: ignore
 
         return agent
 

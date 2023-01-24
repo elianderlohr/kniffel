@@ -169,6 +169,7 @@ class KniffelEnvHelper:
             print("reward_finish not in env_config, set to default '5'")
 
     def reset_kniffel(self):
+        del self.kniffel
         self.kniffel = Kniffel(
             logging=self.logging, custom=self.custom_kniffel, state_mode=self.state_mode
         )

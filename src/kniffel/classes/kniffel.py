@@ -340,7 +340,8 @@ class Kniffel:
             )
         )
 
-        return np.array([np.array(status)])
+        return np.array([np.array(status, dtype=np.float16)], dtype=np.float16)
+        # return np.array([np.array(status)])
 
     def start(self):
         """

@@ -16,8 +16,8 @@ import numpy as np
 import tensorflow as tf
 
 # SB3
-from sb3_contrib import TRPO
-from stable_baselines3 import PPO
+from sb3_contrib import TRPO, ARS, QRDQN, RecurrentPPO
+from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 
 # Project imports
@@ -25,10 +25,13 @@ path_root = Path(__file__).parents[2]
 os.chdir(path_root)
 sys.path.append(str(path_root))
 
+from src.env.sb3_env import KniffelEnvSB3
+from src.env.open_ai_env import KniffelEnv
+
 import src.kniffel.classes.custom_exceptions as ex
 from src.kniffel.classes.kniffel import Kniffel
 from src.kniffel.classes.options import KniffelOptions
-from src.env.open_ai_env import KniffelEnv
+
 from src.env.env_helper import KniffelEnvHelper
 from src.env.env_helper import EnumAction
 from src.utils.draw import KniffelDraw
@@ -37,7 +40,7 @@ from src.utils.draw import KniffelDraw
 class KniffelRL:
 
     # OpenAI Gym environment
-    env: KniffelEnv
+    env: KniffelEnvSB3
 
     # Test episodes
     _test_episodes = 100
@@ -134,41 +137,12 @@ class KniffelRL:
     def get_hyperparameter(self, key):
         return self.agent_dict[key]
 
-    # Model
-    def build_model(self):
-        model = tf.keras.Sequential()
-        model.add(
-            Flatten(
-                input_shape=(
-                    self.get_hyperparameter("windows_length"),
-                    1,
-                    self._env_observation_space,
-                )
-            )
-        )
-
-        for i in range(1, self.get_hyperparameter("layers") + 1):
-            model.add(
-                Dense(
-                    self.get_hyperparameter("n_units_l" + str(i)),
-                    activation=self.get_hyperparameter("n_activation_l{}".format(i)),
-                )
-            )
-
-        model.add(
-            Dense(
-                self._env_action_space, activation=self.get_hyperparameter("activation")
-            )
-        )
-        model.summary()
-        return model
-
-    def get_kniffel_env(self) -> KniffelEnv:
+    def get_kniffel_env(self) -> KniffelEnvSB3:
         """Get the environment for the agent
 
         :return: Kniffel OpenAI environment
         """
-        env = KniffelEnv(
+        env = KniffelEnvSB3(
             self.env_config,
             logging=self.logging,
             env_observation_space=self._env_observation_space,
@@ -176,6 +150,10 @@ class KniffelRL:
             reward_mode=self.reward_mode,
             state_mode=self.state_mode,
         )
+
+        from stable_baselines3.common.env_checker import check_env
+
+        check_env(env, warn=True, skip_render_check=True)
 
         return env
 
@@ -267,6 +245,15 @@ class KniffelRL:
                     f"{prefix}_target_kl",
                 ),
             )
+        elif self.get_hyperparameter("agent") == "DQN":
+            prefix = "DQN"
+            return DQN(
+                policy=self.get_hyperparameter(
+                    f"{prefix}_policy",
+                ),
+                env=self.get_kniffel_env(),
+                learning_rate=0.003,
+            )
 
     def train(
         self,
@@ -292,11 +279,6 @@ class KniffelRL:
 
         dir_name = "p_date={}/".format(self.datetime)
         path = f"{self.base_path}output/weights/{dir_name}"
-
-        # Create dir
-        # os.mkdir(path)
-
-        print(f"Create subdir: {path}")
 
         if load_weights:
             print(f"Load weights from dir: {load_dir_name}")
@@ -494,7 +476,7 @@ class KniffelRL:
         agent = self.build_sb_agent()
 
         # load the weights
-        agent.load(f"{path}/kniffel_model")
+        agent.load(f"{path}/kniffel_model")  # type: ignore
 
         metrics = self.use_model(
             agent,
@@ -528,10 +510,7 @@ class KniffelRL:
             suffix="%(index)d/%(max)d - %(eta)ds",
         )
 
-        kniffel_env = KniffelEnvHelper(
-            env_config=self.env_config,
-            logging=self.logging,
-        )
+        env: KniffelEnvSB3 = self.get_kniffel_env()
 
         for _ in range(1, episodes + 1):
             if write:
@@ -540,28 +519,22 @@ class KniffelRL:
                     content="\n".join(KniffelDraw().draw_kniffel_title().split("\n")),
                 )
 
+            state = env.reset()
+
             # reset values
             bar.next()
-            kniffel_env.reset_kniffel()
             rounds_counter = 1
             done = False
 
             while not done:
                 log_csv = []
 
-                # Get fresh state
-                state = kniffel_env.get_state()
-                dices = kniffel_env.kniffel.get_last().get_latest().to_int_list()
-
                 # predict action
-                action = agent.forward(state)
+                action, _states = agent.predict(state, deterministic=True)
                 enum_action = EnumAction(action)
 
                 # Apply action to model
-                reward, done, info = kniffel_env.predict_and_apply(action)
-
-                # Apply action to model
-                agent.backward(reward, done)
+                obs, reward, done, info = env.step(action)
 
                 # DEBUG
                 log_csv.append(
@@ -569,7 +542,7 @@ class KniffelRL:
                 )
                 log_csv.append(f"##  Try: {rounds_counter}\n")
                 log_csv.append(
-                    f"##  Attempts left: {kniffel_env.kniffel.get_last().count()}/3\n"
+                    f"##  Attempts left: {env.kniffel_helper.kniffel.get_last().count()}/3\n"
                 )
                 log_csv.append(f"##  Action: {enum_action}\n")
                 log_csv.append("\n\n" + KniffelDraw().draw_dices(state[0][0:30]))
@@ -581,12 +554,12 @@ class KniffelRL:
                     rounds_counter += 1
                 else:
                     if not info["error"]:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
                         log_csv.append(
-                            "\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel)
+                            "\n" + KniffelDraw().draw_sheet(env.kniffel_helper.kniffel)
                         )
 
                         log_csv.append(
@@ -607,13 +580,13 @@ class KniffelRL:
 
                         break
                     else:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
 
                         log_csv.append(
-                            "\n" + KniffelDraw().draw_sheet(kniffel_env.kniffel)
+                            "\n" + KniffelDraw().draw_sheet(env.kniffel_helper.kniffel)
                         )
 
                         log_csv.append(
@@ -710,31 +683,31 @@ class KniffelRL:
             suffix="%(index)d/%(max)d - %(eta)ds",
         )
 
-        kniffel_env = KniffelEnvHelper(
-            env_config=self.env_config,
-            logging=self.logging,
-        )
+        env: KniffelEnvSB3 = self.get_kniffel_env()
 
         actions = []
         bonus_counter = 0  # count bonus
 
         for game_id in range(1, episodes + 1):
+
             # reset values
             bar.next()
-            kniffel_env.reset_kniffel()
             rounds_counter = 1
             done = False
 
+            state = env.reset()
+
             while not done:
                 # Get fresh state
-                state = kniffel_env.get_state()
+                state = env.kniffel_helper.kniffel.get_state()
 
                 # predict action
                 action, _states = agent.predict(state, deterministic=True)
                 enum_action = EnumAction(action)
 
                 # Apply action to model
-                reward, done, info = kniffel_env.predict_and_apply(action)
+
+                obs, reward, done, info = env.step(action)
 
                 if not done:
                     # if game not over increase round counter
@@ -745,7 +718,7 @@ class KniffelRL:
                         "game_id": game_id,
                         "round": rounds_counter,
                         "action": enum_action.name,
-                        "points": kniffel_env.kniffel.get_turn(-2)
+                        "points": env.kniffel_helper.kniffel.get_turn(-2)
                         .get_selected_option()
                         .points
                         if action >= 0 and action <= 12
@@ -755,7 +728,7 @@ class KniffelRL:
                     actions.append(action_dict)
                 else:
                     if not info["error"]:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
@@ -764,7 +737,7 @@ class KniffelRL:
                             "game_id": game_id,
                             "round": rounds_counter,
                             "action": enum_action.name,
-                            "points": kniffel_env.kniffel.get_turn(-1)
+                            "points": env.kniffel_helper.kniffel.get_turn(-1)
                             .get_selected_option()
                             .points
                             if action >= 0 and action <= 12
@@ -775,14 +748,14 @@ class KniffelRL:
 
                         break
                     else:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
 
                         break
 
-            bonus_counter += 1 if kniffel_env.kniffel.is_bonus() else 0
+            bonus_counter += 1 if env.kniffel_helper.kniffel.is_bonus() else 0
 
         bar.finish()
 
@@ -934,20 +907,7 @@ if __name__ == "__main__":
         },
     }
 
-    agent_dict = {
-        "agent": "TRPO",
-        "learning_rate": 0.045596393554676144,
-        "TRPO_cg_damping": 0.07035336901085272,
-        "TRPO_cg_max_steps": 36,
-        "TRPO_gae_lambda": 0.9300498564577707,
-        "TRPO_gamma": 0.9019176493023834,
-        "TRPO_line_search_max_iter": 88,
-        "TRPO_line_search_shrinking_factor": 0.6418643642549521,
-        "TRPO_normalize_advantage": False,
-        "TRPO_n_critic_updates": 21,
-        "TRPO_policy": "MlpPolicy",
-        "TRPO_target_kl": 0.09722377148109375,
-    }
+    agent_dict = {"agent": "DQN", "DQN_policy": "MlpPolicy"}
 
     rl = KniffelRL(
         agent_dict=agent_dict,
@@ -957,16 +917,15 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "train"
+    TASK = "train"  # train, play, evaluate
 
     if TASK == "train":
-
         rl.train(
-            nb_steps=1_000_000,
+            nb_steps=10_000_000,
             load_weights=False,
             load_dir_name="current-best-v3",
         )
     elif TASK == "play":
-        rl.play(dir_name="current-best-v3", episodes=20_000, write=False)
+        rl.play(dir_name="p_date=2023-01-24-09_02_29", episodes=1000, write=False)
     elif TASK == "evaluate":
-        rl.evaluate(dir_name="p_date=2023-01-21-09_41_01", episodes=1000)
+        rl.evaluate(dir_name="p_date=2023-01-24-09_02_29", episodes=1000)
