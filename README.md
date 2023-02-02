@@ -8,6 +8,8 @@
 The dice game "Kniffel", also known under the name "Yahtzee", coded in Python. 
 
 
+# CURRENT OPTUNA = v23.02.02.v1
+
 More Information about this project can be viewed on my website: [https://kniffel.elch.cc/](https://kniffel.elch.cc/)
 
 ## The Game
