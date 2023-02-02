@@ -151,9 +151,9 @@ class KniffelRL:
             state_mode=self.state_mode,
         )
 
-        from stable_baselines3.common.env_checker import check_env
+        # from stable_baselines3.common.env_checker import check_env
 
-        check_env(env, warn=True, skip_render_check=True)
+        # check_env(env, warn=True, skip_render_check=True)
 
         return env
 
@@ -185,18 +185,18 @@ class KniffelRL:
                 env=self.get_kniffel_env(),
                 batch_size=128,
                 learning_rate=self.get_hyperparameter("learning_rate"),
-                gamma=self.get_hyperparameter(f"{prefix}_gamma"),
+                gamma=self.get_hyperparameter(
+                    f"{prefix}_gamma",
+                ),
                 cg_max_steps=self.get_hyperparameter(f"{prefix}_cg_max_steps"),
                 cg_damping=self.get_hyperparameter(f"{prefix}_cg_damping"),
                 line_search_shrinking_factor=self.get_hyperparameter(
-                    f"{prefix}_line_search_shrinking_factor"
+                    f"{prefix}_line_search_shrinking_factor",
                 ),
                 line_search_max_iter=self.get_hyperparameter(
                     f"{prefix}_line_search_max_iter",
                 ),
-                n_critic_updates=self.get_hyperparameter(
-                    f"{prefix}_n_critic_updates",
-                ),
+                n_critic_updates=self.get_hyperparameter(f"{prefix}_n_critic_updates"),
                 gae_lambda=self.get_hyperparameter(
                     f"{prefix}_gae_lambda",
                 ),
@@ -211,17 +211,13 @@ class KniffelRL:
         elif self.get_hyperparameter("agent") == "PPO":
             prefix = "PPO"
             return PPO(
-                policy=self.get_hyperparameter(
-                    f"{prefix}_policy",
-                ),
+                policy=self.get_hyperparameter(f"{prefix}_policy"),
                 env=self.get_kniffel_env(),
                 batch_size=128,
                 learning_rate=self.get_hyperparameter(
                     f"{prefix}_learning_rate",
                 ),
-                gamma=self.get_hyperparameter(
-                    f"{prefix}_gamma",
-                ),
+                gamma=self.get_hyperparameter(f"{prefix}_gamma"),
                 gae_lambda=self.get_hyperparameter(
                     f"{prefix}_gae_lambda",
                 ),
@@ -245,14 +241,132 @@ class KniffelRL:
                     f"{prefix}_target_kl",
                 ),
             )
-        elif self.get_hyperparameter("agent") == "DQN":
-            prefix = "DQN"
-            return DQN(
+        elif self.get_hyperparameter("agent") == "ARS":
+            prefix = "ARS"
+            return ARS(
                 policy=self.get_hyperparameter(
                     f"{prefix}_policy",
                 ),
                 env=self.get_kniffel_env(),
-                learning_rate=0.003,
+                n_delta=self.get_hyperparameter(
+                    f"{prefix}_n_delta",
+                ),
+                learning_rate=self.get_hyperparameter(
+                    f"{prefix}_learning_rate",
+                ),
+                delta_std=self.get_hyperparameter(
+                    f"{prefix}_delta_std",
+                ),
+                n_top=self.get_hyperparameter(
+                    f"{prefix}_n_top",
+                ),
+                zero_policy=self.get_hyperparameter(
+                    f"{prefix}_zero_policy",
+                ),
+            )
+        elif self.get_hyperparameter("agent") == "QRDQN":
+            prefix = "QRDQN"
+            return QRDQN(
+                policy=self.get_hyperparameter(f"{prefix}_policy"),
+                env=self.get_kniffel_env(),
+                batch_size=32,
+                learning_rate=self.get_hyperparameter(
+                    f"{prefix}_learning_rate",
+                ),
+                buffer_size=self.get_hyperparameter(
+                    f"{prefix}_buffer_size",
+                ),
+                learning_starts=self.get_hyperparameter(
+                    f"{prefix}_learning_starts",
+                ),
+                tau=self.get_hyperparameter(
+                    f"{prefix}_tau",
+                ),
+                gamma=self.get_hyperparameter(
+                    f"{prefix}_gamma",
+                ),
+                train_freq=self.get_hyperparameter(
+                    f"{prefix}_train_freq",
+                ),
+                gradient_steps=self.get_hyperparameter(
+                    f"{prefix}_gradient_steps",
+                ),
+                target_update_interval=self.get_hyperparameter(
+                    f"{prefix}_target_update_interval",
+                ),
+                exploration_fraction=self.get_hyperparameter(
+                    f"{prefix}_exploration_fraction",
+                ),
+                exploration_final_eps=self.get_hyperparameter(
+                    f"{prefix}_exploration_final_eps",
+                ),
+                exploration_initial_eps=self.get_hyperparameter(
+                    f"{prefix}_exploration_initial_eps",
+                ),
+            )
+        elif self.get_hyperparameter("agent") == "A2C":
+            prefix = "A2C"
+            return A2C(
+                policy=self.get_hyperparameter(f"{prefix}_policy"),
+                env=self.get_kniffel_env(),
+                learning_rate=self.get_hyperparameter(
+                    f"{prefix}_learning_rate",
+                ),
+                gamma=self.get_hyperparameter(
+                    f"{prefix}_gamma",
+                ),
+                gae_lambda=self.get_hyperparameter(
+                    f"{prefix}_gae_lambda",
+                ),
+                vf_coef=self.get_hyperparameter(
+                    f"{prefix}_vf_coef",
+                ),
+                max_grad_norm=self.get_hyperparameter(
+                    f"{prefix}_max_grad_norm",
+                ),
+                use_rms_prop=self.get_hyperparameter(
+                    f"{prefix}_use_rms_prop",
+                ),
+                use_sde=False,
+            )
+        elif self.get_hyperparameter("agent") == "DQN":
+            prefix = "DQN"
+            return DQN(
+                policy=self.get_hyperparameter(f"{prefix}_policy"),
+                env=self.get_kniffel_env(),
+                batch_size=32,
+                learning_rate=self.get_hyperparameter(
+                    f"{prefix}_learning_rate",
+                ),
+                buffer_size=self.get_hyperparameter(
+                    f"{prefix}_buffer_size",
+                ),
+                learning_starts=self.get_hyperparameter(f"{prefix}_learning_starts"),
+                tau=self.get_hyperparameter(
+                    f"{prefix}_tau",
+                ),
+                gamma=self.get_hyperparameter(
+                    f"{prefix}_gamma",
+                ),
+                train_freq=self.get_hyperparameter(
+                    f"{prefix}_train_freq",
+                ),
+                gradient_steps=self.get_hyperparameter(
+                    f"{prefix}_gradient_steps",
+                ),
+                target_update_interval=self.get_hyperparameter(
+                    f"{prefix}_target_update_interval",
+                ),
+                exploration_fraction=self.get_hyperparameter(
+                    f"{prefix}_exploration_fraction",
+                ),
+                exploration_final_eps=self.get_hyperparameter(
+                    f"{prefix}_exploration_final_eps",
+                ),
+                exploration_initial_eps=self.get_hyperparameter(
+                    f"{prefix}_exploration_initial_eps",
+                ),
+                max_grad_norm=self.get_hyperparameter(f"{prefix}_max_grad_norm"),
             )
 
     def train(
@@ -261,6 +375,8 @@ class KniffelRL:
         nb_steps=10_000,
         load_weights=False,
     ):
+        print()
+        print("Start training:")
         episodes = 1_000
 
         dir_name = "p_date={}/".format(self.datetime)
@@ -274,20 +390,15 @@ class KniffelRL:
         # Build Agent
         agent = self.build_sb_agent()
 
-        # create callbacks
-        callbacks = []
-
-        dir_name = "p_date={}/".format(self.datetime)
-        path = f"{self.base_path}output/weights/{dir_name}"
-
         if load_weights:
-            print(f"Load weights from dir: {load_dir_name}")
+            print("Loading not implemented yet!")
+            # print(f"Load weights from dir: {load_dir_name}")
             # agent.load_weights(
             #    f"{self.base_path}output/weights/{load_dir_name}/weights.h5f"
             # )
 
         # fit the agent
-        agent.learn(total_timesteps=nb_steps, log_interval=10, progress_bar=True)  # type: ignore
+        agent.learn(total_timesteps=nb_steps, log_interval=1, progress_bar=False)  # type: ignore
 
         # SAVE
 
@@ -467,16 +578,23 @@ class KniffelRL:
         with open(f"{path}/configuration.json", "r") as f:
             agent_dict_play = json.load(f)
 
-        self.agent_dict = agent_dict_play
-
-        print(f"Play {episodes} games from model from path: {path}.")
+        print("Start loading model...")
         print()
+        print("Load agent: ", agent_dict_play["agent"])
 
-        # Build Agent
-        agent = self.build_sb_agent()
-
-        # load the weights
-        agent.load(f"{path}/kniffel_model")  # type: ignore
+        agent = None
+        if agent_dict_play["agent"] == "DQN":
+            agent = DQN.load(f"{path}/kniffel_model")
+        if agent_dict_play["agent"] == "TRPO":
+            agent = TRPO.load(f"{path}/kniffel_model")
+        if agent_dict_play["agent"] == "PPO":
+            agent = PPO.load(f"{path}/kniffel_model")
+        if agent_dict_play["agent"] == "A2C":
+            agent = A2C.load(f"{path}/kniffel_model")
+        if agent_dict_play["agent"] == "QRDQN":
+            agent = QRDQN.load(f"{path}/kniffel_model")
+        if agent_dict_play["agent"] == "ARS":
+            agent = ARS.load(f"{path}/kniffel_model")
 
         metrics = self.use_model(
             agent,
@@ -527,10 +645,13 @@ class KniffelRL:
             done = False
 
             while not done:
+                # Get fresh state
+                state = env.kniffel_helper.kniffel.get_state()
+
                 log_csv = []
 
                 # predict action
-                action, _states = agent.predict(state, deterministic=True)
+                action, _ = agent.predict(state, deterministic=True)
                 enum_action = EnumAction(action)
 
                 # Apply action to model
@@ -623,6 +744,12 @@ class KniffelRL:
 
         bar.finish()
 
+        mean_reward, std_reward = evaluate_policy(
+            agent, env, n_eval_episodes=100  # type: ignore
+        )
+
+        print(f"mean_reward={mean_reward:.2f} +/- {std_reward}")
+
         metrics = {
             "finished_games": episodes - break_counter,
             "error_games": break_counter,
@@ -651,11 +778,28 @@ class KniffelRL:
         print(f"Play {episodes} games from model from path: {path}.")
         print()
 
-        # Build Agent
-        agent = self.build_sb_agent()
+        agent_dict_play = {}
+        # read json file to dict
+        with open(f"{path}/configuration.json", "r") as f:
+            agent_dict_play = json.load(f)
 
-        # load the weights
-        agent.load(f"{path}/kniffel_model", env=self.get_kniffel_env())  # type: ignore
+        print("Start loading model...")
+        print()
+        print("Load agent: ", agent_dict_play["agent"])
+
+        agent = None
+        if agent_dict_play["agent"] == "DQN":
+            agent = DQN.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
+        if agent_dict_play["agent"] == "TRPO":
+            agent = TRPO.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
+        if agent_dict_play["agent"] == "PPO":
+            agent = PPO.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
+        if agent_dict_play["agent"] == "A2C":
+            agent = A2C.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
+        if agent_dict_play["agent"] == "QRDQN":
+            agent = QRDQN.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
+        if agent_dict_play["agent"] == "ARS":
+            agent = ARS.load(f"{path}/kniffel_model", env=self.get_kniffel_env())
 
         mean_reward, std_reward = evaluate_policy(
             agent, agent.get_env(), n_eval_episodes=100  # type: ignore
@@ -702,7 +846,7 @@ class KniffelRL:
                 state = env.kniffel_helper.kniffel.get_state()
 
                 # predict action
-                action, _states = agent.predict(state, deterministic=True)
+                action, _ = agent.predict(state, deterministic=False)
                 enum_action = EnumAction(action)
 
                 # Apply action to model
@@ -793,10 +937,10 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
-        "reward_roll_dice": 0,
-        "reward_game_over": -0,
+        "reward_roll_dice": 1,
+        "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 100,
+        "reward_bonus": 50,
         "reward_mode": "custom",  # custom or kniffel
         "state_mode": "continuous",  # binary or continuous
         "reward_kniffel": {
@@ -854,7 +998,7 @@ if __name__ == "__main__":
                 "reward_three_dices": 18.0,
                 "reward_two_dices": 9.0,
                 "reward_one_dice": 0.9,
-                "reward_slash": -0,
+                "reward_slash": -10,
             },
             "reward_four_times": {
                 "reward_five_dices": 35.0,
@@ -870,7 +1014,7 @@ if __name__ == "__main__":
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -12,
             },
             "reward_small_street": {
                 "reward_five_dices": 1.0,
@@ -878,7 +1022,7 @@ if __name__ == "__main__":
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -5,
             },
             "reward_large_street": {
                 "reward_five_dices": 60.0,
@@ -886,7 +1030,7 @@ if __name__ == "__main__":
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -15,
             },
             "reward_kniffel": {
                 "reward_five_dices": 100.0,
@@ -902,12 +1046,25 @@ if __name__ == "__main__":
                 "reward_three_dices": 3,
                 "reward_two_dices": 2,
                 "reward_one_dice": 1,
-                "reward_slash": -0,
+                "reward_slash": -1,
             },
         },
     }
 
-    agent_dict = {"agent": "DQN", "DQN_policy": "MlpPolicy"}
+    agent_dict = {
+        "agent": "TRPO",
+        "learning_rate": 0.021399516962183417,
+        "TRPO_cg_damping": 0.019137947259896548,
+        "TRPO_cg_max_steps": 87,
+        "TRPO_gae_lambda": 0.9465758241918152,
+        "TRPO_gamma": 0.9869739575647402,
+        "TRPO_line_search_max_iter": 33,
+        "TRPO_line_search_shrinking_factor": 0.5368300841247234,
+        "TRPO_normalize_advantage": False,
+        "TRPO_n_critic_updates": 43,
+        "TRPO_policy": "MlpPolicy",
+        "TRPO_target_kl": 0.03245235641396581,
+    }
 
     rl = KniffelRL(
         agent_dict=agent_dict,
@@ -917,15 +1074,15 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "train"  # train, play, evaluate
+    TASK = "play"  # train, play, evaluate
 
     if TASK == "train":
         rl.train(
-            nb_steps=10_000_000,
+            nb_steps=500_000,
             load_weights=False,
             load_dir_name="current-best-v3",
         )
     elif TASK == "play":
-        rl.play(dir_name="p_date=2023-01-24-09_02_29", episodes=1000, write=False)
+        rl.play(dir_name="p_date=2023-02-02-14_20_32", episodes=1000, write=False)
     elif TASK == "evaluate":
         rl.evaluate(dir_name="p_date=2023-01-24-09_02_29", episodes=1000)

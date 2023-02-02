@@ -1001,12 +1001,12 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
-        "reward_roll_dice": 0,
-        "reward_game_over": -0,
+        "reward_bonus": 35,
         "reward_finish": 25,
-        "reward_bonus": 100,
-        "reward_mode": "custom",  # custom or kniffel
-        "state_mode": "continuous",  # binary or continuous
+        "reward_game_over": -25,
+        "reward_mode": "custom",
+        "reward_roll_dice": 0.5,
+        "state_mode": "binary",
         "reward_kniffel": {
             "reward_ones": {
                 "reward_five_dices": 5,
@@ -1123,10 +1123,10 @@ if __name__ == "__main__":
         "dqn_adam_beta_1": 0.8770788026018081,
         "dqn_adam_beta_2": 0.8894717766504484,
         "dqn_adam_epsilon": 7.579405338028617e-05,
-        "dqn_adam_learning_rate": 0.0029242299694621833,
+        "dqn_adam_learning_rate": 0.0015,
         "dqn_dueling_option": "avg",
         "dqn_enable_double_dqn": True,
-        "dqn_memory_limit": 150000,
+        "dqn_memory_limit": 1500000,
         "dqn_target_model_update_int": 9954,
         "enable_dueling_network": False,
         "eps_greedy_eps": 0.22187387376395634,
@@ -1150,10 +1150,10 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    rl.train(
-        nb_steps=20_000_000,
-        load_weights=False,
-        load_dir_name="current-best-v3",
-    )
-    # rl.play(dir_name="current-best-v3", episodes=20_000, write=False)
+    # rl.train(
+    #    nb_steps=20_000_000,
+    #    load_weights=False,
+    #    load_dir_name="keras-current-best-v3",
+    # )
+    rl.play(dir_name="keras-current-best-v3", episodes=1_000, write=False)
     # rl.evaluate(dir_name="p_date=2023-01-11-08_05_26", episodes=1000)

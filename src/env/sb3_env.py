@@ -102,7 +102,7 @@ class KniffelEnvSB3(Env):
         self.state = self.kniffel_helper.get_state()
 
         # Return step information
-        return self.state, reward, done, info  # info
+        return self.state, reward, done, info
 
     def render(self):
         """
@@ -110,7 +110,7 @@ class KniffelEnvSB3(Env):
         """
         pass
 
-    def reset(self, seed=None, options=None):
+    def reset(self):
         """
         Reset state
         """

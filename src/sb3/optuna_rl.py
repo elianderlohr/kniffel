@@ -22,7 +22,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from src.env.open_ai_env import KniffelEnv
+from src.env.sb3_env import KniffelEnvSB3
 from src.env.env_helper import KniffelEnvHelper
 from src.env.callback.custom_keras_pruning_callback import (
     CustomKerasPruningCallback,
@@ -50,9 +50,6 @@ class KniffelRL:
 
     # Current date
     datetime = dt.today().strftime("%Y-%m-%d-%H_%M_%S")
-
-    # Window
-    window_length = 1
 
     def __init__(
         self,
@@ -302,7 +299,7 @@ class KniffelRL:
         return np.mean(sm_list)
 
     def train(self, nb_steps=10_000):
-        env = KniffelEnv(
+        env = KniffelEnvSB3(
             self.env_config,
             env_action_space=self._env_action_space,
             env_observation_space=self._env_observation_space,
@@ -332,38 +329,36 @@ class KniffelRL:
 
         print("Start playing games...")
 
-        kniffel_env = KniffelEnvHelper(env_config=self.env_config, logging=False)
+        env: KniffelEnvSB3 = agent.get_env()
 
         for _ in range(1, episodes + 1):
-            # reset values
 
-            kniffel_env.reset_kniffel()
+            # reset values
+            state = env.reset()
             rounds_counter = 1
             done = False
 
             while not done:
                 # Get fresh state
-                state = kniffel_env.get_state()
-
+                state = env.kniffel_helper.kniffel.get_state()
                 # predict action
-                action, _states = agent.predict(state, deterministic=True)
-                enum_action = EnumAction(action)
+                action, _ = agent.predict(state, deterministic=True)
 
                 # Apply action to model
-                reward, done, info = kniffel_env.predict_and_apply(action)
+                obs, reward, done, info = env.step(action)
 
                 if not done:
                     # if game not over increase round counter
                     rounds_counter += 1
                 else:
                     if not info["error"]:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         rounds_counter = 1
 
                         break
                     else:
-                        points.append(kniffel_env.kniffel.get_points())
+                        points.append(env.kniffel_helper.kniffel.get_points())
                         rounds.append(rounds_counter)
                         break_counter += 1
                         rounds_counter = 1
@@ -372,7 +367,7 @@ class KniffelRL:
 
         # Get policy mean and std
         policy_mean_reward, policy_std_reward = evaluate_policy(
-            agent, agent.get_env(), n_eval_episodes=episodes  # type: ignore
+            agent, env, n_eval_episodes=episodes  # type: ignore
         )
 
         metrics = {
@@ -401,9 +396,9 @@ def objective(trial):
     }
 
     env_config = {
-        "reward_roll_dice": 0,
-        "reward_game_over": -10,
-        "reward_finish": 30,
+        "reward_roll_dice": 1,
+        "reward_game_over": -25,
+        "reward_finish": 25,
         "reward_bonus": 50,
         "reward_mode": "custom",  # custom or kniffel
         "state_mode": "continuous",  # binary or continuous
@@ -462,7 +457,7 @@ def objective(trial):
                 "reward_three_dices": 18.0,
                 "reward_two_dices": 9.0,
                 "reward_one_dice": 0.9,
-                "reward_slash": -0,
+                "reward_slash": -10,
             },
             "reward_four_times": {
                 "reward_five_dices": 35.0,
@@ -478,7 +473,7 @@ def objective(trial):
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -12,
             },
             "reward_small_street": {
                 "reward_five_dices": 1.0,
@@ -486,7 +481,7 @@ def objective(trial):
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -5,
             },
             "reward_large_street": {
                 "reward_five_dices": 60.0,
@@ -494,7 +489,7 @@ def objective(trial):
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
-                "reward_slash": -0,
+                "reward_slash": -15,
             },
             "reward_kniffel": {
                 "reward_five_dices": 100.0,
@@ -510,7 +505,7 @@ def objective(trial):
                 "reward_three_dices": 3,
                 "reward_two_dices": 2,
                 "reward_one_dice": 1,
-                "reward_slash": -0,
+                "reward_slash": -1,
             },
         },
     }
@@ -524,7 +519,7 @@ def objective(trial):
         env_action_space=57,
     )
 
-    metrics = rl.train(nb_steps=500_000)  # todo
+    metrics = rl.train(nb_steps=1_000_000)  # todo
 
     trial.set_user_attr("server", str(server))
     trial.set_user_attr("param", trial.params)
@@ -540,7 +535,7 @@ def objective(trial):
     trial.set_user_attr("policy_mean_reward", float(metrics["policy_mean_reward"]))
     trial.set_user_attr("policy_std_reward", float(metrics["policy_std_reward"]))
 
-    return float(metrics["policy_mean_reward"])
+    return float(metrics["max_points"])
 
 
 server = ""
