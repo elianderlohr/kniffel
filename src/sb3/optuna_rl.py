@@ -313,7 +313,7 @@ class KniffelRL:
         )
 
         # Test agent
-        metrics = self.test_model(agent=agent, episodes=self._test_episodes)
+        metrics = self.test_model(agent=agent, env=env, episodes=self._test_episodes)
 
         # Return metrics
         return metrics
@@ -321,6 +321,7 @@ class KniffelRL:
     def test_model(
         self,
         agent,
+        env,
         episodes: int,
     ):
         points = []
@@ -328,8 +329,6 @@ class KniffelRL:
         break_counter = 0
 
         print("Start playing games...")
-
-        env: KniffelEnvSB3 = agent.get_env()
 
         for _ in range(1, episodes + 1):
 
