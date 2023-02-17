@@ -1051,20 +1051,19 @@ if __name__ == "__main__":
         },
     }
 
-    agent_dict = {
-        "agent": "TRPO",
-        "learning_rate": 0.021399516962183417,
-        "TRPO_cg_damping": 0.019137947259896548,
-        "TRPO_cg_max_steps": 87,
-        "TRPO_gae_lambda": 0.9465758241918152,
-        "TRPO_gamma": 0.9869739575647402,
-        "TRPO_line_search_max_iter": 33,
-        "TRPO_line_search_shrinking_factor": 0.5368300841247234,
-        "TRPO_normalize_advantage": False,
-        "TRPO_n_critic_updates": 43,
-        "TRPO_policy": "MlpPolicy",
-        "TRPO_target_kl": 0.03245235641396581,
-    }
+    agent_dict = {'agent': 'QRDQN',
+        'QRDQN_buffer_size': 100000,
+        'QRDQN_exploration_final_eps': 0.09113316028045268,
+        'QRDQN_exploration_fraction': 0.019035620237241382,
+        'QRDQN_exploration_initial_eps': 0.49827930377793855,
+        'QRDQN_gamma': 0.9070283947221435,
+        'QRDQN_gradient_steps': 67,
+        'QRDQN_learning_rate': 0.0016187203716563254,
+        'QRDQN_learning_starts': 1000,
+        'QRDQN_policy': 'MlpPolicy',
+        'QRDQN_target_update_interval': 984,
+        'QRDQN_tau': 0.48643533524790566,
+        'QRDQN_train_freq': 17}
 
     rl = KniffelRL(
         agent_dict=agent_dict,
@@ -1074,11 +1073,11 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "play"  # train, play, evaluate
+    TASK = "train"  # train, play, evaluate
 
     if TASK == "train":
         rl.train(
-            nb_steps=500_000,
+            nb_steps=1_000_000,
             load_weights=False,
             load_dir_name="current-best-v3",
         )
