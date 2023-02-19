@@ -1077,7 +1077,7 @@ if __name__ == "__main__":
 
     if TASK == "train":
         rl.train(
-            nb_steps=1_000_000,
+            nb_steps=5_000_000,
             load_weights=False,
             load_dir_name="current-best-v3",
         )
