@@ -391,14 +391,14 @@ def objective(trial):
 
     # Define hyperparameters
     base_hp = {
-        "agent": ["TRPO", "ARS", "QRDQN", "PPO", "A2C", "DQN"],
+        "agent": ["TRPO","QRDQN", "PPO"],
     }
 
     env_config = {
-        "reward_roll_dice": 1,
+        "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
-        "reward_bonus": 50,
+        "reward_bonus": 25,
         "reward_mode": "custom",  # custom or kniffel
         "state_mode": "continuous",  # binary or continuous
         "reward_kniffel": {
@@ -451,7 +451,7 @@ def objective(trial):
                 "reward_slash": -12,
             },
             "reward_three_times": {
-                "reward_five_dices": 20.0,
+                "reward_five_dices": 26.0,
                 "reward_four_dices": 24.0,
                 "reward_three_dices": 18.0,
                 "reward_two_dices": 9.0,
@@ -459,52 +459,52 @@ def objective(trial):
                 "reward_slash": -10,
             },
             "reward_four_times": {
-                "reward_five_dices": 35.0,
+                "reward_five_dices": 46.0,
                 "reward_four_dices": 40.0,
-                "reward_three_dices": 15.0,
-                "reward_two_dices": 5,
-                "reward_one_dice": 0.7,
-                "reward_slash": -12,
+                "reward_three_dices": 34.0,
+                "reward_two_dices": 17,
+                "reward_one_dice": 1.7,
+                "reward_slash": -20,
             },
             "reward_full_house": {
-                "reward_five_dices": 50.0,
-                "reward_four_dices": None,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -12,
-            },
-            "reward_small_street": {
-                "reward_five_dices": 1.0,
-                "reward_four_dices": 25.0,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -5,
-            },
-            "reward_large_street": {
-                "reward_five_dices": 60.0,
-                "reward_four_dices": None,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -15,
-            },
-            "reward_kniffel": {
-                "reward_five_dices": 100.0,
+                "reward_five_dices": 80.0,
                 "reward_four_dices": None,
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
                 "reward_slash": -25,
             },
+            "reward_small_street": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -17.5,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 80.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -30,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 120.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -50,
+            },
             "reward_chance": {
-                "reward_five_dices": 5,
-                "reward_four_dices": 4,
-                "reward_three_dices": 3,
+                "reward_five_dices": 16,
+                "reward_four_dices": 8,
+                "reward_three_dices": 4,
                 "reward_two_dices": 2,
                 "reward_one_dice": 1,
-                "reward_slash": -1,
+                "reward_slash": -10,
             },
         },
     }

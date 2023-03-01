@@ -1073,7 +1073,7 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "train"  # train, play, evaluate
+    TASK = "evaluate"  # train, play, evaluate
 
     if TASK == "train":
         rl.train(
@@ -1082,6 +1082,6 @@ if __name__ == "__main__":
             load_dir_name="current-best-v3",
         )
     elif TASK == "play":
-        rl.play(dir_name="p_date=2023-02-02-14_20_32", episodes=1000, write=False)
+        rl.play(dir_name="p_date=2023-02-25-15_09_12", episodes=1000, write=False)
     elif TASK == "evaluate":
-        rl.evaluate(dir_name="p_date=2023-01-24-09_02_29", episodes=1000)
+        rl.evaluate(dir_name="p_date=2023-02-25-15_09_12", episodes=1000)
