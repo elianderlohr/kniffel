@@ -398,7 +398,7 @@ class KniffelRL:
             # )
 
         # fit the agent
-        agent.learn(total_timesteps=nb_steps, log_interval=1, progress_bar=False)  # type: ignore
+        agent.learn(total_timesteps=nb_steps, progress_bar=True)  # type: ignore
 
         # SAVE
 
