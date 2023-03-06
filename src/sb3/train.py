@@ -937,7 +937,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     env_config = {
-        "reward_roll_dice": 1,
+        "reward_roll_dice": 0,
         "reward_game_over": -25,
         "reward_finish": 25,
         "reward_bonus": 50,
@@ -993,7 +993,7 @@ if __name__ == "__main__":
                 "reward_slash": -12,
             },
             "reward_three_times": {
-                "reward_five_dices": 20.0,
+                "reward_five_dices": 26.0,
                 "reward_four_dices": 24.0,
                 "reward_three_dices": 18.0,
                 "reward_two_dices": 9.0,
@@ -1001,69 +1001,69 @@ if __name__ == "__main__":
                 "reward_slash": -10,
             },
             "reward_four_times": {
-                "reward_five_dices": 35.0,
+                "reward_five_dices": 46.0,
                 "reward_four_dices": 40.0,
-                "reward_three_dices": 15.0,
-                "reward_two_dices": 5,
-                "reward_one_dice": 0.7,
-                "reward_slash": -12,
+                "reward_three_dices": 34.0,
+                "reward_two_dices": 17,
+                "reward_one_dice": 1.7,
+                "reward_slash": -20,
             },
             "reward_full_house": {
-                "reward_five_dices": 50.0,
-                "reward_four_dices": None,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -12,
-            },
-            "reward_small_street": {
-                "reward_five_dices": 1.0,
-                "reward_four_dices": 25.0,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -5,
-            },
-            "reward_large_street": {
-                "reward_five_dices": 60.0,
-                "reward_four_dices": None,
-                "reward_three_dices": None,
-                "reward_two_dices": None,
-                "reward_one_dice": None,
-                "reward_slash": -15,
-            },
-            "reward_kniffel": {
-                "reward_five_dices": 100.0,
+                "reward_five_dices": 80.0,
                 "reward_four_dices": None,
                 "reward_three_dices": None,
                 "reward_two_dices": None,
                 "reward_one_dice": None,
                 "reward_slash": -25,
             },
+            "reward_small_street": {
+                "reward_five_dices": 25.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -17.5,
+            },
+            "reward_large_street": {
+                "reward_five_dices": 80.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -30,
+            },
+            "reward_kniffel": {
+                "reward_five_dices": 120.0,
+                "reward_four_dices": None,
+                "reward_three_dices": None,
+                "reward_two_dices": None,
+                "reward_one_dice": None,
+                "reward_slash": -50,
+            },
             "reward_chance": {
-                "reward_five_dices": 5,
-                "reward_four_dices": 4,
-                "reward_three_dices": 3,
+                "reward_five_dices": 16,
+                "reward_four_dices": 8,
+                "reward_three_dices": 4,
                 "reward_two_dices": 2,
                 "reward_one_dice": 1,
-                "reward_slash": -1,
+                "reward_slash": -10,
             },
         },
     }
 
     agent_dict = {'agent': 'QRDQN',
-        'QRDQN_buffer_size': 100000,
-        'QRDQN_exploration_final_eps': 0.09113316028045268,
-        'QRDQN_exploration_fraction': 0.019035620237241382,
-        'QRDQN_exploration_initial_eps': 0.49827930377793855,
-        'QRDQN_gamma': 0.9070283947221435,
-        'QRDQN_gradient_steps': 67,
-        'QRDQN_learning_rate': 0.0016187203716563254,
-        'QRDQN_learning_starts': 1000,
+        'QRDQN_buffer_size': 1000000,
+        'QRDQN_exploration_final_eps': 0.5066659655334863,
+        'QRDQN_exploration_fraction': 0.0379901863376626,
+        'QRDQN_exploration_initial_eps': 0.6403920867115538,
+        'QRDQN_gamma': 0.9864232747280991,
+        'QRDQN_gradient_steps': 73,
+        'QRDQN_learning_rate': 0.001620594424457856,
+        'QRDQN_learning_starts': 31100,
         'QRDQN_policy': 'MlpPolicy',
-        'QRDQN_target_update_interval': 984,
-        'QRDQN_tau': 0.48643533524790566,
-        'QRDQN_train_freq': 17}
+        'QRDQN_target_update_interval': 562,
+        'QRDQN_tau': 0.8207629144756895,
+        'QRDQN_train_freq': 30}
 
     rl = KniffelRL(
         agent_dict=agent_dict,
@@ -1073,7 +1073,7 @@ if __name__ == "__main__":
         env_action_space=57,
     )
 
-    TASK = "evaluate"  # train, play, evaluate
+    TASK = "train"  # train, play, evaluate
 
     if TASK == "train":
         rl.train(
